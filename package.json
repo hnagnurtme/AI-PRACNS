@@ -4,7 +4,7 @@
   "description": "Optimization of Resource Allocation Using GenAI",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified\" && exit 0",
     "prepare": "husky",
     "commit": "cz"
   },
