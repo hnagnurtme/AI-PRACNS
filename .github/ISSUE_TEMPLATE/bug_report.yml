@@ -1,0 +1,81 @@
+name: "🐞 Bug Report for Client–Server System"
+description: "Báo cáo lỗi cho hệ thống Client–Server"
+title: "[Bug]: "
+labels: ["bug", "client-server"]
+body:
+  - type: input
+    id: system-name
+    attributes:
+      label: "💡 System / Service Name"
+      description: "Tên hệ thống hoặc service nơi xảy ra lỗi (vd: ChatApp, OnlineStore)"
+      placeholder: "ChatApp"
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: "📝 Bug Description"
+      description: "Mô tả chi tiết về lỗi gặp phải"
+      placeholder: "Mô tả lỗi, bối cảnh xảy ra, và tác động của nó (vd: Không thể gửi tin nhắn khi sử dụng WebSocket)"
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: "🔄 Steps to Reproduce"
+      description: "Các bước để tái hiện lỗi"
+      placeholder: |
+        1. Đăng nhập vào ChatApp với tài khoản user1
+        2. Mở giao diện chat với user2
+        3. Gửi một tin nhắn dài hơn 500 ký tự
+        4. Quan sát lỗi
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: "✅ Expected Behavior"
+      description: "Hành vi mong đợi của hệ thống"
+      placeholder: "Tin nhắn nên được gửi thành công và hiển thị trong giao diện chat"
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: "❌ Actual Behavior"
+      description: "Hành vi thực tế xảy ra"
+      placeholder: "Tin nhắn không được gửi, giao diện hiển thị lỗi 'Connection timeout'"
+
+  - type: checkboxes
+    id: affected-components
+    attributes:
+      label: "🛠️ Affected Components"
+      description: "Chọn các thành phần bị ảnh hưởng bởi lỗi"
+      options:
+        - label: "Client (Frontend)"
+        - label: "Server (Backend)"
+        - label: "Database/Storage"
+        - label: "Communication Protocol (REST/WebSocket)"
+        - label: "Authentication/Authorization"
+        - label: "Logging/Error Handling"
+
+  - type: input
+    id: environment
+    attributes:
+      label: "🌐 Environment"
+      description: "Môi trường xảy ra lỗi (browser, OS, version, etc.)"
+      placeholder: "Chrome 120.0, Windows 11, ChatApp v1.2.3"
+
+  - type: textarea
+    id: logs-screenshots
+    attributes:
+      label: "📜 Logs or Screenshots"
+      description: "Cung cấp log, screenshot, hoặc thông tin debug liên quan"
+      placeholder: |
+        ```
+        [2025-08-17 19:27:03] ERROR: WebSocket connection failed: Timeout
+        ```
+        Hoặc đính kèm link đến screenshot/video.
+
+  - type: textarea
+    id: additional-notes
+    attributes:
+      label: "📌 Additional Notes"
+      description: "Thông tin bổ sung (tần suất lỗi, thiết bị cụ thể, v.v.)"
+      placeholder: "Lỗi chỉ xảy ra khi kết nối Wi-Fi không ổn định"

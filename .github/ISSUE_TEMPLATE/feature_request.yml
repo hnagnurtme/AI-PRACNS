@@ -1,0 +1,61 @@
+name: "🖥️ Client–Server Design & Implementation"
+description: "Thiết kế và triển khai một hệ thống Client–Server"
+title: "[Client–Server]: "
+labels: ["client-server", "backend", "frontend"]
+body:
+  - type: input
+    id: system-name
+    attributes:
+      label: "💡 System / Service Name"
+      description: "Tên hệ thống hoặc service (vd: ChatApp, OnlineStore)"
+      placeholder: "ChatApp"
+
+  - type: textarea
+    id: objectives
+    attributes:
+      label: "📌 Objectives"
+      description: "Mục tiêu chính của hệ thống Client–Server"
+      placeholder: |
+        - Cho phép người dùng gửi và nhận tin nhắn
+        - Quản lý kết nối nhiều client đồng thời
+
+  - type: checkboxes
+    id: core-features
+    attributes:
+      label: "✅ Core Features"
+      description: "Các tính năng chính cần triển khai"
+      options:
+        - label: "Client gửi yêu cầu (Request)"
+        - label: "Server xử lý và trả phản hồi (Response)"
+        - label: "Xử lý nhiều client đồng thời"
+        - label: "Xác thực/Phân quyền (Authentication/Authorization)"
+        - label: "Lưu trữ dữ liệu (Storage/Database)"
+        - label: "Thông báo lỗi / Logging"
+
+  - type: textarea
+    id: communication-protocol
+    attributes:
+      label: "🌐 Communication Protocol"
+      description: "Giao thức hoặc API dùng giữa client và server"
+      placeholder: |
+        - REST API (HTTP/HTTPS)
+        - WebSocket cho real-time
+        - TCP/UDP socket
+
+  - type: textarea
+    id: data-model
+    attributes:
+      label: "🗃️ Suggested Data Model"
+      description: "Cấu trúc dữ liệu hoặc schema"
+      placeholder: |
+        {
+          "userId": "string",
+          "message": "string",
+          "timestamp": "ISODate"
+        }
+
+  - type: textarea
+    id: additional-notes
+    attributes:
+      label: "📝 Additional Notes"
+      description: "Ghi chú bổ sung (security, scalability, logging...)"
