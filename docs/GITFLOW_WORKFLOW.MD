@@ -39,8 +39,11 @@ GitFlow là một mô hình quản lý nhánh Git phổ biến, giúp tổ chứ
 git checkout develop
 git checkout -b feature/login-google
 # Viết mã, commit thay đổi
+git push origin feature/login-google
+# Tạo Pull Request trên GitHub từ feature/login-google vào develop
+# Sau khi PR được phê duyệt và kiểm tra bởi GitHub Actions, merge PR trên GitHub
 git checkout develop
-git merge feature/login-google
+git pull origin develop
 git branch -d feature/login-google
 ```
 
@@ -49,11 +52,16 @@ git branch -d feature/login-google
 git checkout develop
 git checkout -b release/1.0.0
 # Thực hiện các chỉnh sửa nhỏ, cập nhật phiên bản
+git push origin release/1.0.0
+# Tạo Pull Request trên GitHub từ release/1.0.0 vào main
+# Sau khi PR được phê duyệt và kiểm tra bởi GitHub Actions, merge PR trên GitHub
 git checkout main
-git merge release/1.0.0
+git pull origin main
 git tag -a v1.0.0 -m "Release 1.0.0"
+# Tạo Pull Request trên GitHub từ release/1.0.0 vào develop
+# Sau khi PR được phê duyệt và kiểm tra bởi GitHub Actions, merge PR trên GitHub
 git checkout develop
-git merge release/1.0.0
+git pull origin develop
 git branch -d release/1.0.0
 ```
 
@@ -62,15 +70,27 @@ git branch -d release/1.0.0
 git checkout main
 git checkout -b hotfix/fix-login-bug
 # Sửa lỗi, commit thay đổi
+git push origin hotfix/fix-login-bug
+# Tạo Pull Request trên GitHub từ hotfix/fix-login-bug vào main
+# Sau khi PR được phê duyệt và kiểm tra bởi GitHub Actions, merge PR trên GitHub
 git checkout main
-git merge hotfix/fix-login-bug
+git pull origin main
+# Tạo Pull Request trên GitHub từ hotfix/fix-login-bug vào develop
+# Sau khi PR được phê duyệt và kiểm tra bởi GitHub Actions, merge PR trên GitHub
 git checkout develop
-git merge hotfix/fix-login-bug
+git pull origin develop
 git branch -d hotfix/fix-login-bug
 ```
 
 ## Lưu ý
 - **Công cụ hỗ trợ**: Có thể sử dụng các công cụ như `git-flow` (một tiện ích dòng lệnh) để tự động hóa quy trình GitFlow.
 - **Xung đột merge**: Luôn kiểm tra và giải quyết xung đột khi merge nhánh để đảm bảo mã nguồn ổn định.
+- **Sử dụng Pull Request với GitHub Actions**:  
+  - Thay vì merge trực tiếp các nhánh `feature`, `release`, hoặc `hotfix`, hãy tạo **Pull Request (PR)** trên GitHub để xem xét mã nguồn trước khi merge.  
+  - K kết hợp **GitHub Actions** để tự động hóa quy trình kiểm tra:  
+    - Tạo file workflow (VD: `.github/workflows/ci.yml`) để chạy kiểm tra mã nguồn (unit tests, linters) mỗi khi có PR.  
+    - Ví dụ: Một GitHub Action có thể chạy `npm test` hoặc `flake8` để kiểm tra mã JavaScript hoặc Python.  
+    - Cấu hình PR để yêu cầu ít nhất một người phê duyệt trước khi merge vào `develop` hoặc `main`.  
+  - Lợi ích: Đảm bảo chất lượng mã, giảm lỗi, và tăng tính minh bạch trong quy trình phát triển.  
 - **Tài liệu tham khảo**:  
   - [GitFlow by Vincent Driessen](https://nvie.com/posts/a-successful-git-branching-model/)
