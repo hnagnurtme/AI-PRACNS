@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class FireBaseConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(FireBaseConfiguration.class);
@@ -22,16 +23,31 @@ public class FireBaseConfiguration {
             logger.info("Firestore already initialized");
             return;
         }
+
         String serviceAccountPath = ReadPropertiesUtils.getString("firebase.serviceAccountPath");
         String databaseUrl = ReadPropertiesUtils.getString("firebase.databaseUrl");
 
-        FileInputStream serviceAccount = new FileInputStream(serviceAccountPath);
+        InputStream serviceAccount;
+
+        // Try to load as classpath resource first, then as file
+        try {
+            serviceAccount = FireBaseConfiguration.class.getClassLoader()
+                    .getResourceAsStream("serviceAccountKey.json");
+            if (serviceAccount == null) {
+                // Fallback to file system
+                serviceAccount = new FileInputStream(serviceAccountPath);
+            } else {
+                logger.info("Loading Firebase service account key from classpath");
+            }
+        } catch (Exception e) {
+            logger.warn("Failed to load from classpath, trying file system: {}", serviceAccountPath);
+            serviceAccount = new FileInputStream(serviceAccountPath);
+        }
 
         FirebaseOptions options = FirebaseOptions.builder()
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                 .setDatabaseUrl(databaseUrl)
                 .build();
-        ;
 
         if (FirebaseApp.getApps().isEmpty()) {
             FirebaseApp.initializeApp(options);
