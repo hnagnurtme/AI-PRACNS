@@ -5,6 +5,7 @@ package com.sagin.satellite.service.implement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.sagin.satellite.common.SatelliteException;
 import com.sagin.satellite.model.Packet;
 import com.sagin.satellite.service.IBufferManager;
 import com.sagin.satellite.service.ISatelliteService;
@@ -24,9 +25,21 @@ public class SatelliteService implements ISatelliteService {
      */
     @Override
     public void recievePacket(Packet packet) throws Exception {
+        validatePacket(packet);
         bufferManager.add(packet);
 
         logger.info("Packet {} added to buffer", packet.getPacketId());
         
     }
+
+    private void validatePacket(Packet packet) throws Exception {
+        if (packet.getPacketId() == null || packet.getPacketId().isEmpty()) {
+            throw new SatelliteException.InvalidPacketException("Invalid Packet: Packet ID is missing");
+        }
+        if( packet.getNextHop() == null || packet.getNextHop().isEmpty()){
+            throw new SatelliteException.InvalidPacketException("Invalid Packet: Next hop is missing");
+        }
+    }
 }
+
+

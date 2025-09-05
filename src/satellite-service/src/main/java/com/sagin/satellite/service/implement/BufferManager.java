@@ -15,9 +15,9 @@ import java.util.stream.Collectors;
  * BufferManagerImpl quản lý buffer packet cho SatelliteService
  * Thread-safe, FIFO, maxCapacity, auto-flush và retry.
  */
-public class BufferManagerImpl implements IBufferManager {
+public class BufferManager implements IBufferManager {
 
-    private static final Logger logger = LoggerFactory.getLogger(BufferManagerImpl.class);
+    private static final Logger logger = LoggerFactory.getLogger(BufferManager.class);
 
     private final BlockingQueue<Packet> queue;
     private final int maxCapacity;
@@ -26,7 +26,7 @@ public class BufferManagerImpl implements IBufferManager {
     private final int flushIntervalMs;
     private final int maxRetry;
 
-    public BufferManagerImpl(int maxCapacity, TcpSender sender, int flushIntervalMs, int maxRetry) {
+    public BufferManager(int maxCapacity, TcpSender sender, int flushIntervalMs, int maxRetry) {
         this.maxCapacity = maxCapacity;
         this.sender = sender;
         this.flushIntervalMs = flushIntervalMs;
