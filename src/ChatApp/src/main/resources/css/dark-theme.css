@@ -1,0 +1,91 @@
+/* Dark Theme for SAGIN Network Client */
+
+.root {
+    -fx-font-family: "Segoe UI", "Arial", sans-serif;
+    -fx-font-size: 12px;
+    -fx-background-color: #2c3e50;
+}
+
+.panel-title {
+    -fx-font-weight: bold;
+    -fx-font-size: 14px;
+    -fx-text-fill: #ecf0f1;
+}
+
+.button {
+    -fx-background-color: #34495e;
+    -fx-border-color: #4a5a6b;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-text-fill: #ecf0f1;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+
+.button:hover {
+    -fx-background-color: #4a5a6b;
+}
+
+.primary-button {
+    -fx-background-color: #3498db;
+    -fx-text-fill: white;
+    -fx-border-color: #2980b9;
+}
+
+.secondary-button {
+    -fx-background-color: #95a5a6;
+    -fx-text-fill: white;
+    -fx-border-color: #7f8c8d;
+}
+
+.text-area {
+    -fx-background-color: #34495e;
+    -fx-text-fill: #ecf0f1;
+    -fx-border-color: #4a5a6b;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+}
+
+.text-field {
+    -fx-background-color: #34495e;
+    -fx-text-fill: #ecf0f1;
+    -fx-border-color: #4a5a6b;
+    -fx-border-radius: 4px;
+    -fx-background-radius: 4px;
+    -fx-padding: 8px;
+}
+
+.combo-box {
+    -fx-background-color: #34495e;
+    -fx-text-fill: #ecf0f1;
+    -fx-border-color: #4a5a6b;
+}
+
+.split-pane {
+    -fx-background-color: #2c3e50;
+}
+
+.menu-bar {
+    -fx-background-color: #1a252f;
+}
+
+.status-bar {
+    -fx-background-color: #1a252f;
+    -fx-border-color: #34495e;
+    -fx-border-width: 1px 0 0 0;
+}
+
+.status-bar .label {
+    -fx-text-fill: #ecf0f1;
+    -fx-font-size: 11px;
+}
+
+.table-view {
+    -fx-background-color: #34495e;
+    -fx-text-fill: #ecf0f1;
+    -fx-border-color: #4a5a6b;
+}
+
+.label {
+    -fx-text-fill: #ecf0f1;
+}
