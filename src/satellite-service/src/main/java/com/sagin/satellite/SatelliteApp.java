@@ -1,12 +1,15 @@
 package com.sagin.satellite;
 
-import com.sagin.satellite.config.FireStoreConfiguration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sagin.satellite.config.ApplicationConfiguration;
 
 public class SatelliteApp {
-    public static void main(String[] args) throws Exception {
-        FireStoreConfiguration.init();
-
-        
-        FireStoreConfiguration.shutdown();
+    private static final Logger logger = LoggerFactory.getLogger(SatelliteApp.class);
+    public static void main(String[] args) {
+        ApplicationConfiguration.init();
+        ApplicationConfiguration.initServer(6000);
+        logger.info("Satellite Service is running on port 6000");
     }
 }
