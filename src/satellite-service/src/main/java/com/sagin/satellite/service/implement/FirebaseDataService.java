@@ -1,4 +1,4 @@
-package com.sagin.satellite.service;
+package com.sagin.satellite.service.implement;
 
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;

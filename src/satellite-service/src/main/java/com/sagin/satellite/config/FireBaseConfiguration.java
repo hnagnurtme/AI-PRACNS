@@ -16,7 +16,6 @@ public class FireBaseConfiguration {
     public static void init() throws IOException {
         Properties props = new Properties();
 
-        // Load application.properties từ resources
         try (InputStream input = FireBaseConfiguration.class
                 .getClassLoader()
                 .getResourceAsStream("application-prod.properties")) {
@@ -30,7 +29,6 @@ public class FireBaseConfiguration {
         String serviceAccountPath = props.getProperty("firebase.serviceAccountPath");
         String databaseUrl = props.getProperty("firebase.databaseUrl");
 
-        // Load serviceAccountKey.json (vẫn từ path, có thể cải tiến đọc từ resources luôn)
         FileInputStream serviceAccount = new FileInputStream(serviceAccountPath);
 
         FirebaseOptions options = FirebaseOptions.builder()

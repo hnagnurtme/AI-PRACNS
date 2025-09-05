@@ -1,7 +1,8 @@
-package com.sagin.satellite.service;
+package com.sagin.satellite.service.implement;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sagin.satellite.model.Packet;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import java.io.OutputStream;
@@ -43,9 +44,9 @@ public class TcpSender {
             out.write(json.getBytes(StandardCharsets.UTF_8));
             out.write('\n');
             out.flush();
-            logger.debug("Sent packet {} to {}:{}", packet.getId(), ip, port);
+            logger.debug("Sent packet {} to {}:{}", packet.getPacketId(), ip, port);
         } catch (Exception ex) {
-            logger.error("Failed to send packet {} to {}: {}", packet.getId(), address, ex.getMessage());
+            logger.error("Failed to send packet {} to {}: {}", packet.getPacketId(), address, ex.getMessage());
             throw ex;
         }
     }

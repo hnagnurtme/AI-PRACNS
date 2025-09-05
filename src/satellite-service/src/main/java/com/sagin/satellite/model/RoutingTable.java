@@ -1,21 +1,43 @@
 package com.sagin.satellite.model;
 
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import lombok.*;
+import java.util.*;
 
+/**
+ * RoutingTable lưu thông tin đường đi tốt nhất từ source → destination
+ * Kết hợp với LinkMetric để chọn nextHop
+ */
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class RoutingTable {
-    private final Map<String, String> routes = new ConcurrentHashMap<>();
 
-    public void addRoute(String dst, String nextHop) {
-        if (dst == null || nextHop == null) return;
-        routes.put(dst, nextHop);
+    // destinationNodeId -> nextHopNodeId
+    private Map<String, String> table = new HashMap<>();
+
+    // destinationNodeId -> toàn bộ path NodeId
+    private Map<String, List<String>> pathHistory = new HashMap<>();
+
+    /**
+     * Cập nhật tuyến đường từ source → destination
+     */
+    public void updateRoute(String destinationNodeId, String nextHopNodeId, List<String> path) {
+        table.put(destinationNodeId, nextHopNodeId);
+        pathHistory.put(destinationNodeId, path != null ? new ArrayList<>(path) : new ArrayList<>());
     }
 
-    public String getNextHop(String dst) {
-        return routes.get(dst);
+    /**
+     * Lấy next hop dựa trên destination
+     */
+    public String getNextHop(String destinationNodeId) {
+        return table.get(destinationNodeId);
     }
 
-    public void removeRoute(String dst) {
-        routes.remove(dst);
+    /**
+     * Lấy toàn bộ path history đến destination
+     */
+    public List<String> getPath(String destinationNodeId) {
+        return pathHistory.getOrDefault(destinationNodeId, new ArrayList<>());
     }
 }
