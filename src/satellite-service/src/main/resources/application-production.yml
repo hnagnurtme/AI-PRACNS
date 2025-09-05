@@ -1,0 +1,20 @@
+node:
+  id: sat1
+  ip: 10.0.0.2
+  port: 9090
+
+manager:
+  api:
+    url: http://localhost:8081
+
+firebase:
+  serviceAccountPath: src/main/resources/serviceAccountKey.json
+  databaseUrl: https://ai-pracns-default-rtdb.asia-southeast1.firebasedatabase.app
+
+buffer:
+  maxSize: 500
+
+state:
+  report:
+    interval:
+      ms: 5000
