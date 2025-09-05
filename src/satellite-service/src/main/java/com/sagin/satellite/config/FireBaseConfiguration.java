@@ -23,14 +23,16 @@ public class FireBaseConfiguration {
             logger.info("Firestore already initialized");
             return;
         }
+
         String serviceAccountPath = ReadPropertiesUtils.getString("firebase.serviceAccountPath");
         String databaseUrl = ReadPropertiesUtils.getString("firebase.databaseUrl");
 
         InputStream serviceAccount;
-        
+
         // Try to load as classpath resource first, then as file
         try {
-            serviceAccount = FireBaseConfiguration.class.getClassLoader().getResourceAsStream("serviceAccountKey.json");
+            serviceAccount = FireBaseConfiguration.class.getClassLoader()
+                    .getResourceAsStream("serviceAccountKey.json");
             if (serviceAccount == null) {
                 // Fallback to file system
                 serviceAccount = new FileInputStream(serviceAccountPath);
@@ -46,7 +48,6 @@ public class FireBaseConfiguration {
                 .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                 .setDatabaseUrl(databaseUrl)
                 .build();
-        ;
 
         if (FirebaseApp.getApps().isEmpty()) {
             FirebaseApp.initializeApp(options);
