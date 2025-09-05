@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.chatapp.chatapp.gui.controllers.MainWindowController">
+   <top>
+      <!-- Menu Bar -->
+      <MenuBar fx:id="menuBar">
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem fx:id="exitMenuItem" mnemonicParsing="false" text="Exit" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="View">
+            <items>
+              <MenuItem fx:id="lightThemeMenuItem" mnemonicParsing="false" text="Light Theme" />
+              <MenuItem fx:id="darkThemeMenuItem" mnemonicParsing="false" text="Dark Theme" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Settings">
+            <items>
+              <MenuItem mnemonicParsing="false" text="Preferences..." />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem mnemonicParsing="false" text="About" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+   </top>
+   
+   <center>
+      <!-- Main Content Area -->
+      <SplitPane fx:id="mainSplitPane" dividerPositions="0.7" orientation="HORIZONTAL">
+        <items>
+          <!-- Left Side - Chat and Topology -->
+          <SplitPane fx:id="leftSplitPane" dividerPositions="0.6" orientation="VERTICAL">
+            <items>
+              <!-- Chat Panel -->
+              <VBox fx:id="chatPanel" spacing="10.0">
+                <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </padding>
+                <children>
+                  <Label styleClass="panel-title" text="Chat Panel">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  
+                  <!-- User Selection -->
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                      <Label text="Send to:" />
+                      <ComboBox fx:id="userSelectionCombo" prefWidth="150.0" />
+                    </children>
+                  </HBox>
+                  
+                  <!-- Chat History -->
+                  <TextArea fx:id="chatHistoryArea" prefHeight="200.0" promptText="Chat history will appear here..." VBox.vgrow="ALWAYS" />
+                  
+                  <!-- Message Input -->
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                      <TextField fx:id="messageInputField" promptText="Type your message..." HBox.hgrow="ALWAYS" />
+                      <Button fx:id="sendButton" styleClass="primary-button" text="Send" />
+                    </children>
+                  </HBox>
+                </children>
+              </VBox>
+              
+              <!-- Topology Panel -->
+              <VBox fx:id="topologyPanel" spacing="10.0">
+                <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </padding>
+                <children>
+                  <Label styleClass="panel-title" text="Network Topology">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  
+                  <!-- Topology Controls -->
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                      <Button fx:id="zoomInButton" text="Zoom In" />
+                      <Button fx:id="zoomOutButton" text="Zoom Out" />
+                      <Button fx:id="resetViewButton" text="Reset View" />
+                    </children>
+                  </HBox>
+                  
+                  <!-- Topology Canvas -->
+                  <ScrollPane fx:id="topologyScrollPane" fitToHeight="true" fitToWidth="true" VBox.vgrow="ALWAYS">
+                    <content>
+                      <Pane fx:id="topologyCanvas" />
+                    </content>
+                  </ScrollPane>
+                </children>
+              </VBox>
+            </items>
+          </SplitPane>
+          
+          <!-- Right Side - Access Point Selector and Log Panel -->
+          <SplitPane fx:id="rightSplitPane" dividerPositions="0.5" orientation="VERTICAL">
+            <items>
+              <!-- Access Point Selector Panel -->
+              <VBox fx:id="accessPointPanel" spacing="10.0">
+                <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </padding>
+                <children>
+                  <Label styleClass="panel-title" text="Access Point Selector">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  
+                  <!-- Manual Selection -->
+                  <VBox spacing="10.0">
+                    <children>
+                      <Label text="Manual Selection:" />
+                      <RadioButton fx:id="satelliteRadio" text="Satellite" />
+                      <RadioButton fx:id="groundStationRadio" text="Ground Station" />
+                      <ComboBox fx:id="accessPointCombo" prefWidth="200.0" />
+                    </children>
+                  </VBox>
+                  
+                  <!-- AI Recommendation -->
+                  <VBox spacing="10.0">
+                    <children>
+                      <Button fx:id="aiSuggestionButton" styleClass="secondary-button" text="Get AI Suggestion" />
+                      <Label fx:id="aiRecommendationLabel" text="No recommendation yet" wrapText="true" />
+                    </children>
+                  </VBox>
+                  
+                  <!-- Quick Connect -->
+                  <VBox spacing="10.0">
+                    <children>
+                      <Button fx:id="quickConnectButton" styleClass="primary-button" text="Quick Connect" />
+                      <Label fx:id="connectionIndicator" text="Status: Disconnected" />
+                    </children>
+                  </VBox>
+                </children>
+              </VBox>
+              
+              <!-- Log Panel -->
+              <VBox fx:id="logPanel" spacing="10.0">
+                <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                </padding>
+                <children>
+                  <Label styleClass="panel-title" text="Log Panel &amp; Monitoring">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  
+                  <!-- Search and Filter -->
+                  <HBox alignment="CENTER_LEFT" spacing="10.0">
+                    <children>
+                      <TextField fx:id="searchField" prefWidth="150.0" />
+                      <ComboBox fx:id="filterCombo" prefWidth="100.0" />
+                      <Button fx:id="exportLogButton" text="Export" />
+                    </children>
+                  </HBox>
+                  
+                  <!-- Packet Log Table -->
+                  <TableView fx:id="packetLogTable" VBox.vgrow="ALWAYS">
+                    <columns>
+                      <TableColumn prefWidth="75.0" text="Packet ID" />
+                      <TableColumn prefWidth="75.0" text="Source" />
+                      <TableColumn prefWidth="75.0" text="Destination" />
+                      <TableColumn prefWidth="75.0" text="Status" />
+                      <TableColumn prefWidth="75.0" text="Delay" />
+                    </columns>
+                  </TableView>
+                  
+                  <!-- Performance Metrics -->
+                  <VBox spacing="5.0">
+                    <children>
+                      <Label text="Performance Metrics:" />
+                      <HBox spacing="10.0">
+                        <children>
+                          <Label text="Throughput: 0 MB/s" />
+                          <Label text="Latency: 0 ms" />
+                          <Label text="Packet Loss: 0%" />
+                        </children>
+                      </HBox>
+                    </children>
+                  </VBox>
+                </children>
+              </VBox>
+            </items>
+          </SplitPane>
+        </items>
+      </SplitPane>
+   </center>
+   
+   <bottom>
+      <!-- Status Bar -->
+      <HBox fx:id="statusBar" alignment="CENTER_LEFT" spacing="20.0" styleClass="status-bar">
+        <padding>
+          <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
+        </padding>
+        <children>
+          <Label fx:id="connectionStatusLabel" text="Status: Disconnected" />
+          <Separator orientation="VERTICAL" />
+          <Label fx:id="currentNodeLabel" text="Node: None" />
+          <Separator orientation="VERTICAL" />
+          <Label fx:id="networkStatsLabel" text="Network: 0 packets/s" />
+        </children>
+      </HBox>
+   </bottom>
+</BorderPane>
