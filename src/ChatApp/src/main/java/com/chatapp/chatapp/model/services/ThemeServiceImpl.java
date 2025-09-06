@@ -1,6 +1,6 @@
-package com.chatapp.chatapp.application;
+package com.chatapp.chatapp.model.services;
 
-import com.chatapp.chatapp.gui.interfaces.ThemeService;
+import com.chatapp.chatapp.model.interfaces.ThemeService;
 
 import javafx.scene.Scene;
 

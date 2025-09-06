@@ -1,6 +1,6 @@
-package com.chatapp.chatapp.application;
+package com.chatapp.chatapp.model.services;
 
-import com.chatapp.chatapp.gui.interfaces.StatusService;
+import com.chatapp.chatapp.model.interfaces.StatusService;
 
 import javafx.scene.control.Label;
 

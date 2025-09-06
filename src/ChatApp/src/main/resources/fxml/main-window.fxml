@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.chatapp.chatapp.gui.controllers.MainWindowController">
+<BorderPane xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.chatapp.chatapp.controller.MainWindowController">
    <top>
       <!-- Menu Bar -->
       <MenuBar fx:id="menuBar">
