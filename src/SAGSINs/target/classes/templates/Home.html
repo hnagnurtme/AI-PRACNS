@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Satellite WebView</title>
+    <!-- Cesium CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.95.0/Widgets/widgets.css" rel="stylesheet">
+    <link href="css/Home.css" rel="stylesheet">
+</head>
+
+<body>
+    <!-- Loading screen -->
+    <div class="loading" id="loadingScreen">
+        <div class="spinner"></div>
+        <h3>🚀 Đang khởi tạo vệ tinh...</h3>
+        <p>Vui lòng chờ trong giây lát</p>
+    </div>
+    <!-- Control Panel -->
+    <div class="control-panel" id="controlPanel" style="opacity: 0;">
+        <h3>
+            <span>📡</span>
+            Danh sách vệ tinh
+        </h3>
+        <div class="satellite-card" style="border-left: 4px solid #ffd700;">
+            <div class="satellite-info">
+                <div class="satellite-icon" style="background: rgba(255, 215, 0, 0.2); color: #ffd700;">🛰️</div>
+                <div class="satellite-details">
+                    <h4>ISS-Demo</h4>
+                    <p>Trạm vũ trụ quốc tế</p>
+                </div>
+            </div>
+            <div class="satellite-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Độ cao</div>
+                    <div class="stat-value">500 km</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Tốc độ</div>
+                    <div class="stat-value">Nhanh</div>
+                </div>
+            </div>
+        </div>
+        <div class="satellite-card" style="border-left: 4px solid #00ffff;">
+            <div class="satellite-info">
+                <div class="satellite-icon" style="background: rgba(0, 255, 255, 0.2); color: #00ffff;">📡</div>
+                <div class="satellite-details">
+                    <h4>GPS-Demo</h4>
+                    <p>Hệ thống định vị toàn cầu</p>
+                </div>
+            </div>
+            <div class="satellite-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Độ cao</div>
+                    <div class="stat-value">1200 km</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Tốc độ</div>
+                    <div class="stat-value">Vừa</div>
+                </div>
+            </div>
+        </div>
+        <div class="satellite-card" style="border-left: 4px solid #00ff00;">
+            <div class="satellite-info">
+                <div class="satellite-icon" style="background: rgba(0, 255, 0, 0.2); color: #00ff00;">🌍</div>
+                <div class="satellite-details">
+                    <h4>GEO-Demo</h4>
+                    <p>Vệ tinh địa tĩnh</p>
+                </div>
+            </div>
+            <div class="satellite-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Độ cao</div>
+                    <div class="stat-value">2000 km</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Tốc độ</div>
+                    <div class="stat-value">Chậm</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Cesium Container -->
+    <div id="cesiumContainer"></div>
+    <!-- Cesium JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cesium/1.95.0/Cesium.js"></script>
+    <script src="js/Home.js"></script>
+</body>
+
+</html>
