@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 
 import com.sagin.satellite.config.ApplicationConfiguration;
 
-
 public class SatelliteApp {
     private static final Logger logger = LoggerFactory.getLogger(SatelliteApp.class);
     public static void main(String[] args) {
