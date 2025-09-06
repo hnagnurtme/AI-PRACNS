@@ -16,7 +16,6 @@ import com.sagin.satellite.model.Packet;
 import com.sagin.satellite.service.IBufferManager;
 import com.sagin.satellite.service.ISatelliteService;
 import com.sagin.satellite.service.implement.BufferManager;
-import com.sagin.satellite.service.implement.ManagerClient;
 import com.sagin.satellite.service.implement.SatelliteService;
 import com.sagin.satellite.service.implement.TcpSender;
 
@@ -30,16 +29,13 @@ public class ApplicationConfiguration {
             // 1️⃣ Init Firebase 
             FireBaseConfiguration.init();
 
-            // 2️⃣ Init ManagerClient & TcpSender
-            ManagerClient managerClient = new ManagerClient("http://localhost:8080");
-            TcpSender tcpSender = new TcpSender(managerClient);
+            TcpSender tcpSender = new TcpSender();
 
             // 3️⃣ Init BufferManager
-            int bufferCapacity = 100;
-            int flushIntervalMs = 200;
+            int bufferCapacity = 1000;
+            int flushIntervalMs = 50;
             int maxRetry = 3;
-            IBufferManager bufferManager = new BufferManager(bufferCapacity, tcpSender, flushIntervalMs, maxRetry);
-
+            IBufferManager bufferManager = new BufferManager(bufferCapacity, tcpSender, flushIntervalMs, maxRetry, 4);
             // 4️⃣ Init SatelliteService
             ISatelliteService satelliteService = new SatelliteService(bufferManager);
 
