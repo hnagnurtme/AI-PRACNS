@@ -16,7 +16,6 @@
 /Users/anhnon/PBL4/src/satellite-service/src/main/java/com/sagin/satellite/service/ISatelliteService.java
 /Users/anhnon/PBL4/src/satellite-service/src/main/java/com/sagin/satellite/service/ITcpSender.java
 /Users/anhnon/PBL4/src/satellite-service/src/main/java/com/sagin/satellite/service/implement/BufferManager.java
-/Users/anhnon/PBL4/src/satellite-service/src/main/java/com/sagin/satellite/service/implement/ManagerClient.java
 /Users/anhnon/PBL4/src/satellite-service/src/main/java/com/sagin/satellite/service/implement/SatelliteService.java
 /Users/anhnon/PBL4/src/satellite-service/src/main/java/com/sagin/satellite/service/implement/TcpSender.java
 /Users/anhnon/PBL4/src/satellite-service/src/main/java/com/sagin/satellite/util/JsonUtils.java

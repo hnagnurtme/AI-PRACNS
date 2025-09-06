@@ -1,4 +1,4 @@
-package com.chatapp.chatapp.gui.interfaces;
+package com.chatapp.chatapp.model.interfaces;
 
 public interface ThemeService {
     void switchToLightTheme();

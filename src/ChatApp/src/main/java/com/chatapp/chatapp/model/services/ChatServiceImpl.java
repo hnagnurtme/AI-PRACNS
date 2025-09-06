@@ -1,10 +1,10 @@
-package com.chatapp.chatapp.application;
+package com.chatapp.chatapp.model.services;
 
 import java.time.LocalTime;
 import java.util.List;
 
-import com.chatapp.chatapp.domain.Packet;
-import com.chatapp.chatapp.gui.interfaces.ChatService;
+import com.chatapp.chatapp.model.entities.Packet;
+import com.chatapp.chatapp.model.interfaces.ChatService;
 
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;

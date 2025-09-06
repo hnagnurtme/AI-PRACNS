@@ -1,8 +1,8 @@
-package com.chatapp.chatapp.application;
+package com.chatapp.chatapp.model.services;
 
 import java.util.List;
 
-import com.chatapp.chatapp.gui.interfaces.AccessPointService;
+import com.chatapp.chatapp.model.interfaces.AccessPointService;
 
 import javafx.application.Platform;
 import javafx.scene.control.ComboBox;
