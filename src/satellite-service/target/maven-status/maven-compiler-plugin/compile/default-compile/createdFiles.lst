@@ -1,4 +1,5 @@
 com/sagin/satellite/model/RoutingTable.class
+com/sagin/satellite/view/TestCesiumServer.class
 com/sagin/satellite/model/SatelliteStatus.class
 com/sagin/satellite/common/SatelliteException$BufferEmptyException.class
 com/sagin/satellite/model/NodeInfo.class
@@ -8,13 +9,16 @@ com/sagin/satellite/repository/IPacketRepository.class
 com/sagin/satellite/config/FireBaseConfiguration.class
 com/sagin/satellite/util/ReadPropertiesUtils.class
 com/sagin/satellite/service/implement/BufferManager.class
+com/sagin/satellite/view/SatelliteWebView.class
 com/sagin/satellite/service/implement/ManagerClient.class
 com/sagin/satellite/service/IBufferManager.class
 com/sagin/satellite/controller/SatelliteController.class
 com/sagin/satellite/service/implement/SatelliteService.class
 com/sagin/satellite/util/ProjectConstant.class
 com/sagin/satellite/common/SatelliteException$InvalidPacketException.class
+com/sagin/satellite/view/SatelliteWebView$2.class
 com/sagin/satellite/common/SatelliteException.class
+com/sagin/satellite/view/SatelliteWebView$1.class
 com/sagin/satellite/model/Geo3D.class
 com/sagin/satellite/service/ISatelliteService.class
 com/sagin/satellite/common/SatelliteException$PacketDroppedException.class

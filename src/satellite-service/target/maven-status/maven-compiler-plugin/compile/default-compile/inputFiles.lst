@@ -22,3 +22,5 @@
 /Users/anhnon/PBL4/src/satellite-service/src/main/java/com/sagin/satellite/util/JsonUtils.java
 /Users/anhnon/PBL4/src/satellite-service/src/main/java/com/sagin/satellite/util/ProjectConstant.java
 /Users/anhnon/PBL4/src/satellite-service/src/main/java/com/sagin/satellite/util/ReadPropertiesUtils.java
+/Users/anhnon/PBL4/src/satellite-service/src/main/java/com/sagin/satellite/view/SatelliteWebView.java
+/Users/anhnon/PBL4/src/satellite-service/src/main/java/com/sagin/satellite/view/TestCesiumServer.java
