@@ -1,4 +1,4 @@
-package com.chatapp.chatapp.domain;
+package com.chatapp.chatapp.model.entities;
 
 import java.util.ArrayList;
 import java.util.List;

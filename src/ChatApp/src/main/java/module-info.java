@@ -9,11 +9,9 @@ module com.chatapp.chatapp {
     exports com.chatapp.chatapp.controller;
     opens com.chatapp.chatapp.controller to javafx.fxml;
 
-    exports com.chatapp.chatapp.gui;
-    opens com.chatapp.chatapp.gui to javafx.fxml;
-    exports com.chatapp.chatapp.gui.controllers;
-    opens com.chatapp.chatapp.gui.controllers to javafx.fxml;
+    exports com.chatapp.chatapp.view;
+    opens com.chatapp.chatapp.view to javafx.fxml;
 
-    exports com.chatapp.chatapp.gui.interfaces;
-    exports com.chatapp.chatapp.application;
+    exports com.chatapp.chatapp.model.interfaces;
+    exports com.chatapp.chatapp.model.services;
 }
