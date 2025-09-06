@@ -1,21 +1,21 @@
-package com.chatapp.chatapp.gui.controllers;
+package com.chatapp.chatapp.controller;
 
 import java.net.URL;
 import java.util.ResourceBundle;
 
-import com.chatapp.chatapp.application.AccessPointServiceImpl;
-import com.chatapp.chatapp.application.ChatServiceImpl;
-import com.chatapp.chatapp.application.LogMonitoringServiceImpl;
-import com.chatapp.chatapp.application.NetworkTopologyServiceImpl;
-import com.chatapp.chatapp.application.StatusServiceImpl;
-import com.chatapp.chatapp.application.ThemeServiceImpl;
-import com.chatapp.chatapp.gui.interfaces.AccessPointService;
-import com.chatapp.chatapp.gui.interfaces.ChatService;
-import com.chatapp.chatapp.gui.interfaces.LogMonitoringService;
-import com.chatapp.chatapp.gui.interfaces.MainWindowView;
-import com.chatapp.chatapp.gui.interfaces.NetworkTopologyService;
-import com.chatapp.chatapp.gui.interfaces.StatusService;
-import com.chatapp.chatapp.gui.interfaces.ThemeService;
+import com.chatapp.chatapp.model.interfaces.AccessPointService;
+import com.chatapp.chatapp.model.interfaces.ChatService;
+import com.chatapp.chatapp.model.interfaces.LogMonitoringService;
+import com.chatapp.chatapp.model.interfaces.MainWindowView;
+import com.chatapp.chatapp.model.interfaces.NetworkTopologyService;
+import com.chatapp.chatapp.model.interfaces.StatusService;
+import com.chatapp.chatapp.model.interfaces.ThemeService;
+import com.chatapp.chatapp.model.services.AccessPointServiceImpl;
+import com.chatapp.chatapp.model.services.ChatServiceImpl;
+import com.chatapp.chatapp.model.services.LogMonitoringServiceImpl;
+import com.chatapp.chatapp.model.services.NetworkTopologyServiceImpl;
+import com.chatapp.chatapp.model.services.StatusServiceImpl;
+import com.chatapp.chatapp.model.services.ThemeServiceImpl;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;

@@ -1,10 +1,10 @@
-package com.chatapp.chatapp.application;
+package com.chatapp.chatapp.model.services;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.chatapp.chatapp.gui.interfaces.LogMonitoringService;
+import com.chatapp.chatapp.model.interfaces.LogMonitoringService;
 
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableView;
