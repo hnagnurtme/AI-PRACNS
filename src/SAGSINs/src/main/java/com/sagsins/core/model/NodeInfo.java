@@ -2,6 +2,7 @@ package com.sagsins.core.model;
 
 import lombok.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 @Getter
@@ -9,12 +10,16 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class NodeInfo {
 
+public class NodeInfo {
+    private static final AtomicInteger COUNTER = new AtomicInteger(1);
     private String nodeId; // ID node
     private String nodeType ;
-
+    private Orbit orbit;       // ➕ quỹ đạo
+    private Velocity velocity; // ➕ vận tốc
     private Geo3D position; // Vị trí 3D của node
+
+
 
     private boolean linkAvailable; // Liên kết đến node khả dụng
     private double bandwidth; // Băng thông tối đa (Mbps)
@@ -25,6 +30,8 @@ public class NodeInfo {
     private double throughput; // Lưu lượng thực tế đang xử lý (Mbps)
 
     private long lastUpdated; // Thời điểm cập nhật trạng thái
+    private boolean healthy = true;
+
 
     // ----- Helper methods -----
 
@@ -35,6 +42,9 @@ public class NodeInfo {
         return linkAvailable && bufferSize < 1000; // threshold ví dụ
     }
 
+    public void setHealthy(boolean healthy) {
+        this.healthy = healthy;
+    }
     /**
      * Cập nhật các chỉ số QoS
      */
@@ -46,6 +56,7 @@ public class NodeInfo {
         this.bufferSize = bufferSize;
         this.throughput = throughput;
         this.lastUpdated = System.currentTimeMillis();
+        this.healthy = isHealthy();
     }
 
     /**
@@ -64,5 +75,37 @@ public class NodeInfo {
         if (this.position == null || other.position == null)
             return new double[] { 0, 0, 0 };
         return this.position.directionTo(other.position);
+    }
+
+    public NodeInfo(String nodeType, Geo3D position) {
+        this.nodeId = nodeType + "-" + COUNTER.getAndIncrement();
+        this.nodeType = nodeType;
+        this.position = position;
+
+        // Khởi tạo các giá trị mặc định
+        this.linkAvailable = true;
+        this.bandwidth = 100.0; // Mbps
+        this.latencyMs = 10.0; // ms
+        this.packetLossRate = 0.01; // 1%
+        this.bufferSize = 0; // ban đầu không có packet
+        this.throughput = 0.0; // ban đầu không có throughput
+        this.lastUpdated = System.currentTimeMillis(); // thời điểm hiện tại    
+    }
+
+    public NodeInfo(String nodeType, Geo3D position, Orbit orbit, Velocity velocity) {
+        this.nodeId = nodeType + "-" + COUNTER.getAndIncrement();
+        this.nodeType = nodeType;
+        this.position = position;
+        this.orbit = orbit;
+        this.velocity = velocity;
+
+        // Khởi tạo các giá trị mặc định
+        this.linkAvailable = true;
+        this.bandwidth = 100.0; // Mbps
+        this.latencyMs = 10.0; // ms
+        this.packetLossRate = 0.01; // 1%
+        this.bufferSize = 0; // ban đầu không có packet
+        this.throughput = 0.0; // ban đầu không có throughput
+        this.lastUpdated = System.currentTimeMillis(); // thời điểm hiện tại    
     }
 }
