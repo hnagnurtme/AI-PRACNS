@@ -10,8 +10,9 @@ package-lock.json
 pnpm-lock.yaml
 /.vscode/
 
-
+src/SAGSINs/src/main/resources/.env
 /src/satellite-service/resources/application-prod.properties
+src/SAGSINs/src/main/resources/serviceAccountKey.json
 /target/
 /logs/
 *.iml
