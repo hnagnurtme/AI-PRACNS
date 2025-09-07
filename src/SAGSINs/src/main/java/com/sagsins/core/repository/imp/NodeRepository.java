@@ -1,8 +1,10 @@
-package com.sagsins.core.repository;
+package com.sagsins.core.repository.imp;
 
 import com.google.cloud.firestore.DocumentReference;
 import com.google.cloud.firestore.Firestore;
 import com.sagsins.core.model.NodeInfo;
+import com.sagsins.core.repository.INodeRepository;
+
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

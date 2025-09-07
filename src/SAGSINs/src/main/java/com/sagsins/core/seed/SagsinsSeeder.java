@@ -4,7 +4,7 @@ import com.sagsins.core.model.Geo3D;
 import com.sagsins.core.model.NodeInfo;
 import com.sagsins.core.model.Orbit;
 import com.sagsins.core.model.Velocity;
-import com.sagsins.core.repository.NodeRepository;
+import com.sagsins.core.repository.imp.NodeRepository;
 import com.sagsins.core.utils.ProjectConstant;
 
 import org.slf4j.Logger;
