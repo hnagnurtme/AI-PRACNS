@@ -13,7 +13,6 @@ pnpm-lock.yaml
 src/SAGSINs/src/main/resources/.env
 /src/satellite-service/resources/application-prod.properties
 src/SAGSINs/src/main/resources/serviceAccountKey.json
-/target/
 /logs/
 *.iml
 .idea/
