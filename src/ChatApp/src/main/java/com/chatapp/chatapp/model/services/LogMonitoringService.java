@@ -4,19 +4,19 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.chatapp.chatapp.model.interfaces.LogMonitoringService;
+import com.chatapp.chatapp.model.interfaces.ILogMonitoringService;
 
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 
-public class LogMonitoringServiceImpl implements LogMonitoringService {
+public class LogMonitoringService implements ILogMonitoringService {
     private final TableView<Object> packetLogTable; 
     private final TextField searchField;
     private final ComboBox<String> filterCombo;
     private final List<PacketLog> logs = new ArrayList<>();
     
-    public LogMonitoringServiceImpl(TableView<Object> packetLogTable, TextField searchField, ComboBox<String> filterCombo) {
+    public LogMonitoringService(TableView<Object> packetLogTable, TextField searchField, ComboBox<String> filterCombo) {
         this.packetLogTable = packetLogTable;
         this.searchField = searchField;
         this.filterCombo = filterCombo;

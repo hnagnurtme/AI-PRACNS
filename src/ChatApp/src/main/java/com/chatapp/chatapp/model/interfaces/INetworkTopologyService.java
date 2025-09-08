@@ -2,7 +2,7 @@ package com.chatapp.chatapp.model.interfaces;
 
 import java.util.List;
 
-public interface NetworkTopologyService {
+public interface INetworkTopologyService {
     void updateTopology(List<NetworkNode> nodes, List<NetworkLink> links);
     void zoomIn();
     void zoomOut();

@@ -1,26 +1,31 @@
 package com.chatapp.chatapp.controller;
 
 import java.net.URL;
+import java.util.Map;
 import java.util.ResourceBundle;
 
-import com.chatapp.chatapp.model.interfaces.AccessPointService;
-import com.chatapp.chatapp.model.interfaces.ChatService;
-import com.chatapp.chatapp.model.interfaces.LogMonitoringService;
-import com.chatapp.chatapp.model.interfaces.MainWindowView;
-import com.chatapp.chatapp.model.interfaces.NetworkTopologyService;
-import com.chatapp.chatapp.model.interfaces.StatusService;
-import com.chatapp.chatapp.model.interfaces.ThemeService;
-import com.chatapp.chatapp.model.services.AccessPointServiceImpl;
-import com.chatapp.chatapp.model.services.ChatServiceImpl;
-import com.chatapp.chatapp.model.services.LogMonitoringServiceImpl;
-import com.chatapp.chatapp.model.services.NetworkTopologyServiceImpl;
-import com.chatapp.chatapp.model.services.StatusServiceImpl;
-import com.chatapp.chatapp.model.services.ThemeServiceImpl;
+import com.chatapp.auth.model.entities.UserSession;
+import com.chatapp.auth.view.AuthView;
+import com.chatapp.chatapp.model.interfaces.IAccessPointService;
+import com.chatapp.chatapp.model.interfaces.IChatService;
+import com.chatapp.chatapp.model.interfaces.ILogMonitoringService;
+import com.chatapp.chatapp.model.interfaces.IMainWindowView;
+import com.chatapp.chatapp.model.interfaces.INetworkTopologyService;
+import com.chatapp.chatapp.model.interfaces.IStatusService;
+import com.chatapp.chatapp.model.interfaces.IThemeService;
+import com.chatapp.chatapp.model.services.AccessPointService;
+import com.chatapp.chatapp.model.services.ChatService;
+import com.chatapp.chatapp.model.services.LogMonitoringService;
+import com.chatapp.chatapp.model.services.NetworkTopologyService;
+import com.chatapp.chatapp.model.services.StatusService;
+import com.chatapp.chatapp.model.services.ThemeService;
 
 import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuBar;
@@ -35,14 +40,16 @@ import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Stage;
 
-public class MainWindowController implements Initializable, MainWindowView {
+public class MainWindowController implements Initializable, IMainWindowView {
 
     // ===== FXML COMPONENTS =====
     
     // Menu Bar
     @FXML private MenuBar menuBar;
     @FXML private MenuItem exitMenuItem;
+    @FXML private MenuItem logoutMenuItem;  // THÊM LOGOUT MENU ITEM
     @FXML private MenuItem lightThemeMenuItem;
     @FXML private MenuItem darkThemeMenuItem;
 
@@ -63,6 +70,8 @@ public class MainWindowController implements Initializable, MainWindowView {
     @FXML private TextField messageInputField;
     @FXML private ComboBox<String> userSelectionCombo;
     @FXML private Button sendButton;
+    @FXML private TextField userSearchField;
+    @FXML private Button clearChatButton;
 
     // Topology Panel Components
     @FXML private VBox topologyPanel;
@@ -90,12 +99,12 @@ public class MainWindowController implements Initializable, MainWindowView {
     @FXML private Button exportLogButton;
 
     // ===== SERVICES =====
-    private ChatService chatService;
-    private NetworkTopologyService topologyService;
-    private AccessPointService accessPointService;
-    private LogMonitoringService logService;
-    private ThemeService themeService;
-    private StatusService statusService;
+    private IChatService chatService;
+    private INetworkTopologyService topologyService;
+    private IAccessPointService accessPointService;
+    private ILogMonitoringService logService;
+    private IThemeService themeService;
+    private IStatusService statusService;
 
     // ===== PRIVATE FIELDS =====
     private ToggleGroup accessPointGroup;
@@ -110,7 +119,7 @@ public class MainWindowController implements Initializable, MainWindowView {
         initializeServices();
         setupEventHandlers();
         setupLayout();
-        
+
         System.out.println("MainWindowController initialized successfully!");
     }
 
@@ -133,31 +142,31 @@ public class MainWindowController implements Initializable, MainWindowView {
     private void initializeServices() {
         try {
             // Chat Service
-            this.chatService = new ChatServiceImpl(
+            this.chatService = new ChatService(
                 chatHistoryArea, 
                 messageInputField, 
                 userSelectionCombo
             );
 
             // Topology Service  
-            this.topologyService = new NetworkTopologyServiceImpl(topologyCanvas);
+            this.topologyService = new NetworkTopologyService(topologyCanvas);
 
             // Access Point Service
-            this.accessPointService = new AccessPointServiceImpl(
+            this.accessPointService = new AccessPointService(
                 accessPointCombo, 
                 aiRecommendationLabel, 
                 connectionIndicator
             );
 
             // Log Monitoring Service
-            this.logService = new LogMonitoringServiceImpl(
+            this.logService = new LogMonitoringService(
                 packetLogTable, 
                 searchField, 
                 filterCombo
             );
 
             // Status Service
-            this.statusService = new StatusServiceImpl(
+            this.statusService = new StatusService(
                 connectionStatusLabel, 
                 currentNodeLabel, 
                 networkStatsLabel
@@ -166,7 +175,7 @@ public class MainWindowController implements Initializable, MainWindowView {
             // Theme Service (initialize after scene is available)
             Platform.runLater(() -> {
                 if (menuBar != null && menuBar.getScene() != null) {
-                    this.themeService = new ThemeServiceImpl(menuBar.getScene());
+                    this.themeService = new ThemeService(menuBar.getScene());
                 }
             });
 
@@ -197,12 +206,59 @@ public class MainWindowController implements Initializable, MainWindowView {
             exitMenuItem.setOnAction(e -> Platform.exit());
         }
 
+        // THÊM LOGOUT HANDLER
+        if (logoutMenuItem != null) {
+            logoutMenuItem.setOnAction(e -> handleLogout());
+        }
+
         if (lightThemeMenuItem != null) {
             lightThemeMenuItem.setOnAction(e -> switchToLightTheme());
         }
 
         if (darkThemeMenuItem != null) {
             darkThemeMenuItem.setOnAction(e -> switchToDarkTheme());
+        }
+    }
+
+    // THÊM LOGOUT METHODS
+    @FXML
+    private void handleLogout() {
+        // Show confirmation dialog
+        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmAlert.setTitle("Logout Confirmation");
+        confirmAlert.setHeaderText("Are you sure you want to logout?");
+        confirmAlert.setContentText("You will be returned to the login screen.");
+        
+        confirmAlert.showAndWait().ifPresent(response -> {
+            if (response == ButtonType.OK) {
+                performLogout();
+            }
+        });
+    }
+
+    private void performLogout() {
+        try {
+            // Clear user session
+            UserSession.logout();
+            
+            // Close current window
+            Stage currentStage = (Stage) menuBar.getScene().getWindow();
+            
+            // Open login window
+            Stage loginStage = new Stage();
+            AuthView authApp = new AuthView();
+            authApp.start(loginStage);
+            
+            // Close main window
+            currentStage.close();
+            
+        } catch (Exception e) {
+            // Show error dialog
+            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+            errorAlert.setTitle("Logout Error");
+            errorAlert.setHeaderText("Failed to logout");
+            errorAlert.setContentText("Error: " + e.getMessage());
+            errorAlert.showAndWait();
         }
     }
 
@@ -216,6 +272,14 @@ public class MainWindowController implements Initializable, MainWindowView {
         
         if (messageInputField != null) {
             messageInputField.setOnAction(e -> sendMessage());
+        }
+        
+        if (clearChatButton != null) {
+            clearChatButton.setOnAction(e -> clearChat());
+        }
+        
+        if (userSearchField != null) {
+            userSearchField.setOnAction(e -> searchUser());
         }
     }
 
@@ -290,7 +354,7 @@ public class MainWindowController implements Initializable, MainWindowView {
      */
     private void sendMessage() {
         try {
-            if (chatService instanceof ChatServiceImpl impl) {
+            if (chatService instanceof ChatService impl) {
                 impl.sendCurrentMessage();
             }
         } catch (Exception e) {
@@ -356,7 +420,7 @@ public class MainWindowController implements Initializable, MainWindowView {
      * Quick connect to selected access point
      */
     private void quickConnect() {
-        if (accessPointService instanceof AccessPointServiceImpl impl) {
+        if (accessPointService instanceof AccessPointService impl) {
             impl.quickConnect();
         }
     }
@@ -365,40 +429,56 @@ public class MainWindowController implements Initializable, MainWindowView {
      * Export logs
      */
     private void exportLogs() {
-        if (logService instanceof LogMonitoringServiceImpl impl) {
+        if (logService instanceof LogMonitoringService impl) {
             impl.exportLogAction();
+        }
+    }
+
+    private void searchUser() {
+        if (userSearchField != null && chatService instanceof ChatService impl) {
+            String email = userSearchField.getText().trim();
+            if (!email.isEmpty()) {
+                impl.searchAndAddUser(email);
+                userSearchField.clear();
+            }
+        }
+    }
+
+    private void clearChat() {
+        if (chatService != null) {
+            chatService.clearChatHistory();
         }
     }
 
     // ===== MAINWINDOWVIEW INTERFACE IMPLEMENTATION =====
 
     @Override
-    public ChatService getChatService() {
+    public IChatService getChatService() {
         return chatService;
     }
 
     @Override
-    public NetworkTopologyService getTopologyService() {
+    public INetworkTopologyService getTopologyService() {
         return topologyService;
     }
 
     @Override
-    public AccessPointService getAccessPointService() {
+    public IAccessPointService getAccessPointService() {
         return accessPointService;
     }
 
     @Override
-    public LogMonitoringService getLogService() {
+    public ILogMonitoringService getLogService() {
         return logService;
     }
 
     @Override
-    public ThemeService getThemeService() {
+    public IThemeService getThemeService() {
         return themeService;
     }
 
     @Override
-    public StatusService getStatusService() {
+    public IStatusService getStatusService() {
         return statusService;
     }
 
@@ -435,6 +515,10 @@ public class MainWindowController implements Initializable, MainWindowView {
             
             if (statusService != null) {
                 // Cleanup status service if needed
+            }
+            
+            if (chatService instanceof ChatService impl) {
+                impl.shutdown();
             }
             
             System.out.println("MainWindowController shutdown completed");

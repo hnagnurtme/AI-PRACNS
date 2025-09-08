@@ -3,7 +3,7 @@ package com.chatapp.chatapp.model.interfaces;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface LogMonitoringService {
+public interface ILogMonitoringService {
     void logPacket(PacketLog packet);
     List<PacketLog> getPacketHistory();
     List<PacketLog> filterPackets(String filter);

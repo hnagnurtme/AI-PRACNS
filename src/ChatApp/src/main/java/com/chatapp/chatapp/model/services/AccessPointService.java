@@ -2,19 +2,19 @@ package com.chatapp.chatapp.model.services;
 
 import java.util.List;
 
-import com.chatapp.chatapp.model.interfaces.AccessPointService;
+import com.chatapp.chatapp.model.interfaces.IAccessPointService;
 
 import javafx.application.Platform;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 
-public class AccessPointServiceImpl implements AccessPointService {
+public class AccessPointService implements IAccessPointService {
     private final ComboBox<String> accessPointCombo;
     private final Label aiRecommendationLabel;
     private final Label connectionIndicator;
     private ConnectionStatus currentStatus = ConnectionStatus.DISCONNECTED;
     
-    public AccessPointServiceImpl(ComboBox<String> accessPointCombo, Label aiRecommendationLabel, Label connectionIndicator) {
+    public AccessPointService(ComboBox<String> accessPointCombo, Label aiRecommendationLabel, Label connectionIndicator) {
         this.accessPointCombo = accessPointCombo;
         this.aiRecommendationLabel = aiRecommendationLabel;
         this.connectionIndicator = connectionIndicator;

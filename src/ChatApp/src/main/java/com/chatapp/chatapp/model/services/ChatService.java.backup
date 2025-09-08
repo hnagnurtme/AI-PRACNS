@@ -2,20 +2,25 @@ package com.chatapp.chatapp.model.services;
 
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Map;
 
+import com.chatapp.chatapp.config.FirebaseConfig;
 import com.chatapp.chatapp.model.entities.Packet;
-import com.chatapp.chatapp.model.interfaces.ChatService;
+import com.chatapp.chatapp.model.interfaces.IChatService;
+import com.google.cloud.firestore.Firestore;
+import com.google.cloud.firestore.QueryDocumentSnapshot;
+import com.google.cloud.firestore.QuerySnapshot;
 
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 
-public class ChatServiceImpl implements ChatService {
+public class ChatService implements IChatService {
     private final TextArea chatHistoryArea;
     private final TextField messageInputField;
     private final ComboBox<String> userSelectionCombo;
     
-    public ChatServiceImpl(TextArea chatHistoryArea, TextField messageInputField, ComboBox<String> userSelectionCombo) {
+    public ChatService(TextArea chatHistoryArea, TextField messageInputField, ComboBox<String> userSelectionCombo) {
         this.chatHistoryArea = chatHistoryArea;
         this.messageInputField = messageInputField;
         this.userSelectionCombo = userSelectionCombo;
@@ -168,6 +173,33 @@ public class ChatServiceImpl implements ChatService {
                 sendMessage(message, recipient);
                 messageInputField.clear();
             }
+        }
+    }
+
+    @Override
+    public Map<String, Object> searchUserByEmail(String email) {
+        try {
+            // Tìm kiếm user trong Firestore theo email 
+            Firestore db = FirebaseConfig.getFirestore();
+        
+            QuerySnapshot snapshot = db.collection("users")
+                .whereEqualTo("email", email)
+                .get()
+                .get();
+        
+            if (!snapshot.isEmpty()) {
+                // Lấy user đầu tiên
+                QueryDocumentSnapshot doc = snapshot.getDocuments().get(0);
+                Map<String, Object> userData = doc.getData();
+                userData.put("uid", doc.getId()); // thêm uid vào map
+                return userData;
+            } else {
+                System.out.println("No user found with email: " + email);
+                return null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }

@@ -2,14 +2,14 @@ package com.chatapp.chatapp.model.services;
 
 import java.util.List;
 
-import com.chatapp.chatapp.model.interfaces.NetworkTopologyService;
+import com.chatapp.chatapp.model.interfaces.INetworkTopologyService;
 
 import javafx.scene.layout.Pane;
 
-public class NetworkTopologyServiceImpl implements NetworkTopologyService {
+public class NetworkTopologyService implements INetworkTopologyService {
     private final Pane topologyCanvas;
     
-    public NetworkTopologyServiceImpl(Pane topologyCanvas) {
+    public NetworkTopologyService(Pane topologyCanvas) {
         this.topologyCanvas = topologyCanvas;
         setupTopologyCanvas();
     }
