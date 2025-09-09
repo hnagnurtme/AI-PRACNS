@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  server8000:
+    image: satellite-service:0.1.0
+    container_name: server8000
+    ports:
+      - "8000:8000"
+    environment:
+      - SERVER_PORT=8000
+    networks:
+      - satnet
+
+  client3000:
+    image: satellite-service:0.1.0
+    container_name: client3000
+    ports:
+      - "3000:3000"
+    environment:
+      - SERVER_PORT=3000
+      - SERVER_HOST=server8000
+      - SERVER_TARGET_PORT=8000
+    depends_on:
+      - server8000
+    networks:
+      - satnet
+
+networks:
+  satnet:
+    driver: bridge

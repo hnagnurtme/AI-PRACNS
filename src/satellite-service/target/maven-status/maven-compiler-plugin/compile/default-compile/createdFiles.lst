@@ -13,8 +13,11 @@ com/sagin/satellite/controller/SatelliteController.class
 com/sagin/satellite/service/implement/SatelliteService.class
 com/sagin/satellite/util/ProjectConstant.class
 com/sagin/satellite/common/SatelliteException$InvalidPacketException.class
+com/sagin/satellite/service/implement/TcpSender$TcpSenderMetrics.class
 com/sagin/satellite/common/SatelliteException.class
+com/sagin/satellite/common/SatelliteException$SendException.class
 com/sagin/satellite/model/Geo3D.class
+com/sagin/satellite/service/implement/BufferManager$BufferMetrics.class
 com/sagin/satellite/service/ISatelliteService.class
 com/sagin/satellite/common/SatelliteException$PacketDroppedException.class
 com/sagin/satellite/SatelliteApp.class

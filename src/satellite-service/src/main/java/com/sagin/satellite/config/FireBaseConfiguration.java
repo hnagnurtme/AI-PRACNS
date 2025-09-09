@@ -29,12 +29,10 @@ public class FireBaseConfiguration {
 
         InputStream serviceAccount;
 
-        // Try to load as classpath resource first, then as file
         try {
             serviceAccount = FireBaseConfiguration.class.getClassLoader()
                     .getResourceAsStream("serviceAccountKey.json");
             if (serviceAccount == null) {
-                // Fallback to file system
                 serviceAccount = new FileInputStream(serviceAccountPath);
             } else {
                 logger.info("Loading Firebase service account key from classpath");
