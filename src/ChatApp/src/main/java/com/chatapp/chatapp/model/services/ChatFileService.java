@@ -90,6 +90,23 @@ public class ChatFileService {
         
         return messages;
     }
+
+    public java.util.List<String> loadChatHistory(String user1, String user2) {
+        java.util.List<String> messages = new java.util.ArrayList<>();
+        String conversationId = generateConversationId(user1, user2);
+        String fileName = getChatFileName(conversationId);
+        
+        try {
+            java.nio.file.Path filePath = java.nio.file.Paths.get(fileName);
+            if (java.nio.file.Files.exists(filePath)) {
+                messages = java.nio.file.Files.readAllLines(filePath);
+            }
+        } catch (Exception e) {
+            System.err.println("Error loading chat history: " + e.getMessage());
+        }
+        
+        return messages;
+    }
     
     /**
      * Bắt đầu watch file changes cho real-time

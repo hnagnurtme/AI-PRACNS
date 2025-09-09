@@ -18,6 +18,7 @@ RUN apt-get update && apt-get install -y \
     libasound2t64 libfreetype6 x11-apps \
     xvfb x11vnc fluxbox wget unzip git \
     python3 python3-numpy supervisor \
+    xterm \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -106,7 +107,18 @@ RUN echo '#!/bin/bash' > start.sh && \
     echo 'wait' >> start.sh && \
     chmod +x start.sh
 
-# Expose both VNC and HTTP ports
-EXPOSE 5900 6080
+# Create conditional startup script
+RUN echo '#!/bin/bash' > conditional-start.sh && \
+    echo 'if [ "$SERVER_ONLY" = "true" ]; then' >> conditional-start.sh && \
+    echo '  echo "🖥️ Starting as Socket Server only..."' >> conditional-start.sh && \
+    echo '  java -cp app.jar com.chatapp.chatapp.model.services.SocketChatServer' >> conditional-start.sh && \
+    echo 'else' >> conditional-start.sh && \
+    echo '  echo "📱 Starting as Chat Client..."' >> conditional-start.sh && \
+    echo '  exec ./start.sh' >> conditional-start.sh && \
+    echo 'fi' >> conditional-start.sh && \
+    chmod +x conditional-start.sh
 
-ENTRYPOINT ["./start.sh"]
+# Expose both VNC and HTTP ports
+EXPOSE 5900 6080 8888
+
+ENTRYPOINT ["./conditional-start.sh"]

@@ -11,6 +11,7 @@ import org.apache.hc.client5.http.impl.classic.CloseableHttpResponse;
 import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.apache.hc.core5.http.io.entity.StringEntity;
 
+import com.chatapp.auth.utils.PropertiesUtil;
 import com.chatapp.chatapp.config.FirebaseConfig;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -19,7 +20,7 @@ import com.google.cloud.firestore.FieldValue;
 import com.google.cloud.firestore.Firestore;
 
 public class FirebaseAuthService {
-    private static final String API_KEY = "AIzaSyBn1ZD0y06LFquRyDk97XZBPTkDR3G2eNs";
+    private static final String API_KEY = PropertiesUtil.getString("firebase.api.key");
     private static final String SIGNUP_URL =
             "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=" + API_KEY;
     private static final String SIGNIN_URL =

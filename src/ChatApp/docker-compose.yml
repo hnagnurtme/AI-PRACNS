@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  # Shared Socket Server
+  chat-server:
+    build: .
+    container_name: chat-server
+    environment:
+      - SERVER_ONLY=true
+    command: java -cp app.jar com.chatapp.chatapp.model.services.SocketChatServer
+    ports:
+      - "8888:8888"
+    networks:
+      - chat-network
+    volumes:
+      - chat_history:/app/chat_history
+
+  # Chat Client 1
+  chat-user1:
+    build: .
+    container_name: chat-user1
+    environment:
+      - SOCKET_SERVER_HOST=chat-server
+      - SOCKET_SERVER_PORT=8888
+    ports:
+      - "6080:6080"
+      - "5900:5900"
+    depends_on:
+      - chat-server
+    networks:
+      - chat-network
+    volumes:
+      - chat_history:/app/chat_history
+
+  # Chat Client 2  
+  chat-user2:
+    build: .
+    container_name: chat-user2
+    environment:
+      - SOCKET_SERVER_HOST=chat-server
+      - SOCKET_SERVER_PORT=8888
+    ports:
+      - "6081:6080"
+      - "5901:5900"
+    depends_on:
+      - chat-server
+    networks:
+      - chat-network
+    volumes:
+      - chat_history:/app/chat_history
+
+volumes:
+  chat_history:
+
+networks:
+  chat-network:
+    driver: bridge

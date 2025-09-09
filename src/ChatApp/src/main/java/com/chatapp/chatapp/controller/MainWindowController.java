@@ -147,6 +147,11 @@ public class MainWindowController implements Initializable, IMainWindowView {
                 messageInputField, 
                 userSelectionCombo
             );
+            
+            // **THÊM DÒNG NÀY** - Initialize ChatService
+            if (chatService instanceof ChatService impl) {
+                impl.initialize();
+            }
 
             // Topology Service  
             this.topologyService = new NetworkTopologyService(topologyCanvas);
