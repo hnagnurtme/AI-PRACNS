@@ -29,3 +29,4 @@ src/satellite-service/src/main/resources/serviceAccountKey.json
 src/satellite-service/src/main/resources/application-production.yml
 .fake
 /src/satellite-service/target/
+/src/satellite-service/target/
