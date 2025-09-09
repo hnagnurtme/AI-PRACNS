@@ -1,4 +1,3 @@
-
 node_modules/
 dist/
 .env
@@ -10,9 +9,10 @@ yarn-error.log*
 package-lock.json
 pnpm-lock.yaml
 /.vscode/
+
+
 /src/satellite-service/resources/application-prod.properties
-/src/SAGSINs/src/main/resources/.env
-/src/SAGSINs/src/main/resources/serviceAccountKey.json
+/target/
 /logs/
 *.iml
 .idea/
@@ -22,11 +22,16 @@ out/
 *.jar
 *.war
 *.ear
+
+
 #firebase
 src/satellite-service/src/main/resources/serviceAccountKey.json
-/src/SAGSINs/target/classes/serviceAccountKey.json
-/src/satellite-service/target/classes/serviceAccountKey.json
+
+src/satellite-service/src/main/resources/application-production.ymlsrc/satellite-service/target/classes/serviceAccountKey.json
+src/satellite-service/target/classes/serviceAccountKey.json
 src/satellite-service/src/main/resources/application-production.yml
-.fake
-/src/satellite-service/target/
-/src/satellite-service/target/
+src/ChatApp/src/main/resources/serviceAccountKey.json
+src/ChatApp/chat_history/
+
+#application properties
+src/ChatApp/src/main/resources/application.properties

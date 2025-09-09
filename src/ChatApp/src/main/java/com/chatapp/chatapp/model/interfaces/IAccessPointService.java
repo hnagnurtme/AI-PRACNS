@@ -2,7 +2,7 @@ package com.chatapp.chatapp.model.interfaces;
 
 import java.util.List;
 
-public interface AccessPointService {
+public interface IAccessPointService {
     List<AccessPoint> getAvailableAccessPoints();
     void connectToAccessPoint(String accessPointId);
     void disconnectFromAccessPoint();

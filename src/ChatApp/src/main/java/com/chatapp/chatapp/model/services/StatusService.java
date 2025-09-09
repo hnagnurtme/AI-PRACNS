@@ -1,15 +1,15 @@
 package com.chatapp.chatapp.model.services;
 
-import com.chatapp.chatapp.model.interfaces.StatusService;
+import com.chatapp.chatapp.model.interfaces.IStatusService;
 
 import javafx.scene.control.Label;
 
-public class StatusServiceImpl implements StatusService {
+public class StatusService implements IStatusService {
     private final Label connectionStatusLabel;
     private final Label currentNodeLabel;
     private final Label networkStatsLabel;
     
-    public StatusServiceImpl(Label connectionStatusLabel, Label currentNodeLabel, Label networkStatsLabel) {
+    public StatusService(Label connectionStatusLabel, Label currentNodeLabel, Label networkStatsLabel) {
         this.connectionStatusLabel = connectionStatusLabel;
         this.currentNodeLabel = currentNodeLabel;
         this.networkStatsLabel = networkStatsLabel;

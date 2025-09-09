@@ -12,6 +12,8 @@
         <menus>
           <Menu mnemonicParsing="false" text="File">
             <items>
+              <MenuItem fx:id="logoutMenuItem" mnemonicParsing="false" text="Logout" />
+              <SeparatorMenuItem />
               <MenuItem fx:id="exitMenuItem" mnemonicParsing="false" text="Exit" />
             </items>
           </Menu>
@@ -48,28 +50,48 @@
                   <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
                 </padding>
                 <children>
-                  <Label styleClass="panel-title" text="Chat Panel">
+                  <Label styleClass="panel-title" text="SAGIN Chat">
                      <font>
                         <Font name="System Bold" size="14.0" />
                      </font>
                   </Label>
                   
-                  <!-- User Selection -->
+                  <!-- User Search -->
+                  <VBox spacing="5.0">
+                    <children>
+                      <Label text="Find User:" />
+                      <TextField fx:id="userSearchField" promptText="Type '/search email@example.com' in message box" />
+                    </children>
+                  </VBox>
+                  
+                  <!-- Current Chat -->
                   <HBox alignment="CENTER_LEFT" spacing="10.0">
                     <children>
-                      <Label text="Send to:" />
-                      <ComboBox fx:id="userSelectionCombo" prefWidth="150.0" />
+                      <Label text="Chatting with:" />
+                      <ComboBox fx:id="userSelectionCombo" prefWidth="200.0" />
                     </children>
                   </HBox>
                   
                   <!-- Chat History -->
-                  <TextArea fx:id="chatHistoryArea" prefHeight="200.0" promptText="Chat history will appear here..." VBox.vgrow="ALWAYS" />
+                  <TextArea fx:id="chatHistoryArea" prefHeight="200.0" 
+                            promptText="Welcome to SAGIN Chat! Type '/search email' to find someone to chat with..." 
+                            VBox.vgrow="ALWAYS" />
                   
                   <!-- Message Input -->
                   <HBox alignment="CENTER_LEFT" spacing="10.0">
                     <children>
-                      <TextField fx:id="messageInputField" promptText="Type your message..." HBox.hgrow="ALWAYS" />
+                      <TextField fx:id="messageInputField" 
+                                 promptText="Type message or '/search email@example.com'..." 
+                                 HBox.hgrow="ALWAYS" />
                       <Button fx:id="sendButton" styleClass="primary-button" text="Send" />
+                    </children>
+                  </HBox>
+                  
+                  <!-- Quick Actions -->
+                  <HBox spacing="10.0">
+                    <children>
+                      <Button fx:id="clearChatButton" text="Clear Chat" />
+                      <Label text="💡 Tip: Use '/search email' to find users" />
                     </children>
                   </HBox>
                 </children>

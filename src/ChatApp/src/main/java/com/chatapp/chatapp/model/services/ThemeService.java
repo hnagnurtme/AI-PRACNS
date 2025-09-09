@@ -1,14 +1,14 @@
 package com.chatapp.chatapp.model.services;
 
-import com.chatapp.chatapp.model.interfaces.ThemeService;
+import com.chatapp.chatapp.model.interfaces.IThemeService;
 
 import javafx.scene.Scene;
 
-public class ThemeServiceImpl implements ThemeService {
+public class ThemeService implements IThemeService {
     private final Scene scene;
     private boolean isDark = false;
     
-    public ThemeServiceImpl(Scene scene) {
+    public ThemeService(Scene scene) {
         this.scene = scene;
     }
     

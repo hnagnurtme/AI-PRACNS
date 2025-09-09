@@ -1,0 +1,45 @@
+module com.chatapp.chatapp {
+    requires javafx.controls;
+    requires javafx.fxml;
+
+    requires org.controlsfx.controls;
+    requires com.dlsc.formsfx;
+    requires org.kordamp.bootstrapfx.core;
+
+    requires com.fasterxml.jackson.databind;
+    requires java.net.http;
+    requires java.desktop;
+
+    requires org.apache.httpcomponents.client5.httpclient5;
+    requires org.apache.httpcomponents.core5.httpcore5;
+
+    // Firebase
+    requires firebase.admin;
+    requires google.cloud.firestore;
+    requires com.google.auth;
+    requires com.google.auth.oauth2;
+
+    exports com.chatapp.chatapp.controller;
+    opens com.chatapp.chatapp.controller to javafx.fxml;
+
+    exports com.chatapp.chatapp.view;
+    opens com.chatapp.chatapp.view to javafx.fxml;
+
+    exports com.chatapp.chatapp.model.interfaces;
+    exports com.chatapp.chatapp.model.services;
+    exports com.chatapp.chatapp.model.entities;             
+    opens com.chatapp.chatapp.model.entities to com.fasterxml.jackson.databind; 
+    exports com.chatapp.chatapp.model.repositories;
+    exports com.chatapp.chatapp.config;
+
+    // Auth
+    exports com.chatapp.auth.model.entities;
+    opens com.chatapp.auth.model.entities to com.fasterxml.jackson.databind;
+    exports com.chatapp.auth.model.interfaces;
+    exports com.chatapp.auth.model.services;
+    exports com.chatapp.auth.model.repositories;
+    exports com.chatapp.auth.controller;
+    opens com.chatapp.auth.controller to javafx.fxml;
+    exports com.chatapp.auth.view;
+    opens com.chatapp.auth.view to javafx.fxml;
+}
