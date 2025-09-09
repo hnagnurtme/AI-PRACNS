@@ -2,8 +2,8 @@ package com.sagin.satellite.model;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
@@ -12,6 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Packet {
     // ----- Identification -----

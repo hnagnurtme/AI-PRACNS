@@ -29,6 +29,7 @@
             <version>1.18.0</version>
         </dependency>
         <dependency>
+         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>2.2</version>
@@ -38,17 +39,13 @@
             <artifactId>dotenv-java</artifactId>
             <version>3.0.0</version>
         </dependency>
-
-
-        <!-- Lombok -->
+        <!-- Lombok (không để scope=provided nữa) -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.32</version>
             <optional>true</optional>
         </dependency>
-
-        <!-- Logging: SLF4J API + Logback -->
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
@@ -58,6 +55,9 @@
             <groupId>ch.qos.logback</groupId>
             <artifactId>logback-classic</artifactId>
             <version>1.4.11</version>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>2.0.7</version>
         </dependency>
 
         <!-- HTTP client -->
@@ -95,7 +95,6 @@
                     </annotationProcessorPaths>
                 </configuration>
             </plugin>
-            
             <!-- Maven Shade Plugin to create executable JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

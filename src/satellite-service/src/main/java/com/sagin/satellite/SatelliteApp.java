@@ -1,4 +1,3 @@
-
 package com.sagin.satellite;
 
 import org.slf4j.Logger;
@@ -16,3 +15,4 @@ public class SatelliteApp {
         logger.info("Satellite Service started on port {}", port);
     }
 }
+
