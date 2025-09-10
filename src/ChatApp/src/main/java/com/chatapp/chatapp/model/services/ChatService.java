@@ -77,7 +77,8 @@ public class ChatService implements IChatService {
     }
 
     private void handleIncomingMessage(SocketChatServer.ChatMessage message) {
-        System.out.println("📥 Handling incoming message: " + message.getType());
+        // 🆕 Log detailed packet information
+        logIncomingPacket(message);
         
         switch (message.getType()) {
             case "REGISTER_SUCCESS":
@@ -111,6 +112,40 @@ public class ChatService implements IChatService {
             default:
                 System.out.println("Unknown message type: " + message.getType());
         }
+    }
+
+    // 🆕 Thêm method mới để log packet details
+    private void logIncomingPacket(SocketChatServer.ChatMessage message) {
+        System.out.println("=" + "=".repeat(60) + "=");
+        System.out.println("📦 INCOMING PACKET LOG");
+        System.out.println("=" + "=".repeat(60) + "=");
+        System.out.println("🔍 Packet Type: " + message.getType());
+        System.out.println("👤 Sender Email: " + message.getSenderEmail());
+        System.out.println("📧 Receiver Email: " + message.getReceiverEmail());
+        System.out.println("💬 Content: " + message.getContent());
+        System.out.println("🆔 Message ID: " + message.getMessageId());
+        System.out.println("⏰ Timestamp: " + java.time.LocalDateTime.now());
+        System.out.println("📊 Content Length: " + (message.getContent() != null ? message.getContent().length() : 0) + " chars");
+        
+        // Additional packet simulation data
+        System.out.println("🌐 Simulated Network Info:");
+        System.out.println("   📍 Current Node: " + currentUserEmail);
+        System.out.println("   📡 Source: " + message.getSenderEmail());
+        System.out.println("   🎯 Destination: " + message.getReceiverEmail());
+        System.out.println("   ⚡ Estimated Delay: " + String.format("%.2f ms", Math.random() * 200 + 50));
+        System.out.println("   📦 Packet Size: " + estimatePacketSize(message) + " bytes");
+        System.out.println("=" + "=".repeat(60) + "=");
+    }
+
+    // 🆕 Helper method để ước tính kích thước packet
+    private int estimatePacketSize(SocketChatServer.ChatMessage message) {
+        int headerSize = 64; // Estimated header size
+        int contentSize = message.getContent() != null ? message.getContent().getBytes().length : 0;
+        int senderSize = message.getSenderEmail() != null ? message.getSenderEmail().getBytes().length : 0;
+        int receiverSize = message.getReceiverEmail() != null ? message.getReceiverEmail().getBytes().length : 0;
+        int typeSize = message.getType() != null ? message.getType().getBytes().length : 0;
+        
+        return headerSize + contentSize + senderSize + receiverSize + typeSize;
     }
 
     @Override
@@ -261,12 +296,35 @@ public class ChatService implements IChatService {
             packet.setPriority(5);
             packet.setDropped(false);
             
+            // 🆕 Log outgoing packet details khi save
+            logOutgoingPacket(packet);
+            
             // Save to file
             fileService.saveChatMessage(packet);
             
         } catch (Exception e) {
             System.err.println("Error saving message to history: " + e.getMessage());
         }
+    }
+
+    // 🆕 Thêm method để log outgoing packet
+    private void logOutgoingPacket(Packet packet) {
+        System.out.println("=" + "=".repeat(60) + "=");
+        System.out.println("📤 OUTGOING PACKET LOG");
+        System.out.println("=" + "=".repeat(60) + "=");
+        System.out.println("🆔 Packet ID: " + packet.getPacketId());
+        System.out.println("👤 Source User: " + packet.getSourceUserId());
+        System.out.println("🎯 Destination User: " + packet.getDestinationUserId());
+        System.out.println("💬 Message: " + packet.getMessage());
+        System.out.println("📍 Current Node: " + packet.getCurrentNode());
+        System.out.println("➡️ Next Hop: " + packet.getNextHop());
+        System.out.println("⏱️ Delay: " + String.format("%.2f ms", packet.getDelayMs()));
+        System.out.println("📉 Loss Rate: " + String.format("%.4f%%", packet.getLossRate() * 100));
+        System.out.println("🔄 Retry Count: " + packet.getRetryCount());
+        System.out.println("⭐ Priority: " + packet.getPriority());
+        System.out.println("❌ Dropped: " + packet.isDropped());
+        System.out.println("⏰ Timestamp: " + new java.util.Date(packet.getTimestamp()));
+        System.out.println("=" + "=".repeat(60) + "=");
     }
 
     private void loadAndDisplayChatHistory() {
