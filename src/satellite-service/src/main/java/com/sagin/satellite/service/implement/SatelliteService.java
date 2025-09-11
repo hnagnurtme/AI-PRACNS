@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.sagin.satellite.common.SatelliteException;
+
 import com.sagin.satellite.model.Packet;
 import com.sagin.satellite.service.IBufferManager;
 import com.sagin.satellite.service.ISatelliteService;
@@ -17,7 +18,6 @@ public class SatelliteService implements ISatelliteService {
     public SatelliteService(IBufferManager bufferManager) {
         this.bufferManager = bufferManager;
     }
-    
     @Override
     public void recievePacket(Packet packet) throws Exception {
         validatePacket(packet);
@@ -36,4 +36,17 @@ public class SatelliteService implements ISatelliteService {
     }
 }
 
+    /**    
+     * Add a packet to the buffer for processing.
+     * @param packet The packet to be added to the buffer.
+     * Writes log messages for debugging and error handling.
+     * Update sattelite status 
+     */
+    @Override
+    public void recievePacket(Packet packet) throws Exception {
+        bufferManager.add(packet);
 
+        logger.info("Packet {} added to buffer", packet.getPacketId());
+        
+    }
+}

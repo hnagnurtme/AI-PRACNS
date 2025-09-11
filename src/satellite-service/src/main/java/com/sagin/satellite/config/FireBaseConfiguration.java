@@ -13,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-
 public class FireBaseConfiguration {
     private static final Logger logger = LoggerFactory.getLogger(FireBaseConfiguration.class);
     private static Firestore firestore;
@@ -42,31 +41,4 @@ public class FireBaseConfiguration {
             serviceAccount = new FileInputStream(serviceAccountPath);
         }
 
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setDatabaseUrl(databaseUrl)
-                .build();
-
-        if (FirebaseApp.getApps().isEmpty()) {
-            FirebaseApp.initializeApp(options);
-            logger.info("FirebaseApp initialized for Firestore");
-        }
-
-        firestore = FirestoreClient.getFirestore();
-        logger.info("Firestore has been initialized");
     }
-
-    public static Firestore getFirestore() {
-        if (firestore == null) {
-            throw new IllegalStateException("Firestore not initialized. Call init() first.");
-        }
-        return firestore;
-    }
-
-    public static void shutdown() {
-        if (!FirebaseApp.getApps().isEmpty()) {
-            FirebaseApp.getInstance().delete();
-            logger.info("Firestore/FirebaseApp shutdown complete");
-        }
-    }
-}
