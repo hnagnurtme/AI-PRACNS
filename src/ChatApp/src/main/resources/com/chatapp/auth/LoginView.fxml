@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<VBox xmlns="http://javafx.com/javafx/11.0.1" xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="com.chatapp.auth.controller.LoginController"
+      alignment="CENTER" spacing="20" style="-fx-background-color: #f5f5f5;">
+   
+   <padding>
+      <Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+   </padding>
+   
+   <!-- Header -->
+   <Label text="SAGIN Network Client" style="-fx-font-size: 24px; -fx-font-weight: bold; -fx-text-fill: #2c3e50;" />
+   <Label text="Login to continue" style="-fx-font-size: 14px; -fx-text-fill: #7f8c8d;" />
+   
+   <Separator />
+   
+   <!-- Login Form -->
+   <VBox spacing="15" alignment="CENTER">
+      
+      <!-- Email Field -->
+      <VBox spacing="5">
+         <Label text="Email:" style="-fx-font-weight: bold;" />
+         <TextField fx:id="emailField" promptText="Enter your email" 
+                   style="-fx-pref-width: 300; -fx-pref-height: 35;" />
+      </VBox>
+      
+      <!-- Password Field -->
+      <VBox spacing="5">
+         <Label text="Password:" style="-fx-font-weight: bold;" />
+         <PasswordField fx:id="passwordField" promptText="Enter your password" 
+                       style="-fx-pref-width: 300; -fx-pref-height: 35;" />
+      </VBox>
+      
+      <!-- Loading and Message -->
+      <HBox spacing="10" alignment="CENTER">
+         <ProgressIndicator fx:id="loadingIndicator" maxWidth="20" maxHeight="20" />
+         <Label fx:id="messageLabel" text="" style="-fx-font-size: 12px;" />
+      </HBox>
+      
+      <!-- Buttons -->
+      <HBox spacing="10" alignment="CENTER">
+         <Button fx:id="loginButton" text="Login" onAction="#handleLogin" 
+                style="-fx-background-color: #3498db; -fx-text-fill: white; -fx-pref-width: 100; -fx-pref-height: 35;" />
+         <Button fx:id="registerButton" text="Register" onAction="#goToRegister" 
+                style="-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-pref-width: 100; -fx-pref-height: 35;" />
+      </HBox>
+      
+   </VBox>
+   
+</VBox>

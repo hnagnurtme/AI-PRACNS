@@ -1,8 +1,6 @@
-node:
-  id: sat1
-  ip: 10.0.0.2
-  port: 9090
 
+server:
+    port: ${SERVER_PORT:3000}
 manager:
   api:
     url: http://localhost:8081

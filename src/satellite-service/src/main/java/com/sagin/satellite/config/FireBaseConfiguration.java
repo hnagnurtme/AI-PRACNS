@@ -1,46 +1,44 @@
 package com.sagin.satellite.config;
 
 import com.google.auth.oauth2.GoogleCredentials;
+import com.google.cloud.firestore.Firestore;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
+import com.google.firebase.cloud.FirestoreClient;
+import com.sagin.satellite.util.ReadPropertiesUtils;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Properties;
-import java.util.logging.Logger;
-
 public class FireBaseConfiguration {
-    private static final Logger logger = Logger.getLogger(FireBaseConfiguration.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(FireBaseConfiguration.class);
+    private static Firestore firestore;
 
     public static void init() throws IOException {
-        Properties props = new Properties();
+        if (firestore != null) {
+            logger.info("Firestore already initialized");
+            return;
+        }
 
-        try (InputStream input = FireBaseConfiguration.class
-                .getClassLoader()
-                .getResourceAsStream("application-prod.properties")) {
+        String serviceAccountPath = ReadPropertiesUtils.getString("firebase.serviceAccountPath");
+        String databaseUrl = ReadPropertiesUtils.getString("firebase.databaseUrl");
 
-            if (input == null) {
-                throw new IOException("application.properties not found in resources!");
+        InputStream serviceAccount;
+
+        try {
+            serviceAccount = FireBaseConfiguration.class.getClassLoader()
+                    .getResourceAsStream("serviceAccountKey.json");
+            if (serviceAccount == null) {
+                serviceAccount = new FileInputStream(serviceAccountPath);
+            } else {
+                logger.info("Loading Firebase service account key from classpath");
             }
-            props.load(input);
+        } catch (Exception e) {
+            logger.warn("Failed to load from classpath, trying file system: {}", serviceAccountPath);
+            serviceAccount = new FileInputStream(serviceAccountPath);
         }
 
-        String serviceAccountPath = props.getProperty("firebase.serviceAccountPath");
-        String databaseUrl = props.getProperty("firebase.databaseUrl");
-
-        FileInputStream serviceAccount = new FileInputStream(serviceAccountPath);
-
-        FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.fromStream(serviceAccount))
-                .setDatabaseUrl(databaseUrl)
-                .build();
-
-        if (FirebaseApp.getApps().isEmpty()) {
-            FirebaseApp.initializeApp(options);
-            logger.info("Firebase has been initialized");
-        } else {
-            logger.info("FirebaseApp already initialized");
-        }
     }
-}
