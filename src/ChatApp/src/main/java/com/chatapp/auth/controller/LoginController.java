@@ -68,7 +68,7 @@ public class LoginController implements Initializable {
             protected void succeeded() {
                 Platform.runLater(() -> {
                     String token = getValue();
-                    User currentUser = new User(email, token);
+                    User currentUser = new User(email, token, 0, 0);
                     showSuccess("Login successful!");
                     openMainApp(currentUser);
                 });
