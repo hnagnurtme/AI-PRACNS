@@ -93,6 +93,25 @@
             <artifactId>google-auth-library-credentials</artifactId>
             <version>1.18.0</version>
         </dependency>
+        <!-- Google Cloud Firestore -->
+        <dependency>
+            <groupId>com.google.cloud</groupId>
+            <artifactId>google-cloud-firestore</artifactId>
+            <version>3.14.0</version>
+        </dependency>
+        
+        <!-- Google Auth Library -->
+        <dependency>
+            <groupId>com.google.auth</groupId>
+            <artifactId>google-auth-library-oauth2-http</artifactId>
+            <version>1.19.0</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.11.0</version>
+        </dependency>
     </dependencies>
 
     <build>

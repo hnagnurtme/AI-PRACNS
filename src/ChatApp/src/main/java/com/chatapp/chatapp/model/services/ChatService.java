@@ -16,6 +16,9 @@ import javafx.scene.control.TextField;
 
 import java.net.Socket;
 
+import com.chatapp.chatapp.helpers.GeoLocationService;
+import com.chatapp.chatapp.model.entities.Node;
+
 public class ChatService implements IChatService {
     private final TextArea chatHistoryArea;
     private final TextField messageInputField;
@@ -194,6 +197,33 @@ public class ChatService implements IChatService {
         
         if (messageInputField != null) {
             messageInputField.clear();
+        }
+
+        // Tìm node gần nhất và hiển thị thông tin
+        try {
+            double[] userLocation = GeoLocationService.getCurrentLocation();
+            double userLat = userLocation[0];
+            double userLon = userLocation[1];
+
+            System.out.printf("📍 Your location: (%.4f, %.4f)\n", userLat, userLon);
+            UserSession.getCurrentUser().setLocation(userLat, userLon);
+
+            NodeService nodeService = new NodeService(FirebaseConfig.getFirestore());
+
+            Node nearestNode = nodeService.findNearestNode(UserSession.getCurrentUser());
+
+            if (nearestNode != null) {
+                System.out.printf("📡 Connected to:  %s  %s  %.4f  %.4f\n",
+                        nearestNode.getNodeId(),
+                        nearestNode.getNodeType(),
+                        nearestNode.getLatitude(),
+                        nearestNode.getLongitude());
+            } else {
+                chatHistoryArea.appendText("⚠️ No communication nodes available\n");
+                System.out.println("⚠️ No communication nodes available");
+            }
+        } catch (Exception e) {
+            System.err.println("Error finding nearest node: " + e.getMessage());
         }
     }
 
