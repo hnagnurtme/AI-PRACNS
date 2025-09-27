@@ -7,4 +7,5 @@ public interface INodeRepository {
     List<NodeInfo> getAllNodes();
     NodeInfo getNodeById(String nodeId);
     void saveNode(NodeInfo node);
+    void deleteNode(String nodeId);
 }

@@ -6,6 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.*;
 
 import com.chatapp.auth.model.services.FirebaseAuthService;
+import com.chatapp.auth.utils.ValidateRegisterInput;
 
 public class RegisterController {
     @FXML private TextField emailField;
@@ -21,21 +22,10 @@ public class RegisterController {
         String email = emailField.getText().trim();
         String password = passwordField.getText();
 
-        // Basic validation
-        if (email.isEmpty()) {
-            showError("Please enter email");
-            return;
-        }
-        if (password.isEmpty()) {
-            showError("Please enter password");
-            return;
-        }
-        if (!email.contains("@")) {
-            showError("Invalid email format");
-            return;
-        }
-        if (password.length() < 6) {
-            showError("Password must be at least 6 characters");
+        // Validate input
+        String validationError = ValidateRegisterInput.validate(email, password);
+        if (validationError != null) {
+            showError(validationError);
             return;
         }
 

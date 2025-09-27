@@ -27,7 +27,8 @@ out/
 #firebase
 src/satellite-service/src/main/resources/serviceAccountKey.json
 
-src/satellite-service/src/main/resources/application-production.ymlsrc/satellite-service/target/classes/serviceAccountKey.json
+src/satellite-service/src/main/resources/application-production.yml
+src/satellite-service/target/classes/serviceAccountKey.json
 src/satellite-service/target/classes/serviceAccountKey.json
 
 src/satellite-service/src/main/resources/application-production.yml

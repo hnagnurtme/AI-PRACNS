@@ -73,4 +73,19 @@ public class NodeRepository implements INodeRepository {
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void deleteNode(String nodeId) {
+        try {
+            firestore.collection("nodes")
+                    .document(nodeId)
+                    .delete()
+                    .get(); // đợi hoàn tất
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            e.printStackTrace();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+    }
 }
