@@ -15,6 +15,7 @@ export function useNodesApi() {
         return res.json();
       })
       .then((data) => {
+        console.log(data);
         setNodes(data);
         setLoading(false);
       })

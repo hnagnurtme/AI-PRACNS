@@ -4,14 +4,21 @@ export interface NodeInfo {
   position: {
     longitude: number;
     latitude: number;
-    altitude?: number;
+    altitude: number;
   };
   orbit?: {
-    inclination?: number;
-    altitude?: number;
+    altitude: number;
+    inclination: number;
   };
   velocity?: {
-    speed?: number;
+    speed: number;
   };
+  linkAvailable?: boolean;
+  bandwidth?: number;
+  latencyMs?: number;
+  packetLossRate?: number;
+  bufferSize?: number;
+  throughput?: number;
+  lastUpdated?: number;
   healthy?: boolean;
 }
