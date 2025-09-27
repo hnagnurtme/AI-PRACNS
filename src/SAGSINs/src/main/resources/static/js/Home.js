@@ -1,5 +1,5 @@
 // ====================== Cesium Config ======================
-Cesium.Ion.defaultAccessToken = "";
+Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjYTNkNmJmMC03MWJlLTRhZDgtYjI1My1jMDBjNDg0Y2NjMGUiLCJpZCI6MzM4ODk5LCJpYXQiOjE3NTg2MzMwNzN9.QLsbfWFGA6TesQEJBl4ktgCRve3LdQMk2BXTZB7fkWM";
 
 
 const viewer = new Cesium.Viewer("cesiumContainer", {
