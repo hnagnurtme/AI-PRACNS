@@ -2,8 +2,7 @@ package com.sagin.satellite.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import com.sagin.satellite.common.SatelliteException;
+import com.sagin.satellite.common.SatelliteException.InvalidPacketException;
 import com.sagin.satellite.model.Packet;
 import com.sagin.satellite.service.ISatelliteService;
 
@@ -14,10 +13,10 @@ public class SatelliteController extends BaseController {
         this.satelliteService = satelliteService;
     }
 
-    public void receivePacket(Packet packet) throws SatelliteException.InvalidPacketException {
+    public void receivePacket(Packet packet) throws InvalidPacketException {
         if (packet == null || !packet.isAlive()) {
             logger.error("Received null or dead packet");
-            throw new SatelliteException.InvalidPacketException("Packet is null or dead");
+            throw new InvalidPacketException("Packet is null or dead");
         }
         try {
             satelliteService.recievePacket(packet);
@@ -25,7 +24,7 @@ public class SatelliteController extends BaseController {
         catch (Exception e) {
 
             logger.error("Error processing packet {}: {}", packet.getPacketId(), e.getMessage());
-            throw new SatelliteException.InvalidPacketException(e.getMessage());
+            throw new InvalidPacketException(e.getMessage());
         }
     }
 }

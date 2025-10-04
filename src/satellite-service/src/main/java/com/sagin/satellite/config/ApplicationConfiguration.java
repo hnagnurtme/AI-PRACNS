@@ -37,7 +37,7 @@ public class ApplicationConfiguration {
             int maxRetry = 3;
             IBufferManager bufferManager = new BufferManager(bufferCapacity, tcpSender, flushIntervalMs, maxRetry, 4);
             // 4️⃣ Init SatelliteService
-            ISatelliteService satelliteService = new SatelliteService(bufferManager);
+            ISatelliteService satelliteService = new SatelliteService();
 
             // 5️⃣ Init Controller
             satelliteController = new SatelliteController(satelliteService);

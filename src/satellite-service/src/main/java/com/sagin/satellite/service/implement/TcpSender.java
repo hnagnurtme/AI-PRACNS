@@ -2,6 +2,7 @@ package com.sagin.satellite.service.implement;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sagin.satellite.model.Packet;
+import com.sagin.satellite.service.ITcpSender;
 import com.sagin.satellite.common.SatelliteException;
 
 import org.slf4j.Logger;
@@ -20,7 +21,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * TcpSender gửi packet qua TCP connection đến các node khác
  * Hỗ trợ connection pooling, retry logic, và metrics tracking
  */
-public class TcpSender {
+public class TcpSender implements ITcpSender {
     private static final Logger logger = LoggerFactory.getLogger(TcpSender.class);
 
     // Configuration
