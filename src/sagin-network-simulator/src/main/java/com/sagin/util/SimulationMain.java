@@ -3,25 +3,31 @@ package com.sagin.util;
 import com.sagin.core.INetworkManagerService;
 import com.sagin.core.INodeService;
 import com.sagin.core.service.NodeService;
-import com.sagin.configuration.ServiceConfiguration; // Import Service Configuration
-import com.sagin.model.Geo3D; // Cần cho createMockNetworkConfigs
+import com.sagin.configuration.ServiceConfiguration;
 import com.sagin.model.NodeInfo;
-import com.sagin.core.ILinkManagerService; // Cần cho DI
-import com.sagin.routing.RoutingEngine; // Cần cho DI
+import com.sagin.core.ILinkManagerService;
+import com.sagin.routing.RoutingEngine;
+import com.sagin.repository.INodeRepository; // Cần thiết cho Seeder
+import com.sagin.seeding.NodeSeeder;       // Import NodeSeeder
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Điểm khởi chạy chính của ứng dụng mô phỏng Node.
- * Sử dụng ServiceConfiguration để khởi tạo và kết nối tất cả các Service.
+ * Lớp này thực hiện Dependency Injection và khởi tạo luồng mạng chính.
  */
 public class SimulationMain {
+
+    private static final Logger logger = LoggerFactory.getLogger(SimulationMain.class);
 
     public static void main(String[] args) {
         
         if (args.length < Initializer.REQUIRED_ARGS_COUNT) {
-            System.err.println("Lỗi: Thiếu tham số khởi tạo. Cần ít nhất " + Initializer.REQUIRED_ARGS_COUNT + " tham số.");
+            logger.error("Lỗi: Thiếu tham số khởi tạo. Cần ít nhất {} tham số.", Initializer.REQUIRED_ARGS_COUNT);
             System.exit(1);
         }
         
@@ -29,74 +35,51 @@ public class SimulationMain {
             // 1. LẤY CẤU HÌNH DỊCH VỤ (SINGLETON)
             ServiceConfiguration config = ServiceConfiguration.getInstance();
             
-            // 2. LẤY CÁC DEPENDENCY CẦN THIẾT CHO INJECTION
+            // 2. LẤY CÁC DEPENDENCY CẦN THIẾT
             INetworkManagerService networkManager = config.getNetworkManagerService();
             RoutingEngine routingEngine = config.getRoutingEngine();
-            ILinkManagerService linkManager = config.getLinkManagerService(); // LinkManagerService là implementation của ILinkManagerService
+            ILinkManagerService linkManager = config.getLinkManagerService();
+            INodeRepository nodeRepository = config.getNodeRepository(); // 👈 Lấy Repository cho Seeder
 
-            // 3. Khởi tạo Node Info từ tham số dòng lệnh
+            // 3. THỰC HIỆN SEEDING DỮ LIỆU
+            NodeSeeder seeder = new NodeSeeder(nodeRepository);
+            // Chạy Seeder: Đặt 'true' nếu muốn ghi đè Database mỗi lần chạy (dùng cho testing)
+            seeder.seedInitialNodes(false); 
+
+            // 4. Khởi tạo Node Info từ tham số dòng lệnh
             NodeInfo currentNodeInfo = Initializer.initializeNodeFromArgs(args);
             
-            System.out.println("-------------------------------------------------");
-            System.out.println("Node ID: " + currentNodeInfo.getNodeId() + 
-                               " | Type: " + currentNodeInfo.getNodeType());
-            System.out.println("Vị trí: " + currentNodeInfo.getPosition().toString());
-            System.out.println("BW Max: " + currentNodeInfo.getCurrentBandwidth() + " Mbps");
-            System.out.println("-------------------------------------------------");
+            logger.info("=================================================");
+            logger.info("Node ID: {} | Type: {}", currentNodeInfo.getNodeId(), currentNodeInfo.getNodeType());
+            logger.info("Vị trí: {}", currentNodeInfo.getPosition().toString());
+            logger.info("BW Max: {} Mbps", currentNodeInfo.getCurrentBandwidth());
+            logger.info("=================================================");
 
-            // 4. Cấu hình ban đầu của Network Manager (Tạo Database Vị trí)
-            Map<String, NodeInfo> initialConfigs = createMockNetworkConfigs(currentNodeInfo);
-            networkManager.initializeNetwork(initialConfigs); // Đăng ký tất cả node vào Manager
+            // 5. Cấu hình ban đầu của Network Manager 
+            Map<String, NodeInfo> currentInstanceConfig = new HashMap<>();
+            currentInstanceConfig.put(currentNodeInfo.getNodeId(), currentNodeInfo);
+            
+            // initializeNetwork sẽ tải dữ liệu từ DB (vừa được seeder đẩy lên) VÀ thêm Node hiện tại
+            networkManager.initializeNetwork(currentInstanceConfig); 
 
-            // 5. Khởi tạo Node Service THỰC HIỆN DEPENDENCY INJECTION
-            // Truyền tất cả các dependencies mà NodeService cần để hoạt động
+            // 6. Khởi tạo Node Service (THỰC HIỆN DEPENDENCY INJECTION)
             INodeService nodeService = new NodeService(
                 currentNodeInfo, 
-                networkManager,   // Dependency 1: INetworkManagerService
-                routingEngine,    // Dependency 2: RoutingEngine
-                linkManager       // Dependency 3: ILinkManagerService
+                networkManager,
+                routingEngine,   
+                linkManager       
             );
             
-            // 6. Đăng ký Node vào Registry và bắt đầu mô phỏng
+            // 7. Đăng ký Node vào Registry và bắt đầu mô phỏng
             networkManager.registerActiveNode(currentNodeInfo.getNodeId(), nodeService);
             nodeService.startSimulationLoop(); 
 
         } catch (IllegalArgumentException e) {
-            System.err.println("Lỗi tham số: " + e.getMessage());
+            logger.error("Lỗi tham số khởi động: {}", e.getMessage());
             System.exit(1);
         } catch (Exception e) {
-            System.err.println("Lỗi nghiêm trọng xảy ra trong quá trình khởi tạo: " + e.getMessage());
-            e.printStackTrace();
+            logger.error("Lỗi nghiêm trọng xảy ra trong quá trình khởi tạo ứng dụng:", e);
             System.exit(1);
         }
-    }
-    
-    /**
-     * Phương thức giả lập cấu hình Node cho toàn mạng (Database Vị trí ban đầu).
-     */
-    private static Map<String, NodeInfo> createMockNetworkConfigs(NodeInfo currentNodeInfo) {
-        Map<String, NodeInfo> configs = new HashMap<>();
-        
-        // Thêm chính Node đang chạy vào configs
-        configs.put(currentNodeInfo.getNodeId(), currentNodeInfo);
-        
-        // --- Thêm Node láng giềng tĩnh GS_001 ---
-        NodeInfo gsNeighbor = new NodeInfo();
-        gsNeighbor.setNodeId("GS_001");
-        gsNeighbor.setNodeType(ProjectConstant.NODE_TYPE_GROUND_STATION);
-        gsNeighbor.setPosition(new Geo3D(31.0, -101.0, 0.001));
-        gsNeighbor.setCurrentBandwidth(5000.0);
-        configs.put("GS_001", gsNeighbor);
-        
-        // --- Thêm Node láng giềng tĩnh SAT_001 ---
-        // (Cần thiết để cả hai node có thể tìm thấy thông tin của nhau)
-        NodeInfo satNeighbor = new NodeInfo();
-        satNeighbor.setNodeId("SAT_001");
-        satNeighbor.setNodeType(ProjectConstant.NODE_TYPE_SATELLITE);
-        satNeighbor.setPosition(new Geo3D(30.0, -100.0, 550.0));
-        satNeighbor.setCurrentBandwidth(1000.0);
-        configs.put("SAT_001", satNeighbor);
-        
-        return configs;
     }
 }

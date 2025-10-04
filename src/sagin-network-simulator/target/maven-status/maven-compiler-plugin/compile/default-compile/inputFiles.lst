@@ -18,6 +18,7 @@
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/repository/INodeRepository.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/routing/QosDijkstraEngine.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/routing/RoutingEngine.java
+/Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/seeding/NodeSeeder.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/util/Initializer.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/util/ProjectConstant.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/util/SimulationMain.java

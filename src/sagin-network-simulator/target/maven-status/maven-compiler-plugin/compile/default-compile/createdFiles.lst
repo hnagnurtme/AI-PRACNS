@@ -7,6 +7,7 @@ com/sagin/util/SimulationMain.class
 com/sagin/configuration/FireStoreConfiguration.class
 com/sagin/repository/INodeRepository.class
 com/sagin/core/service/NetworkManagerService.class
+com/sagin/seeding/NodeSeeder.class
 com/sagin/configuration/ServiceConfiguration.class
 com/sagin/routing/RoutingEngine.class
 com/sagin/core/service/NodeService.class

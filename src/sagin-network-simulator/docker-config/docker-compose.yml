@@ -14,7 +14,7 @@ services:
     container_name: sat_node_01
     hostname: sat_node_01
     
-    # Sử dụng số thập phân cho tất cả các tham số số
+    # KHẮC PHỤC LOCALE: Chèn tham số JVM trực tiếp vào lệnh khởi động
     command: ["java", 
               "-Duser.language=en", "-Duser.country=US", 
               "-jar", "app.jar", 
@@ -37,7 +37,7 @@ services:
     container_name: gs_node_01
     hostname: gs_node_01
     
-    # Sử dụng số thập phân cho tất cả các tham số số
+    # KHẮC PHỤC LOCALE: Chèn tham số JVM trực tiếp vào lệnh khởi động
     command: ["java", 
               "-Duser.language=en", "-Duser.country=US", 
               "-jar", "app.jar", 

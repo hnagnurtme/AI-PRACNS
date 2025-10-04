@@ -1,6 +1,8 @@
 package com.sagin.model;
 
 import lombok.*;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Getter
@@ -28,6 +30,7 @@ public class NodeInfo {
     private long lastUpdated;            
 
     /** Kiểm tra Node có sẵn sàng xử lý/gửi/nhận không. */
+    @JsonIgnore
     public boolean isHealthy() {
         // Giả định ngưỡng hoạt động: Pin trên 5% và buffer chưa quá tải (ví dụ: 90/100)
         return isOperational && powerLevel > 5.0 && packetBufferLoad < 90; 
