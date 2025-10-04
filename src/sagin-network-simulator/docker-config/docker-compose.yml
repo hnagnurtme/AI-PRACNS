@@ -1,0 +1,57 @@
+# File: src/sagin-network-simulator/docker-config/docker-compose.yml
+
+version: '3.8' 
+
+services:
+  # -----------------------------------------------------------
+  # 1. NODE VỆ TINH (SAT_001)
+  # -----------------------------------------------------------
+  sat_node_01:
+    build: 
+      context: .. 
+      dockerfile: docker-config/Dockerfile 
+    platform: linux/amd64
+    container_name: sat_node_01
+    hostname: sat_node_01
+    
+    # Sử dụng số thập phân cho tất cả các tham số số
+    command: ["java", 
+              "-Duser.language=en", "-Duser.country=US", 
+              "-jar", "app.jar", 
+              "SAT_001", "SATELLITE", "1", 
+              "30.0", "-100.0", "550.0", 
+              "1000.0", "15.0", "100.0"]
+    
+    restart: on-failure
+    networks:
+      - sagin_network
+
+  # -----------------------------------------------------------
+  # 2. NODE TRẠM MẶT ĐẤT (GS_001)
+  # -----------------------------------------------------------
+  gs_node_01:
+    build: 
+      context: ..
+      dockerfile: docker-config/Dockerfile
+    platform: linux/amd64
+    container_name: gs_node_01
+    hostname: gs_node_01
+    
+    # Sử dụng số thập phân cho tất cả các tham số số
+    command: ["java", 
+              "-Duser.language=en", "-Duser.country=US", 
+              "-jar", "app.jar", 
+              "GS_001", "GROUND_STATION", "0", 
+              "31.0", "-101.0", "0.001", 
+              "5000.0", "1.0", "100.0"]
+    
+    restart: on-failure
+    networks:
+      - sagin_network
+
+# -----------------------------------------------------------
+# ĐỊNH NGHĨA MẠNG LƯỚI
+# -----------------------------------------------------------
+networks:
+  sagin_network:
+    driver: bridge
