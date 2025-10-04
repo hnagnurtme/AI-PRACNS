@@ -1,3 +1,6 @@
+/Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/configuration/FireStoreConfiguration.java
+/Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/configuration/FirebaseConfiguration.java
+/Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/configuration/ServiceConfiguration.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/ILinkManagerService.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/INetworkManagerService.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/INodeService.java
@@ -11,6 +14,8 @@
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/model/Packet.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/model/RoutingTable.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/model/ServiceQoS.java
+/Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/repository/FirebaseNodeRepository.java
+/Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/repository/INodeRepository.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/routing/QosDijkstraEngine.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/routing/RoutingEngine.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/util/Initializer.java

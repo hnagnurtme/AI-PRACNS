@@ -4,6 +4,7 @@ import com.sagin.core.INetworkManagerService;
 import com.sagin.core.INodeService;
 import com.sagin.model.NodeInfo;
 import com.sagin.model.Packet;
+import com.sagin.repository.INodeRepository; 
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Lớp triển khai INetworkManagerService. 
  * Quản lý và điều phối tất cả NodeService đang chạy.
+ * Lớp này hoạt động như một Registry và API Gateway cho mạng mô phỏng.
  */
 public class NetworkManagerService implements INetworkManagerService {
 
@@ -20,29 +22,41 @@ public class NetworkManagerService implements INetworkManagerService {
 
     // Lưu trữ tất cả NodeService đang hoạt động (Node ID -> NodeService Object)
     private final Map<String, INodeService> activeNodeServices;
-    // Lưu trữ tất cả NodeInfo (Node ID -> NodeInfo Object)
+    // Lưu trữ tất cả NodeInfo (Database Vị trí trong bộ nhớ)
     private final Map<String, NodeInfo> networkNodesInfo;
+    
+    // DEPENDENCY: Repository để tải dữ liệu từ DB
+    private final INodeRepository nodeRepository; 
 
-    public NetworkManagerService() {
+    public NetworkManagerService(INodeRepository nodeRepository) { // 👈 SỬA: Nhận Repository
         this.activeNodeServices = new ConcurrentHashMap<>();
         this.networkNodesInfo = new ConcurrentHashMap<>();
+        this.nodeRepository = nodeRepository; 
+        logger.info("NetworkManagerService đã khởi tạo.");
     }
 
     @Override
     public void initializeNetwork(Map<String, NodeInfo> initialNodeConfigs) {
-        logger.info("Khởi tạo mạng lưới với {} node...", initialNodeConfigs.size());
+        logger.info("Khởi tạo cấu trúc mạng: Bắt đầu tải dữ liệu Node...");
         
-        for (NodeInfo info : initialNodeConfigs.values()) {
-            // Lưu NodeInfo vào Map chung
-            this.networkNodesInfo.put(info.getNodeId(), info);
-            
-            // Khởi tạo NodeService cho từng Node
-            // LƯU Ý: NetworkManager thường khởi tạo và quản lý NodeService
-            // Nhưng trong mô hình Docker Compose, mỗi container tự khởi tạo NodeService của mình
-            // Ở đây, ta chỉ giả định rằng nó lưu trữ các NodeInfo
+        Map<String, NodeInfo> dbConfigs = nodeRepository.loadAllNodeConfigs();
+        
+        this.networkNodesInfo.putAll(dbConfigs);
+        
+        this.networkNodesInfo.putAll(initialNodeConfigs);
+
+        logger.info("Tải thành công {} Node (Bao gồm cả Node đang chạy) vào Registry.", 
+                    this.networkNodesInfo.size());
+    }
+    
+    @Override
+    public void registerActiveNode(String serviceId, INodeService nodeService) {
+        if (!activeNodeServices.containsKey(serviceId)) {
+            activeNodeServices.put(serviceId, nodeService);
+            logger.info("Node {} đã đăng ký thành công vào NetworkManager.", serviceId);
+        } else {
+            logger.warn("Node {} đã tồn tại trong danh sách Node hoạt động (Đã đăng ký lại).", serviceId);
         }
-        
-        logger.info("Khởi tạo cấu trúc liên kết mạng hoàn tất.");
     }
 
     @Override
@@ -53,10 +67,13 @@ public class NetworkManagerService implements INetworkManagerService {
             // Gọi phương thức receivePacket() của Node đích
             logger.info("Chuyển giao: Gói {} từ {} -> {}", 
                         packet.getPacketId(), packet.getCurrentHoldingNodeId(), destNodeId);
+            // Kỹ thuật gọi hàm này là cách mô phỏng Network Hand-off giữa các luồng
             destinationNode.receivePacket(packet);
+            
+            // NOTE: Cần có logic cập nhật vị trí/trạng thái lên DB tại đây nếu dùng Firebase
+            // nodeRepository.updateNodeInfo(packet.getCurrentHoldingNodeId(), latestNodeInfo);
         } else {
             logger.warn("LỖI CHUYỂN GIAO: Node đích {} không tồn tại hoặc không hoạt động.", destNodeId);
-            // Xử lý gói tin bị mất
             packet.markDropped();
         }
     }
@@ -69,24 +86,6 @@ public class NetworkManagerService implements INetworkManagerService {
 
     @Override
     public void startSimulation() {
-        logger.info("Bắt đầu vòng lặp thời gian toàn mạng.");
-        // Giai đoạn này thường bao gồm việc đồng bộ hóa các NodeService đã được khởi động
-        // (Trong mô hình Docker, NodeService tự chạy, NetworkManager chỉ đóng vai trò là Registry/API Gateway)
-        
-        // Logic mô phỏng: Kích hoạt tất cả NodeService (nếu chưa chạy)
-        // for (INodeService service : activeNodeServices.values()) {
-        //     service.startSimulationLoop();
-        // }
+        logger.info("Network Manager đã sẵn sàng.");
     }
-
-    @Override
-    public void registerActiveNode(String serviceId, INodeService nodeService) {
-        if (!activeNodeServices.containsKey(serviceId)) {
-            activeNodeServices.put(serviceId, nodeService);
-            logger.info("Node {} đã đăng ký thành công vào NetworkManager.", serviceId);
-        } else {
-            logger.warn("Node {} đã tồn tại trong danh sách Node hoạt động.", serviceId);
-        }
-    }
-
 }
