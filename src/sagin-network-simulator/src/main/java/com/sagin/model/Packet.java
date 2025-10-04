@@ -14,7 +14,6 @@ import lombok.*;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Packet {
     
-    // Thuộc tính giữ nguyên như cũ...
     private String packetId;           
     private String sourceUserId;       
     private String destinationUserId;  

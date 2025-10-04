@@ -1,14 +1,16 @@
 package com.sagin.util;
 
 import com.sagin.core.INetworkManagerService;
+import com.sagin.core.INodeGatewayService;
 import com.sagin.core.INodeService;
+import com.sagin.core.IPacketService;
 import com.sagin.core.service.NodeService;
 import com.sagin.configuration.ServiceConfiguration;
 import com.sagin.model.NodeInfo;
-import com.sagin.core.ILinkManagerService;
+import com.sagin.core.ILinkManagerService; 
 import com.sagin.routing.RoutingEngine;
-import com.sagin.repository.INodeRepository; // Cần thiết cho Seeder
-import com.sagin.seeding.NodeSeeder;       // Import NodeSeeder
+import com.sagin.repository.INodeRepository; 
+import com.sagin.seeding.NodeSeeder;       
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,10 +18,6 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Điểm khởi chạy chính của ứng dụng mô phỏng Node.
- * Lớp này thực hiện Dependency Injection và khởi tạo luồng mạng chính.
- */
 public class SimulationMain {
 
     private static final Logger logger = LoggerFactory.getLogger(SimulationMain.class);
@@ -35,42 +33,48 @@ public class SimulationMain {
             // 1. LẤY CẤU HÌNH DỊCH VỤ (SINGLETON)
             ServiceConfiguration config = ServiceConfiguration.getInstance();
             
-            // 2. LẤY CÁC DEPENDENCY CẦN THIẾT
+            // 2. LẤY TẤT CẢ DEPENDENCY TỪ CONFIG
             INetworkManagerService networkManager = config.getNetworkManagerService();
             RoutingEngine routingEngine = config.getRoutingEngine();
             ILinkManagerService linkManager = config.getLinkManagerService();
-            INodeRepository nodeRepository = config.getNodeRepository(); // 👈 Lấy Repository cho Seeder
+            INodeRepository nodeRepository = config.getNodeRepository(); 
+            IPacketService packetService = config.getPacketService();
+            
+            // ❗ LỖI SỬA: Lấy Gateway Service từ Configuration ❗
+            INodeGatewayService nodeGateway = config.getNodeGatewayService(); 
 
             // 3. THỰC HIỆN SEEDING DỮ LIỆU
             NodeSeeder seeder = new NodeSeeder(nodeRepository);
-            // Chạy Seeder: Đặt 'true' nếu muốn ghi đè Database mỗi lần chạy (dùng cho testing)
             seeder.seedInitialNodes(false); 
 
-            // 4. Khởi tạo Node Info từ tham số dòng lệnh
+            // 4. Khởi tạo Node Info
             NodeInfo currentNodeInfo = Initializer.initializeNodeFromArgs(args);
             
+            // 5. Khởi tạo Node Service THỰC HIỆN DEPENDENCY INJECTION HOÀN CHỈNH
+            INodeService nodeService = new NodeService( // Phải dùng tên lớp NodeService đã được sửa
+                currentNodeInfo, 
+                networkManager,   
+                routingEngine,    
+                linkManager,
+                nodeGateway      
+            );
+            
+            // 6. GIẢI QUYẾT VÒNG LẶP PHỤ THUỘC (Setter Injection)
+            // TcpNodeGateway cần NodeService để đưa gói tin vào buffer
+            nodeGateway.setNodeServiceReference(nodeService);
+
             logger.info("=================================================");
             logger.info("Node ID: {} | Type: {}", currentNodeInfo.getNodeId(), currentNodeInfo.getNodeType());
             logger.info("Vị trí: {}", currentNodeInfo.getPosition().toString());
             logger.info("BW Max: {} Mbps", currentNodeInfo.getCurrentBandwidth());
             logger.info("=================================================");
 
-            // 5. Cấu hình ban đầu của Network Manager 
+            // 7. Cấu hình ban đầu của Network Manager 
             Map<String, NodeInfo> currentInstanceConfig = new HashMap<>();
             currentInstanceConfig.put(currentNodeInfo.getNodeId(), currentNodeInfo);
-            
-            // initializeNetwork sẽ tải dữ liệu từ DB (vừa được seeder đẩy lên) VÀ thêm Node hiện tại
             networkManager.initializeNetwork(currentInstanceConfig); 
-
-            // 6. Khởi tạo Node Service (THỰC HIỆN DEPENDENCY INJECTION)
-            INodeService nodeService = new NodeService(
-                currentNodeInfo, 
-                networkManager,
-                routingEngine,   
-                linkManager       
-            );
             
-            // 7. Đăng ký Node vào Registry và bắt đầu mô phỏng
+            // 8. Đăng ký Node vào Registry và bắt đầu mô phỏng
             networkManager.registerActiveNode(currentNodeInfo.getNodeId(), nodeService);
             nodeService.startSimulationLoop(); 
 

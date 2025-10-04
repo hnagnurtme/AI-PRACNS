@@ -3,10 +3,14 @@
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/configuration/ServiceConfiguration.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/ILinkManagerService.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/INetworkManagerService.java
+/Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/INodeGatewayService.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/INodeService.java
+/Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/IPacketService.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/service/LinkManagerService.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/service/NetworkManagerService.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/service/NodeService.java
+/Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/service/PacketService.java
+/Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/core/service/TcpNodeGateway.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/model/Geo3D.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/model/LinkAction.java
 /Users/anhnon/PBL4/src/sagin-network-simulator/src/main/java/com/sagin/model/LinkMetric.java

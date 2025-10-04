@@ -5,9 +5,10 @@ import com.sagin.model.Packet;
 import com.sagin.model.RoutingTable;
 import com.sagin.core.ILinkManagerService;
 import com.sagin.core.INetworkManagerService;
+import com.sagin.core.INodeGatewayService;
 import com.sagin.core.INodeService;
 import com.sagin.routing.RoutingEngine;
-import com.sagin.routing.QosDijkstraEngine; 
+import com.sagin.util.ProjectConstant;
 
 import java.util.Map;
 import java.util.Queue;
@@ -35,9 +36,11 @@ public class NodeService implements INodeService {
     private final RoutingEngine routingEngine;
     private final ILinkManagerService linkManager; 
     private final INetworkManagerService networkManager; 
+    private final INodeGatewayService gatewayService ;
     
     private final Map<String, NodeInfo> neighborNodes; 
     private final Map<String, com.sagin.model.LinkMetric> neighborLinkMetrics;
+
     
     // THÀNH PHẦN ĐA LUỒNG: Scheduler cho các tác vụ định kỳ của Node
     private final ScheduledExecutorService scheduler;
@@ -49,20 +52,21 @@ public class NodeService implements INodeService {
     public NodeService(NodeInfo initialInfo, 
                        INetworkManagerService networkManager, 
                        RoutingEngine routingEngine, 
-                       ILinkManagerService linkManager) { 
+                       ILinkManagerService linkManager,
+                       INodeGatewayService gatewayService) { 
                        
         this.currentNodeInfo = initialInfo;
         this.packetBuffer = new ConcurrentLinkedQueue<>();
-        this.routingTable = new RoutingTable(); // Khởi tạo bảng trống
+        this.routingTable = new RoutingTable(); 
 
         this.networkManager = networkManager;
         this.routingEngine = routingEngine;
         this.linkManager = linkManager;
+        this.gatewayService = gatewayService;
         
         this.neighborNodes = new ConcurrentHashMap<>();
         this.neighborLinkMetrics = new ConcurrentHashMap<>();
         
-        // Khởi tạo Scheduler (vẫn là local cho mỗi Node)
         this.scheduler = Executors.newSingleThreadScheduledExecutor();
 
         logger.info("Service cho Node {} đã khởi tạo.", initialInfo.getNodeId());
@@ -73,6 +77,15 @@ public class NodeService implements INodeService {
         logger.info("Bắt đầu vòng lặp mô phỏng Node {}...", currentNodeInfo.getNodeId());
         
         discoverNeighborsAndRunRouting(); 
+
+        if (currentNodeInfo.getNodeType().equals(ProjectConstant.NODE_TYPE_GROUND_STATION)) {
+            final int EXTERNAL_PORT = 8080; 
+            
+            logger.info("Node {} là Ground Station, khởi động Gateway trên cổng {}...", 
+                        currentNodeInfo.getNodeId(), EXTERNAL_PORT);
+            gatewayService.startListening(currentNodeInfo, EXTERNAL_PORT);
+        }
+
         
         // Lập lịch cho tác vụ chính (bao gồm cập nhật trạng thái và xử lý buffer)
         scheduler.scheduleAtFixedRate(() -> {

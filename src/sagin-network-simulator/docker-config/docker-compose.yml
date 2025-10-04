@@ -4,47 +4,121 @@ version: '3.8'
 
 services:
   # -----------------------------------------------------------
-  # 1. NODE VỆ TINH (SAT_001)
+  # 1. NODE VỆ TINH 1 (SAT_001)
   # -----------------------------------------------------------
   sat_node_01:
     build: 
       context: .. 
       dockerfile: docker-config/Dockerfile 
     platform: linux/amd64
-    container_name: sat_node_01
+    container_name: SAT_003 # 
     hostname: sat_node_01
-    
-    # KHẮC PHỤC LOCALE: Chèn tham số JVM trực tiếp vào lệnh khởi động
     command: ["java", 
               "-Duser.language=en", "-Duser.country=US", 
               "-jar", "app.jar", 
               "SAT_001", "SATELLITE", "1", 
               "30.0", "-100.0", "550.0", 
               "1000.0", "15.0", "100.0"]
-    
     restart: on-failure
     networks:
       - sagin_network
 
   # -----------------------------------------------------------
-  # 2. NODE TRẠM MẶT ĐẤT (GS_001)
+  # 2. NODE VỆ TINH 2 (SAT_002)
+  # -----------------------------------------------------------
+  sat_node_02:
+    build: 
+      context: .. 
+      dockerfile: docker-config/Dockerfile 
+    platform: linux/amd64
+    container_name: SAT_002 
+    hostname: sat_node_02
+    command: ["java", 
+              "-Duser.language=en", "-Duser.country=US", 
+              "-jar", "app.jar", 
+              "SAT_002", "SATELLITE", "1", 
+              "30.5", "-99.5", "555.0",
+              "1000.0", "15.0", "100.0"]
+    restart: on-failure
+    networks:
+      - sagin_network
+
+  # -----------------------------------------------------------
+  # 3. NODE TRẠM MẶT ĐẤT 1 (GS_001)
   # -----------------------------------------------------------
   gs_node_01:
     build: 
       context: ..
       dockerfile: docker-config/Dockerfile
     platform: linux/amd64
-    container_name: gs_node_01
+    container_name: GS_003 # 
     hostname: gs_node_01
-    
-    # KHẮC PHỤC LOCALE: Chèn tham số JVM trực tiếp vào lệnh khởi động
     command: ["java", 
               "-Duser.language=en", "-Duser.country=US", 
               "-jar", "app.jar", 
               "GS_001", "GROUND_STATION", "0", 
               "31.0", "-101.0", "0.001", 
               "5000.0", "1.0", "100.0"]
-    
+    restart: on-failure
+    networks:
+      - sagin_network
+
+  # -----------------------------------------------------------
+  # 4. NODE TRẠM MẶT ĐẤT 2 (GS_002)
+  # -----------------------------------------------------------
+  gs_node_02:
+    build: 
+      context: ..
+      dockerfile: docker-config/Dockerfile
+    platform: linux/amd64
+    container_name: GS_002 
+    hostname: gs_node_02
+    command: ["java", 
+              "-Duser.language=en", "-Duser.country=US", 
+              "-jar", "app.jar", 
+              "GS_002", "GROUND_STATION", "0", 
+              "31.5", "-102.5", "0.001",
+              "5000.0", "1.0", "100.0"]
+    restart: on-failure
+    networks:
+      - sagin_network
+  
+  # -----------------------------------------------------------
+  # 5. NODE UAV (UAV_001)
+  # -----------------------------------------------------------
+  uav_node_01:
+    build: 
+      context: ..
+      dockerfile: docker-config/Dockerfile
+    platform: linux/amd64
+    container_name: UAV_003 #
+    hostname: uav_node_01
+    command: ["java", 
+              "-Duser.language=en", "-Duser.country=US", 
+              "-jar", "app.jar", 
+              "UAV_001", "UAV", "2", 
+              "30.2", "-100.8", "20.0",
+              "200.0", "5.0", "90.0"]
+    restart: on-failure
+    networks:
+      - sagin_network
+
+  # -----------------------------------------------------------
+  # 6. NODE TÀU BIỂN (SEA_001)
+  # -----------------------------------------------------------
+  sea_node_01:
+    build: 
+      context: ..
+      dockerfile: docker-config/Dockerfile
+    platform: linux/amd64
+    container_name: SEA_003  # 
+    hostname: sea_node_01
+    command: ["java", 
+              "-Duser.language=en", "-Duser.country=US", 
+              "-jar", "app.jar", 
+              "SEA_001", "SEA_VESSEL", "3", 
+              "28.0", "-102.0", "0.0", 
+              "500.0", "20.0", "80.0"]
     restart: on-failure
     networks:
       - sagin_network

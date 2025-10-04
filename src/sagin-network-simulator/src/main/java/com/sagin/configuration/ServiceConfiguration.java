@@ -2,8 +2,12 @@ package com.sagin.configuration;
 
 import com.sagin.core.ILinkManagerService;
 import com.sagin.core.INetworkManagerService;
+import com.sagin.core.INodeGatewayService;
+import com.sagin.core.IPacketService;
 import com.sagin.core.service.LinkManagerService;
 import com.sagin.core.service.NetworkManagerService;
+import com.sagin.core.service.PacketService;
+import com.sagin.core.service.TcpNodeGateway;
 import com.sagin.repository.INodeRepository;
 import com.sagin.repository.FirebaseNodeRepository;
 import com.sagin.routing.QosDijkstraEngine; 
@@ -27,7 +31,8 @@ public class ServiceConfiguration {
     private final RoutingEngine routingEngine;
     private final INetworkManagerService networkManagerService;
     private final INodeRepository nodeRepository; 
-
+    private final INodeGatewayService nodeGatewayService;
+    private final IPacketService packetService;
     // --------------------------------------------------------------------------
 
     public ServiceConfiguration() {
@@ -48,6 +53,8 @@ public class ServiceConfiguration {
         this.nodeRepository = new FirebaseNodeRepository();
         this.linkManagerService = new LinkManagerService();
         this.routingEngine = new QosDijkstraEngine();
+        this.packetService = new PacketService(); 
+        this.nodeGatewayService = new TcpNodeGateway(this.packetService);
         
         // 2. DEPENDENCY INJECTION: NetworkManagerService nhận Repository
         this.networkManagerService = new NetworkManagerService(this.nodeRepository);
@@ -71,6 +78,12 @@ public class ServiceConfiguration {
 
     public INodeRepository getNodeRepository() {
         return nodeRepository;
+    }
+    public INodeGatewayService getNodeGatewayService() {
+        return nodeGatewayService;
+    }
+    public IPacketService getPacketService() {
+        return packetService;
     }
     
     // --------------------------------------------------------------------------

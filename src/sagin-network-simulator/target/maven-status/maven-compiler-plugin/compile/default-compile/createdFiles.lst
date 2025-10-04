@@ -1,4 +1,5 @@
 com/sagin/core/INetworkManagerService.class
+com/sagin/core/INodeGatewayService.class
 com/sagin/repository/FirebaseNodeRepository.class
 com/sagin/core/INodeService.class
 com/sagin/model/LinkAction.class
@@ -8,7 +9,9 @@ com/sagin/configuration/FireStoreConfiguration.class
 com/sagin/repository/INodeRepository.class
 com/sagin/core/service/NetworkManagerService.class
 com/sagin/seeding/NodeSeeder.class
+com/sagin/core/service/TcpNodeGateway.class
 com/sagin/configuration/ServiceConfiguration.class
+com/sagin/core/IPacketService.class
 com/sagin/routing/RoutingEngine.class
 com/sagin/core/service/NodeService.class
 com/sagin/routing/QosDijkstraEngine.class
@@ -23,3 +26,4 @@ com/sagin/util/ProjectConstant.class
 com/sagin/model/ServiceQoS.class
 com/sagin/util/Initializer.class
 com/sagin/model/NodeInfo.class
+com/sagin/core/service/PacketService.class
