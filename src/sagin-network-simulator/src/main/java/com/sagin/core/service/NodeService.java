@@ -1,5 +1,6 @@
 package com.sagin.core.service;
 
+import com.sagin.model.LinkMetric;
 import com.sagin.model.NodeInfo;
 import com.sagin.model.Packet;
 import com.sagin.model.RoutingTable;
@@ -8,8 +9,7 @@ import com.sagin.core.INetworkManagerService;
 import com.sagin.core.INodeGatewayService;
 import com.sagin.core.INodeService;
 import com.sagin.routing.RoutingEngine;
-import com.sagin.util.ProjectConstant;
-
+import com.sagin.util.HostPort;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -50,11 +50,10 @@ public class NodeService implements INodeService {
 
 
     public NodeService(NodeInfo initialInfo, 
-                       INetworkManagerService networkManager, 
-                       RoutingEngine routingEngine, 
-                       ILinkManagerService linkManager,
-                       INodeGatewayService gatewayService) { 
-                       
+                    INetworkManagerService networkManager, 
+                    RoutingEngine routingEngine, 
+                    ILinkManagerService linkManager,
+                    INodeGatewayService gatewayService) { 
         this.currentNodeInfo = initialInfo;
         this.packetBuffer = new ConcurrentLinkedQueue<>();
         this.routingTable = new RoutingTable(); 
@@ -78,14 +77,11 @@ public class NodeService implements INodeService {
         
         discoverNeighborsAndRunRouting(); 
 
-        if (currentNodeInfo.getNodeType().equals(ProjectConstant.NODE_TYPE_GROUND_STATION)) {
-            final int EXTERNAL_PORT = 8080; 
+        final int EXTERNAL_PORT = HostPort.port; 
             
-            logger.info("Node {} là Ground Station, khởi động Gateway trên cổng {}...", 
+        logger.info("Khởi động Gateway trên cổng {}...", 
                         currentNodeInfo.getNodeId(), EXTERNAL_PORT);
-            gatewayService.startListening(currentNodeInfo, EXTERNAL_PORT);
-        }
-
+        gatewayService.startListening(currentNodeInfo, EXTERNAL_PORT);
         
         // Lập lịch cho tác vụ chính (bao gồm cập nhật trạng thái và xử lý buffer)
         scheduler.scheduleAtFixedRate(() -> {
@@ -99,9 +95,9 @@ public class NodeService implements INodeService {
                 }
             } catch (Exception e) {
                 logger.error("Lỗi nghiêm trọng trong vòng lặp mô phỏng của Node {}: {}", 
-                             currentNodeInfo.getNodeId(), e.getMessage(), e);
+                            currentNodeInfo.getNodeId(), e.getMessage(), e);
             }
-        }, 0, 1000, TimeUnit.MILLISECONDS); // Chạy mỗi 1 giây
+        }, 0, 1000, TimeUnit.MILLISECONDS); 
     }
 
     @Override
@@ -142,8 +138,22 @@ public class NodeService implements INodeService {
 
         // 2. Quyết định định tuyến
         String nextHop = decideNextHop(packetToSend);
+        if( nextHop == null ) {
+            // logger.warn("WARNING: {} không tìm thấy Next Hop cho gói {}. Gói bị drop.", 
+            //             currentNodeInfo.getNodeId(), 
+            //             packetToSend.getPacketId());
+            logger.warn("WARNING: {} không tìm thấy Next Hop cho gói {}.", 
+                        currentNodeInfo.getNodeId(), 
+                        packetToSend.getPacketId());
+            nextHop = "localhost:3001"; // Mặc định gửi về một địa chỉ an toàn"
+            logger.warn("Gửi gói {} tới địa chỉ an toàn mặc định {}", 
+                        packetToSend.getPacketId(),
+                        nextHop);
+            // packetToSend.markDropped(); 
+            // return;
+        }
         
-        if (nextHop != null && neighborNodes.containsKey(nextHop)) {
+        if (nextHop != null) {
             sendPacket(packetToSend, nextHop);
         } else {
             logger.warn("WARNING: {} không tìm thấy Next Hop hợp lệ cho gói {}", 
@@ -198,7 +208,7 @@ public class NodeService implements INodeService {
             neighborNodes.put(neighbor.getNodeId(), neighbor);
             
             // 2. TÍNH TOÁN LINK BAN ĐẦU
-            com.sagin.model.LinkMetric initialLink = linkManager.calculateInitialMetric(
+            LinkMetric initialLink = linkManager.calculateInitialMetric(
                 currentNodeInfo.getPosition(), 
                 neighbor.getPosition()
             );

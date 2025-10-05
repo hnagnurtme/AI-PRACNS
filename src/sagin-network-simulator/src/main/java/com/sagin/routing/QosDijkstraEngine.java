@@ -69,9 +69,15 @@ public class QosDijkstraEngine implements RoutingEngine {
         
         if (nextHop == null) {
              // SỬ DỤNG LOGGER.WARN
-             logger.warn("Không tìm thấy đường đi cụ thể cho {} trong bảng.", destinationId);
+             nextHop = "localhost:3001"; // Mặc định gửi về một địa chỉ an toàn
+            //  logger.warn("Không tìm thấy đường đi cụ thể cho {} trong bảng.", destinationId);
         }
         
+        logger.info("Next Hop cho gói {} tới {} là {}", 
+                    packet.getPacketId(), 
+                    destinationId, 
+                    nextHop);
         return nextHop;
+
     }
 }

@@ -1,124 +1,132 @@
-# File: src/sagin-network-simulator/docker-config/docker-compose.yml
-
-version: '3.8' 
-
 services:
   # -----------------------------------------------------------
   # 1. NODE VỆ TINH 1 (SAT_001)
+  # Cổng cũ: 8000 -> Cổng mới: 8001
   # -----------------------------------------------------------
   sat_node_01:
     build: 
       context: .. 
       dockerfile: docker-config/Dockerfile 
     platform: linux/amd64
-    container_name: SAT_003 # 
-    hostname: sat_node_01
-    command: ["java", 
-              "-Duser.language=en", "-Duser.country=US", 
-              "-jar", "app.jar", 
+    container_name: SAT_001
+    hostname: SAT_001
+    command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
               "SAT_001", "SATELLITE", "1", 
               "30.0", "-100.0", "550.0", 
-              "1000.0", "15.0", "100.0"]
+              "1000.0", "15.0", "100.0",
+              "SAT_001", "8001"] # PORT TRONG COMMAND ĐÃ THAY ĐỔI
+    ports:
+      - "8001:8001" # PORT HOST ĐÃ THAY ĐỔI VÀ ĐỒNG NHẤT VỚI CONTAINER
     restart: on-failure
     networks:
       - sagin_network
 
   # -----------------------------------------------------------
   # 2. NODE VỆ TINH 2 (SAT_002)
+  # Cổng cũ: 7000 -> Cổng mới: 7001
   # -----------------------------------------------------------
   sat_node_02:
     build: 
       context: .. 
       dockerfile: docker-config/Dockerfile 
     platform: linux/amd64
-    container_name: SAT_002 
-    hostname: sat_node_02
-    command: ["java", 
-              "-Duser.language=en", "-Duser.country=US", 
-              "-jar", "app.jar", 
+    container_name: SAT_002
+    hostname: SAT_002
+    command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
               "SAT_002", "SATELLITE", "1", 
               "30.5", "-99.5", "555.0",
-              "1000.0", "15.0", "100.0"]
+              "1000.0", "15.0", "100.0",
+              "SAT_002", "7001"] # PORT TRONG COMMAND ĐÃ THAY ĐỔI
+    ports:
+      - "7001:7001" # PORT HOST ĐÃ THAY ĐỔI VÀ ĐỒNG NHẤT VỚI CONTAINER
     restart: on-failure
     networks:
       - sagin_network
 
   # -----------------------------------------------------------
   # 3. NODE TRẠM MẶT ĐẤT 1 (GS_001)
+  # Cổng cũ: 8080 -> Cổng mới: 8081
   # -----------------------------------------------------------
   gs_node_01:
     build: 
       context: ..
       dockerfile: docker-config/Dockerfile
     platform: linux/amd64
-    container_name: GS_003 # 
-    hostname: gs_node_01
-    command: ["java", 
-              "-Duser.language=en", "-Duser.country=US", 
-              "-jar", "app.jar", 
+    container_name: GS_001
+    hostname: GS_001
+    command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
               "GS_001", "GROUND_STATION", "0", 
               "31.0", "-101.0", "0.001", 
-              "5000.0", "1.0", "100.0"]
+              "5000.0", "1.0", "100.0",
+              "GS_001", "8081"] # PORT TRONG COMMAND ĐÃ THAY ĐỔI
+    ports:
+      - "8081:8081" # PORT HOST ĐÃ THAY ĐỔI VÀ ĐỒNG NHẤT VỚI CONTAINER
     restart: on-failure
     networks:
       - sagin_network
 
   # -----------------------------------------------------------
   # 4. NODE TRẠM MẶT ĐẤT 2 (GS_002)
+  # Cổng cũ: 5001 -> Cổng mới: 5002
   # -----------------------------------------------------------
   gs_node_02:
     build: 
       context: ..
       dockerfile: docker-config/Dockerfile
     platform: linux/amd64
-    container_name: GS_002 
-    hostname: gs_node_02
-    command: ["java", 
-              "-Duser.language=en", "-Duser.country=US", 
-              "-jar", "app.jar", 
+    container_name: GS_002
+    hostname: GS_002
+    command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
               "GS_002", "GROUND_STATION", "0", 
               "31.5", "-102.5", "0.001",
-              "5000.0", "1.0", "100.0"]
+              "5000.0", "1.0", "100.0",
+              "GS_002", "5002"] # PORT TRONG COMMAND ĐÃ THAY ĐỔI
+    ports:
+      - "5002:5002" # PORT HOST ĐÃ THAY ĐỔI VÀ ĐỒNG NHẤT VỚI CONTAINER
     restart: on-failure
     networks:
       - sagin_network
   
   # -----------------------------------------------------------
   # 5. NODE UAV (UAV_001)
+  # Cổng cũ: 4000 -> Cổng mới: 4001 (Theo yêu cầu của bạn)
   # -----------------------------------------------------------
   uav_node_01:
     build: 
       context: ..
       dockerfile: docker-config/Dockerfile
     platform: linux/amd64
-    container_name: UAV_003 #
-    hostname: uav_node_01
-    command: ["java", 
-              "-Duser.language=en", "-Duser.country=US", 
-              "-jar", "app.jar", 
+    container_name: UAV_001
+    hostname: UAV_001
+    command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
               "UAV_001", "UAV", "2", 
               "30.2", "-100.8", "20.0",
-              "200.0", "5.0", "90.0"]
+              "200.0", "5.0", "90.0",
+              "UAV_001", "4001"] # PORT TRONG COMMAND ĐÃ THAY ĐỔI
+    ports:
+      - "4001:4001" # PORT HOST ĐÃ THAY ĐỔI VÀ ĐỒNG NHẤT VỚI CONTAINER
     restart: on-failure
     networks:
       - sagin_network
 
   # -----------------------------------------------------------
   # 6. NODE TÀU BIỂN (SEA_001)
+  # Cổng cũ: 3000 -> Cổng mới: 3001
   # -----------------------------------------------------------
   sea_node_01:
     build: 
       context: ..
       dockerfile: docker-config/Dockerfile
     platform: linux/amd64
-    container_name: SEA_003  # 
-    hostname: sea_node_01
-    command: ["java", 
-              "-Duser.language=en", "-Duser.country=US", 
-              "-jar", "app.jar", 
+    container_name: SEA_001
+    hostname: SEA_001
+    command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
               "SEA_001", "SEA_VESSEL", "3", 
               "28.0", "-102.0", "0.0", 
-              "500.0", "20.0", "80.0"]
+              "500.0", "20.0", "80.0",
+              "SEA_001", "3001"] # PORT TRONG COMMAND ĐÃ THAY ĐỔI
+    ports:
+      - "3001:3001" # PORT HOST ĐÃ THAY ĐỔI VÀ ĐỒNG NHẤT VỚI CONTAINER
     restart: on-failure
     networks:
       - sagin_network

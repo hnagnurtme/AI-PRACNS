@@ -15,6 +15,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -64,45 +67,77 @@ public class TcpNodeGateway implements INodeGatewayService {
     }
 
     private void handleClientConnection(Socket clientSocket, String gatewayNodeId) {
-        logger.info("TCP: Client mới kết nối từ {}", clientSocket.getInetAddress().getHostAddress());
+    logger.info("TCP: Client mới kết nối từ {}", clientSocket.getInetAddress().getHostAddress());
+    
+    try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
+        String clientData;
         
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
-            String clientData;
+        // Vòng lặp này chỉ chạy MỘT LẦN (cho một dòng dữ liệu từ client)
+        while ((clientData = in.readLine()) != null) { 
             
-            // Đọc dữ liệu từ Client (mô phỏng luồng TCP)
-            while ((clientData = in.readLine()) != null) { 
-                
-                // --- PHẦN XỬ LÝ DỮ LIỆU CỐT LÕI (Mô hình hóa TCP -> Packet) ---
-                
-                // Giả định dữ liệu nhận được là một chuỗi JSON (hoặc chỉ là một dấu hiệu kích hoạt)
-                // Vì không có logic parsing JSON phức tạp, ta chỉ mô phỏng việc tạo gói tin.
-                
-                Packet newPacket = packetService.generatePacket(
-                    "CLIENT_EXTERNAL", // ID Client nguồn
-                    "USER_TERMINAL_02", // Đích cuối (giả định)
-                    ProjectConstant.SERVICE_TYPE_DATA_BULK // Gói tin dữ liệu thô
-                );
-                
-                // Đặt CurrentHoldingNodeId là Node Gateway này
-                newPacket.setCurrentHoldingNodeId(gatewayNodeId);
-                
-                if(nodeServiceReference == null){
-                    logger.error("LỖI: NodeService tham chiếu chưa được thiết lập trong Gateway {}.", gatewayNodeId);
-                    continue; // Bỏ qua gói tin nếu không có NodeService
-                }
-                // Đưa gói tin vào NodeService để bắt đầu luồng định tuyến
-                nodeServiceReference.receivePacket(newPacket);
-                
-                logger.debug("TCP: Nhận dữ liệu. Đã tạo và đưa gói {} vào buffer.", newPacket.getPacketId());
+            // --- PHẦN XỬ LÝ DỮ LIỆU CỐT LÕI ---
+            
+            // Hiện tại, ta vẫn dùng logic hardcode để tạo gói tin
+            String payloadBase64 = "SGVsbG8gV29ybGQ=";
+            List<String> immutableHistory = Arrays.asList("R1", "S2");
+            // BƯỚC KHẮC PHỤC: Tạo một ArrayList mới từ danh sách cố định.
+            List<String> mutableHistory = new ArrayList<>(immutableHistory); 
+
+            Packet newPacket = new Packet(
+                "PKT-XYZ-005",             // packetId
+                "client-101",              // sourceUserId
+                "UAV_001",                // destinationUserId
+                System.currentTimeMillis(),// timestamp
+                payloadBase64,             // payloadDataBase64
+                11,                        // payloadSizeByte
+                "API_REQUEST",             // serviceType
+                15,                        // TTL
+                "Router-C",                // currentHoldingNodeId
+                "UAV_001",                // nextHopNodeId
+                mutableHistory,                   // pathHistory
+                0.0,                       // accumulatedDelayMs
+                8,                         // priorityLevel
+                500.0,                     // maxAcceptableLatencyMs
+                0.01,                      // maxAcceptableLossRate
+                false                      // dropped
+            );
+            
+            logger.info("TCP: Tạo gói tin mới từ dữ liệu Client: {}", newPacket);
+            
+            if(nodeServiceReference == null){
+                logger.error("LỖI: NodeService tham chiếu chưa được thiết lập trong Gateway {}.", gatewayNodeId);
+                // Nếu lỗi, nên ngắt luôn thay vì tiếp tục
+                break; 
             }
-        } catch (IOException e) {
-            logger.error("Lỗi xử lý kết nối Client: {}", e.getMessage());
-        } finally {
+            
+            // // Đưa gói tin vào NodeService để bắt đầu luồng định tuyến
+            // nodeServiceReference.receivePacket(newPacket);
+            // Trong handleClientConnection
             try {
-                clientSocket.close();
-            } catch (IOException e) { /* Bỏ qua lỗi đóng socket */ }
-        }
+                nodeServiceReference.receivePacket(newPacket); // <--- Bọc lệnh gọi này
+            } catch (Exception e) {
+                logger.error("LỖI KHÔNG MONG MUỐN khi gọi receivePacket: {}", e.getMessage(), e);
+                // Gói tin bị drop nếu NodeService bị lỗi khi nhận
+                newPacket.markDropped(); 
+            }
+            
+            logger.info("TCP: Nhận dữ liệu. Đã tạo và đưa gói {} vào buffer.", newPacket.getPacketId());
+            
+            // NGẮT VÒNG LẶP: Đảm bảo chỉ xử lý 1 gói tin rồi thoát.
+            break; 
+        } 
+        // Sau khi break, code sẽ thoát khỏi try block.
+        
+    } catch (IOException e) {
+        logger.error("Lỗi xử lý kết nối Client: {}", e.getMessage());
+    } finally {
+        // Luôn đảm bảo đóng socket sau khi xử lý xong (hoặc sau khi có lỗi)
+        try {
+            clientSocket.close();
+            logger.info("TCP: Đã đóng kết nối Client từ {}", clientSocket.getInetAddress().getHostAddress());
+        } catch (IOException e) { /* Bỏ qua lỗi đóng socket */ }
     }
+}
 
     @Override
     public void stopListening() {

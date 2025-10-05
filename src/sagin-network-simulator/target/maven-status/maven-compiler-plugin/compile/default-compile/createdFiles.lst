@@ -16,6 +16,7 @@ com/sagin/routing/RoutingEngine.class
 com/sagin/core/service/NodeService.class
 com/sagin/routing/QosDijkstraEngine.class
 com/sagin/model/RoutingTable.class
+com/sagin/util/HostPort.class
 com/sagin/core/ILinkManagerService.class
 com/sagin/model/LinkMetric.class
 com/sagin/model/Packet.class

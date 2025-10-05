@@ -3,7 +3,6 @@ package com.sagin.util;
 import com.sagin.core.INetworkManagerService;
 import com.sagin.core.INodeGatewayService;
 import com.sagin.core.INodeService;
-import com.sagin.core.IPacketService;
 import com.sagin.core.service.NodeService;
 import com.sagin.configuration.ServiceConfiguration;
 import com.sagin.model.NodeInfo;
@@ -32,13 +31,12 @@ public class SimulationMain {
         try {
             // 1. LẤY CẤU HÌNH DỊCH VỤ (SINGLETON)
             ServiceConfiguration config = ServiceConfiguration.getInstance();
-            
+
             // 2. LẤY TẤT CẢ DEPENDENCY TỪ CONFIG
             INetworkManagerService networkManager = config.getNetworkManagerService();
             RoutingEngine routingEngine = config.getRoutingEngine();
             ILinkManagerService linkManager = config.getLinkManagerService();
             INodeRepository nodeRepository = config.getNodeRepository(); 
-            IPacketService packetService = config.getPacketService();
             
             // ❗ LỖI SỬA: Lấy Gateway Service từ Configuration ❗
             INodeGatewayService nodeGateway = config.getNodeGatewayService(); 

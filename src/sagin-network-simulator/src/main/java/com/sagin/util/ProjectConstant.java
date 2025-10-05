@@ -24,4 +24,5 @@ public class ProjectConstant {
     // Tốc độ ánh sáng trong chân không (xấp xỉ 300,000 km/s) được chuyển sang km/ms
     public static final double SPEED_OF_LIGHT_KM_PER_MS = 299792.458 / 1000.0; 
 
+
 }

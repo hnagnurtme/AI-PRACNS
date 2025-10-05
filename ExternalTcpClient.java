@@ -12,7 +12,7 @@ import java.io.IOException;
 public class ExternalTcpClient {
 
     // Cổng này PHẢI khớp với cổng bạn đã mở trong docker-compose.yml
-    private static final int GATEWAY_PORT = 8080;
+    private static final int GATEWAY_PORT = 7001;
     // Hostname là 'localhost' vì bạn đã mở cổng ra máy chủ của mình
     private static final String GATEWAY_HOST = "localhost"; 
 
