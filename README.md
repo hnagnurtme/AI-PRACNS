@@ -1,8 +1,22 @@
 
-# AI-Powered Resource Allocation in Cloud and Network Systems
+# 🌐 AI-Powered Resource Allocation in Cloud and Network Systems
 
-## Project Overview
-This project focuses on **optimizing resource allocation** in **Space–Air–Ground–Sea Integrated Networks (SAGSINs)** using **Generative AI** and heuristic algorithms. The primary goal is to minimize communication latency between network nodes (satellites, UAVs, ground/sea stations) while optimizing the use of bandwidth, energy, and other resources.
+[![Python](https://img.shields.io/badge/Python-3.11+-blue?style=flat-square&logo=python)](https://www.python.org/)
+[![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=flat-square&logo=tensorflow&logoColor=white)](https://www.tensorflow.org/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=flat-square&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![REST API](https://img.shields.io/badge/REST-API-blue?style=flat-square)]()
+[![MIT License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
+
+> A **Generative AI-based simulation** for optimizing resource allocation in **Space–Air–Ground–Sea Integrated Networks (SAGSINs)** using **heuristic algorithms** and **reinforcement learning**.
+
+---
+
+## 🚀 Project Overview
+This project focuses on **minimizing communication latency** and **optimizing bandwidth and energy usage** across integrated SAGSIN networks.  
+It combines **heuristic algorithms (PSO, ACO)** with **Generative AI** to deliver intelligent resource allocation and real-time adaptability.
 
 ---
 
