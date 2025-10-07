@@ -1,10 +1,6 @@
 package com.sagin.satellite.config;
 
-import com.google.auth.oauth2.GoogleCredentials;
 import com.google.cloud.firestore.Firestore;
-import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseOptions;
-import com.google.firebase.cloud.FirestoreClient;
 import com.sagin.satellite.util.ReadPropertiesUtils;
 
 import org.slf4j.Logger;
@@ -24,7 +20,6 @@ public class FireBaseConfiguration {
         }
 
         String serviceAccountPath = ReadPropertiesUtils.getString("firebase.serviceAccountPath");
-        String databaseUrl = ReadPropertiesUtils.getString("firebase.databaseUrl");
 
         InputStream serviceAccount;
 
@@ -42,3 +37,4 @@ public class FireBaseConfiguration {
         }
 
     }
+}
