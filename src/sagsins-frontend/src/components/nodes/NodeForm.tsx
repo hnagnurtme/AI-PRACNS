@@ -9,10 +9,11 @@ interface NodeFormProps {
     onClose: () => void;
     mode: 'create' | 'update';
     initialNode?: NodeDTO; // Chỉ tồn tại khi mode là 'update'
+    onSuccess?: () => void; // Callback để refresh data sau khi thành công
 }
 
-const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode }) => {
-    const { updateNodeInStore, removeNodeFromStore, setNodes, nodes } = useNodeStore(); // Thêm setNodes và nodes để xử lý CREATE
+const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode, onSuccess }) => {
+    const { setSelectedNode } = useNodeStore(); // Cần setSelectedNode để clear selection sau delete
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
@@ -65,8 +66,6 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode }) => {
         setIsSubmitting(true);
         
         try {
-            let result: NodeDTO;
-            
             if (mode === 'create') {
                 // Kiểm tra ID có bị bỏ trống không (nếu người dùng cố tình xóa)
                 if (!formData.nodeId) {
@@ -75,21 +74,16 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode }) => {
 
                 // Tạo Node mới
                 // Ép kiểu dữ liệu vì NodeId đã được đảm bảo
-                result = await createNode(formData as CreateNodeRequest);
-                
-                // Cập nhật Node mới vào store: Thêm vào cuối mảng nodes
-                setNodes([...nodes, result]); 
+                await createNode(formData as CreateNodeRequest);
 
             } else {
                 // Cập nhật Node hiện có
                 if (!initialNode) throw new Error("Initial node data is missing for update mode.");
-                result = await updateNode(initialNode.nodeId, formData as UpdateNodeRequest);
-                
-                // Cập nhật Node trong store
-                updateNodeInStore(result); 
+                await updateNode(initialNode.nodeId, formData as UpdateNodeRequest);
             }
             
             onClose(); // Đóng form sau khi thành công
+            onSuccess?.(); // Gọi callback để refresh data nếu có
 
         } catch (err) {
             // Xử lý lỗi API (đã sử dụng Type Guard)
@@ -105,8 +99,9 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode }) => {
         
         try {
             await deleteNode(initialNode.nodeId);
-            removeNodeFromStore(initialNode.nodeId);
+            setSelectedNode(null); // Clear selected node sau khi delete
             onClose(); 
+            onSuccess?.(); // Gọi callback để refresh data nếu có
         } catch (err) {
             const errorMessage = (err as Error).message || "An unknown error occurred during API call.";
             setError("Failed to delete node: " + errorMessage);

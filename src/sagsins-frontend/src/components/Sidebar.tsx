@@ -9,9 +9,10 @@ import type { NodeDTO } from '../types/NodeTypes';
  */
 interface SidebarProps {
     nodes: NodeDTO[];
+    onRefresh: () => Promise<NodeDTO[]>;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ nodes }) => {
+const Sidebar: React.FC<SidebarProps> = ({ nodes, onRefresh }) => {
     const { setSelectedNode, selectedNode } = useNodeStore();
     const [isFormOpen, setIsFormOpen] = useState(false); // Quản lý trạng thái mở Form
 
@@ -64,6 +65,7 @@ const Sidebar: React.FC<SidebarProps> = ({ nodes }) => {
                     <NodeForm 
                         onClose={() => setIsFormOpen(false)} 
                         mode="create"
+                        onSuccess={onRefresh}
                     />
                 </div>
             )}
