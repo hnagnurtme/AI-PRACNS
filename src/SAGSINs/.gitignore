@@ -1,0 +1,34 @@
+# IDE/OS/Editor Files
+#####################################
+.idea/             # IntelliJ IDEA project files
+.vscode/           # Visual Studio Code files
+*.iml              # IntelliJ module files
+*.class            # Compiled class files
+*.log              # Log files
+.DS_Store          # Mac OS X directory files
+
+# Maven Targets and Artifacts
+#####################################
+/target/           # Thư mục build chính của Maven (rất quan trọng)
+!/target/classes/  # KHÔNG BỎ QUA classes (nếu cần cho IDE, nhưng thường không cần)
+
+# Security & Private Configuration
+#####################################
+# Bỏ qua Service Account Key
+src/main/resources/serviceAccountKey.json
+# Bất kỳ file key/cấu hình local nào
+*.key
+*.pem
+*.p12
+
+# Maven Wrapper
+#####################################
+.mvn/wrapper/maven-wrapper.jar
+
+# Testing Artifacts (Test Output)
+#####################################
+# Bỏ qua kết quả chạy test, nhưng GIỮ LẠI thư mục code test
+/src/test/resources/
+/src/test/java/com/sagin/AppTest.java
+
+/target
