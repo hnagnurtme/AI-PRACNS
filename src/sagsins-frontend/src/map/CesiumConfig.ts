@@ -30,7 +30,8 @@ export const setupCesiumConfig = (cesiumBaseUrl: string): void => {
     // Nếu bạn chỉ dùng lớp nền mặc định (Bing Maps/OpenStreetMap), bạn có thể bỏ qua.
     if (import.meta.env.VITE_CESIUM_ION_TOKEN) {
         Cesium.Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_ION_TOKEN;
-    }
+    } 
+    Cesium.Ion.defaultAccessToken= "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJjYTNkNmJmMC03MWJlLTRhZDgtYjI1My1jMDBjNDg0Y2NjMGUiLCJpZCI6MzM4ODk5LCJpYXQiOjE3NTg2MzMwNzN9.QLsbfWFGA6TesQEJBl4ktgCRve3LdQMk2BXTZB7fkWM";
 
     // 3. Tắt hộp thông tin mặc định (Nếu bạn muốn dùng UI React tùy chỉnh)
     // Việc này giúp tránh xung đột với NodeDetailCard của bạn.

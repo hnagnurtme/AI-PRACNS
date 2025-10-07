@@ -1,5 +1,3 @@
-// src/components/nodes/NodeForm.tsx
-
 import React, { useState } from 'react';
 import { useNodeStore } from '../../state/nodeStore';
 import { createNode, deleteNode, updateNode } from '../../services/nodeService';
@@ -14,13 +12,17 @@ interface NodeFormProps {
 }
 
 const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode }) => {
-    const { updateNodeInStore, removeNodeFromStore } = useNodeStore();
+    const { updateNodeInStore, removeNodeFromStore, setNodes, nodes } = useNodeStore(); // Thêm setNodes và nodes để xử lý CREATE
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Hàm tạo ID tạm thời cho trường hợp CREATE
+    const generateTempId = () => `NODE_${Math.random().toString(36).substring(2, 9).toUpperCase()}`;
+
     // Sử dụng state để quản lý dữ liệu form
-    const [formData, setFormData] = useState<Partial<CreateNodeRequest> & Partial<UpdateNodeRequest>>({
-        // Nếu là Update, điền dữ liệu ban đầu
+    const [formData, setFormData] = useState<Partial<CreateNodeRequest> & Partial<UpdateNodeRequest>>(() => ({
+        // THÊM: nodeId là bắt buộc khi tạo, gán giá trị tạm thời khi mode='create'
+        nodeId: initialNode?.nodeId || (mode === 'create' ? generateTempId() : undefined),
         nodeType: initialNode?.nodeType || 'LEO_SATELLITE',
         isOperational: initialNode?.isOperational ?? true,
         // Chỉ lấy Geo3D, không cần Orbit/Velocity cho form đơn giản này
@@ -28,17 +30,19 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode }) => {
         currentBandwidth: initialNode?.currentBandwidth || 500,
         avgLatencyMs: initialNode?.avgLatencyMs || 10,
         packetLossRate: initialNode?.packetLossRate || 0.001,
-    });
+    }));
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value, type } = e.target;
         
         // Xử lý giá trị số và boolean
-        const finalValue: string | number | boolean = type === 'number' 
-            ? parseFloat(value) 
-            : type === 'checkbox' 
-            ? (e.target as HTMLInputElement).checked 
-            : value;
+        let finalValue: string | number | boolean = value;
+
+        if (type === 'number') {
+            finalValue = parseFloat(value); 
+        } else if (type === 'checkbox') {
+            finalValue = (e.target as HTMLInputElement).checked; 
+        }
 
         if (name === 'latitude' || name === 'longitude' || name === 'altitude') {
             // Xử lý cập nhật vị trí Geo3D
@@ -64,12 +68,23 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode }) => {
             let result: NodeDTO;
             
             if (mode === 'create') {
+                // Kiểm tra ID có bị bỏ trống không (nếu người dùng cố tình xóa)
+                if (!formData.nodeId) {
+                    throw new Error("Node ID is mandatory for creation.");
+                }
+
                 // Tạo Node mới
+                // Ép kiểu dữ liệu vì NodeId đã được đảm bảo
                 result = await createNode(formData as CreateNodeRequest);
+                
+                // Cập nhật Node mới vào store: Thêm vào cuối mảng nodes
+                setNodes([...nodes, result]); 
+
             } else {
                 // Cập nhật Node hiện có
                 if (!initialNode) throw new Error("Initial node data is missing for update mode.");
                 result = await updateNode(initialNode.nodeId, formData as UpdateNodeRequest);
+                
                 // Cập nhật Node trong store
                 updateNodeInStore(result); 
             }
@@ -77,8 +92,9 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode }) => {
             onClose(); // Đóng form sau khi thành công
 
         } catch (err) {
-            // Xử lý lỗi API (ví dụ: lỗi validation 400)
-            setError("Failed to process node: " + (err as Error).message);
+            // Xử lý lỗi API (đã sử dụng Type Guard)
+            const errorMessage = (err as Error).message || "An unknown error occurred during API call.";
+            setError("Failed to process node: " + errorMessage);
             setIsSubmitting(false);
         }
     };
@@ -92,7 +108,8 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode }) => {
             removeNodeFromStore(initialNode.nodeId);
             onClose(); 
         } catch (err) {
-            setError("Failed to delete node: " + (err as Error).message);
+            const errorMessage = (err as Error).message || "An unknown error occurred during API call.";
+            setError("Failed to delete node: " + errorMessage);
         }
     }
 
@@ -106,6 +123,21 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode }) => {
             {error && <p className="text-red-600 mb-4 p-2 bg-red-50 rounded">{error}</p>}
 
             <form onSubmit={handleSubmit}>
+                
+                {/* 0. NODE ID (BẮT BUỘC KHI TẠO) */}
+                {mode === 'create' && (
+                    <FormInput 
+                        label="Node ID (Mandatory)" 
+                        name="nodeId" 
+                        type="text" 
+                        // Ép kiểu về string để phù hợp với input
+                        value={formData.nodeId as string} 
+                        onChange={handleChange} 
+                        required 
+                        disabled={false} // ID có thể chỉnh sửa khi tạo
+                    />
+                )}
+
                 {/* 1. Node Type */}
                 <FormGroup label="Node Type">
                     <select 
@@ -200,9 +232,10 @@ interface FormInputProps {
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
     step?: string;
     required?: boolean;
+    disabled?: boolean;
 }
 
-const FormInput: React.FC<FormInputProps> = ({ label, name, type, value, onChange, step, required }) => (
+const FormInput: React.FC<FormInputProps> = ({ label, name, type, value, onChange, step, required, disabled }) => (
     <FormGroup label={label}>
         <input
             type={type}
@@ -211,7 +244,8 @@ const FormInput: React.FC<FormInputProps> = ({ label, name, type, value, onChang
             onChange={onChange}
             step={step}
             required={required}
-            className="w-full p-2 border rounded bg-gray-50 focus:border-indigo-500"
+            disabled={disabled}
+            className="w-full p-2 border rounded bg-gray-50 focus:border-indigo-500 disabled:bg-gray-100"
         />
     </FormGroup>
 );

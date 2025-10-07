@@ -1,6 +1,7 @@
 import type { Geo3D, Orbit, Velocity } from "./ModelTypes";
 
 export interface CreateNodeRequest {
+    nodeId: string; 
     nodeType: string;
     isOperational: boolean;
     position: Geo3D;
@@ -43,4 +44,11 @@ export interface NodeDTO {
     resourceUtilization: number;
     powerLevel: number;
     lastUpdated: number;
+}
+
+export interface ApiResponse<T> {
+    status: number;
+    error: string | null;
+    message: string;
+    data: T;
 }

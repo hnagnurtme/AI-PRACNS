@@ -4,6 +4,8 @@ public class ProjectConstant {
 
     // ----- Hằng số cho NODE_TYPE (Sử dụng trong NodeInfo.nodeType) -----
     public static final String NODE_TYPE_SATELLITE = "SATELLITE";
+    public static final String NODE_TYPE_GEO = "GEO";
+    public static final String NODE_TYPE_LEO = "LEO";
     public static final String NODE_TYPE_UAV = "UAV"; 
     public static final String NODE_TYPE_GROUND_STATION = "GROUND_STATION"; 
     public static final String NODE_TYPE_USER_TERMINAL = "USER_TERMINAL"; 
