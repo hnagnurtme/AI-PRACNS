@@ -7,8 +7,10 @@ import Dashboard from './pages/Dashboard';
  */
 const App: React.FC = () => {
     return (
-        // Dashboard chứa tất cả UI và Map logic
-        <Dashboard /> 
+        <div>
+            {/* Dashboard chứa tất cả UI và Map logic */}
+            <Dashboard />
+        </div>
     );
 };
 
