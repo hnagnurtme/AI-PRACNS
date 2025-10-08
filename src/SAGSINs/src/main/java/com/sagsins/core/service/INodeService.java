@@ -51,4 +51,14 @@ public interface INodeService {
      * @return true nếu xóa thành công, false nếu Node không tồn tại.
      */
     boolean deleteNode(String nodeId);
+
+    /**
+     * Kích hoạt một Node (đặt trạng thái active thành true).
+     * @param nodeId ID của Node cần kích hoạt.
+     * @return Optional chứa NodeInfo đã được kích hoạt nếu thành công, hoặc Optional rỗng nếu không tìm thấy ID.
+     */
+    Optional<NodeDTO> activateNode(String nodeId);
+
+
+    Optional<NodeDTO> deactivateNode(String nodeId);
 }

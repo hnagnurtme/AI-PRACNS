@@ -110,7 +110,7 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode, onSucce
 
 
     return (
-        <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg">
+        <div className="bg-white p-8 rounded-xl shadow-2xl w-full max-w-lg text-gray-700">
             <h2 className="text-2xl font-bold mb-6 text-gray-800">
                 {mode === 'create' ? 'Create New Node' : `Update Node ${initialNode?.nodeId.substring(0, 8)}...`}
             </h2>
@@ -240,7 +240,7 @@ const FormInput: React.FC<FormInputProps> = ({ label, name, type, value, onChang
             step={step}
             required={required}
             disabled={disabled}
-            className="w-full p-2 border rounded bg-gray-50 focus:border-indigo-500 disabled:bg-gray-100"
+            className="w-full p-2 border rounded bg-gray-50 **text-gray-900** focus:border-indigo-500 disabled:bg-gray-100"
         />
     </FormGroup>
 );

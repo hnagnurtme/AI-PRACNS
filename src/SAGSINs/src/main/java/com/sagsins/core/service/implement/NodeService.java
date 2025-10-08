@@ -170,4 +170,25 @@ public class NodeService implements INodeService {
 
         return dto;
     }
+
+    @Override
+    public Optional<NodeDTO> activateNode(String nodeId) {
+        return nodeRepository.findById(nodeId).map(existingNode -> {
+            existingNode.setOperational(true);
+            existingNode.setLastUpdated(System.currentTimeMillis());
+            NodeInfo updatedNode = nodeRepository.save(existingNode);
+            return convertToDTO(updatedNode);
+        });
+    }
+
+    @Override
+    public Optional<NodeDTO> deactivateNode(String nodeId) {
+        return nodeRepository.findById(nodeId).map(existingNode -> {
+            existingNode.setOperational(false);
+            existingNode.setLastUpdated(System.currentTimeMillis());
+            NodeInfo updatedNode = nodeRepository.save(existingNode);
+            return convertToDTO(updatedNode);
+        });
+    }
+
 }

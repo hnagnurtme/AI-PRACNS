@@ -7,7 +7,7 @@ services:
     build: 
       context: .. 
       dockerfile: docker-config/Dockerfile 
-    platform: linux/amd64
+    platform: linux/arm64
     container_name: SAT_001
     hostname: SAT_001
     command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
@@ -29,7 +29,7 @@ services:
     build: 
       context: .. 
       dockerfile: docker-config/Dockerfile 
-    platform: linux/amd64
+    platform: linux/arm64
     container_name: SAT_002
     hostname: SAT_002
     command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
@@ -51,7 +51,7 @@ services:
     build: 
       context: ..
       dockerfile: docker-config/Dockerfile
-    platform: linux/amd64
+    platform: linux/arm64
     container_name: GS_001
     hostname: GS_001
     command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
@@ -73,7 +73,7 @@ services:
     build: 
       context: ..
       dockerfile: docker-config/Dockerfile
-    platform: linux/amd64
+    platform: linux/arm64
     container_name: GS_002
     hostname: GS_002
     command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
@@ -95,7 +95,7 @@ services:
     build: 
       context: ..
       dockerfile: docker-config/Dockerfile
-    platform: linux/amd64
+    platform: linux/arm64
     container_name: UAV_001
     hostname: UAV_001
     command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
@@ -117,7 +117,7 @@ services:
     build: 
       context: ..
       dockerfile: docker-config/Dockerfile
-    platform: linux/amd64
+    platform: linux/arm64
     container_name: SEA_001
     hostname: SEA_001
     command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",

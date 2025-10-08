@@ -56,4 +56,20 @@ public class NodeController {
             return ResponseEntity.notFound().build();
         }
     }
+
+    @PatchMapping("/nodes/{nodeId}/activate")
+    public ResponseEntity<NodeDTO> activateNode(@PathVariable String nodeId) {
+        return nodeService.activateNode(nodeId)
+                .map(node -> ResponseEntity.ok(node))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PatchMapping("/nodes/{nodeId}/deactivate")
+    public ResponseEntity<NodeDTO> deactivateNode(@PathVariable String nodeId) {
+        return nodeService.deactivateNode(nodeId)
+                .map(node -> ResponseEntity.ok(node))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+
 }

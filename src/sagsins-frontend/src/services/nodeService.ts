@@ -44,6 +44,7 @@ export const getAllNodes = async (): Promise<NodeDTO[]> => {
     try {
         // 1. Khai báo response sẽ là kiểu ApiResponse<NodeDTO[]>
         const response = await axios.get<ApiResponse<NodeDTO[]>>(API_BASE_URL);
+        console.log('API Response:', response.data);
         
         // 2. Trích xuất mảng NodeDTO[] từ trường 'data'
         return extractData(response.data);
@@ -79,9 +80,12 @@ export const createNode = async (nodeData: CreateNodeRequest): Promise<NodeDTO> 
 // --- UPDATE ---
 export const updateNode = async (nodeId: string, updateData: UpdateNodeRequest): Promise<NodeDTO> => {
     try {
-        const response = await axios.put<ApiResponse<NodeDTO>>(`${API_BASE_URL}/${nodeId}`, updateData);
+        console.log('Updating node with data:', updateData);
+        const response = await axios.patch<ApiResponse<NodeDTO>>(`${API_BASE_URL}/${nodeId}`, updateData);
+        console.log('API Response:', response.data);
         return extractData(response.data);
     } catch (error) {
+        console.log('Error during API call:', error);
         throw handleAxiosError(error);
     }
 };

@@ -16,6 +16,8 @@ public class NodeInfo {
     private String nodeType; 
 
     private Geo3D position; 
+    private Velocity velocity;   
+    private Orbit orbit;
 
     private boolean isOperational;       
     private double currentBandwidth;     
@@ -36,3 +38,4 @@ public class NodeInfo {
         return isOperational && powerLevel > 5.0 && packetBufferLoad < 90; 
     }
 }
+
