@@ -3,13 +3,17 @@ package com.sagin.model;
 import lombok.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(value = {"circular"}, ignoreUnknown = true) 
 @ToString
 public class Orbit {
     
@@ -34,6 +38,7 @@ public class Orbit {
     /** * Kiểm tra xem quỹ đạo có phải là quỹ đạo tròn hoàn hảo không (e = 0).
      */
     @JsonIgnore
+    @JsonProperty(access = Access.READ_ONLY)
     public boolean isCircular() {
         // Dùng một ngưỡng nhỏ để tính toán dấu phẩy động
         return eccentricity < 1e-6; 

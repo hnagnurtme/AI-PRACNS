@@ -50,22 +50,7 @@ public class Initializer {
 
             // Khởi tạo NodeInfo
             NodeInfo currentNode = new NodeInfo();
-            currentNode.setNodeId(nodeId);
-            currentNode.setNodeType(nodeType);
-            currentNode.setPosition(initialPosition);
             
-            // Thiết lập các Metric khởi tạo (là giá trị ban đầu cho mô phỏng)
-            currentNode.setCurrentBandwidth(initialMaxBandwidth);
-            currentNode.setAvgLatencyMs(initialLatency);
-            currentNode.setPowerLevel(initialPowerLevel);
-            
-            // Thiết lập các giá trị mặc định cho các metric động
-            currentNode.setOperational(true);
-            currentNode.setPacketLossRate(0.0);
-            currentNode.setPacketBufferLoad(0);
-            currentNode.setCurrentThroughput(0.0);
-            currentNode.setResourceUtilization(0.0); 
-            currentNode.setLastUpdated(System.currentTimeMillis());
 
             return currentNode;
 

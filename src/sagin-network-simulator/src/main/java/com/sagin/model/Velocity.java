@@ -3,7 +3,10 @@ package com.sagin.model;
 import lombok.*;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 @Getter
 @Setter
@@ -11,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ToString
+@JsonIgnoreProperties(value = {"speed", "moving"}, ignoreUnknown = true)
 public class Velocity {
 
     // Vận tốc theo trục X (Đông/Tây) - Ví dụ: tính bằng km/s
@@ -28,6 +32,7 @@ public class Velocity {
      * @return Tốc độ tổng thể (speed)
      */
     @JsonIgnore
+    @JsonProperty(access = Access.READ_ONLY)
     public double getSpeed() {
         return Math.sqrt(velocityX * velocityX + velocityY * velocityY + velocityZ * velocityZ);
     }
