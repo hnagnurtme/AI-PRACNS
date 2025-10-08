@@ -2,109 +2,56 @@ version: '3.8'
 
 services:
   # -----------------------------------------------------------
-  # 1. NODE VỆ TINH 1 (SAT_001)
+  # 1. NODE TRẠM MẶT ĐẤT - SENDER (GS_LONDON)
+  # ID Node: GS_LONDON | Hostname: gs_london | Port: 8081
   # -----------------------------------------------------------
-  sat_node_01:
+  gs_london_node:
     build: 
-      context: .. 
-      dockerfile: docker-config/Dockerfile 
+      context: ..
+      dockerfile: docker-config/Dockerfile
     platform: linux/arm64
     container_name: GS_LONDON
-    hostname: sat_node_01 # Đổi hostname thành tên service viết thường cho Service Discovery
-    command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
-              "GS_LONDON"] # CHỈ CẦN NODE ID. Port được lấy từ DB/mặc định.
+    hostname: gs_london
+    # ĐÃ SỬA: Chỉ truyền NODEID làm tham số cho Entrypoint
+    command: ["GS_LONDON"] 
     ports:
-      - "8001:8001" 
+      - "8081:8081" 
     restart: on-failure
     networks:
       - sagin_network
 
   # -----------------------------------------------------------
-  # 2. NODE VỆ TINH 2 (SAT_002)
+  # 2. NODE TRẠM MẶT ĐẤT - DESTINATION (GS_TOKYO)
+  # ID Node: GS_TOKYO | Hostname: gs_tokyo | Port: 8080
   # -----------------------------------------------------------
-  sat_node_02:
+  gs_tokyo_node:
+    build: 
+      context: ..
+      dockerfile: docker-config/Dockerfile
+    platform: linux/arm64
+    container_name: GS_TOKYO
+    hostname: gs_tokyo
+    command: ["GS_TOKYO"]
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    networks:
+      - sagin_network
+
+  # -----------------------------------------------------------
+  # 3. NODE VỆ TINH - NEXT HOP (LEO_004)
+  # ID Node: LEO_004 | Hostname: leo_004 | Port: 8087
+  # -----------------------------------------------------------
+  leo_node_004:
     build: 
       context: .. 
       dockerfile: docker-config/Dockerfile 
     platform: linux/arm64
-    container_name: SAT_002
-    hostname: sat_node_02
-    command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
-              "SAT_002"]
+    container_name: LEO_004
+    hostname: leo_004
+    command: ["LEO_004"] # Chỉ truyền NODEID
     ports:
-      - "7001:7001"
-    restart: on-failure
-    networks:
-      - sagin_network
-
-  # -----------------------------------------------------------
-  # 3. NODE TRẠM MẶT ĐẤT 1 (GS_001)
-  # -----------------------------------------------------------
-  gs_node_01:
-    build: 
-      context: ..
-      dockerfile: docker-config/Dockerfile
-    platform: linux/arm64
-    container_name: GS_001
-    hostname: gs_node_01
-    command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
-              "GS_001"]
-    ports:
-      - "8081:8081"
-    restart: on-failure
-    networks:
-      - sagin_network
-
-  # -----------------------------------------------------------
-  # 4. NODE TRẠM MẶT ĐẤT 2 (GS_002)
-  # -----------------------------------------------------------
-  gs_node_02:
-    build: 
-      context: ..
-      dockerfile: docker-config/Dockerfile
-    platform: linux/arm64
-    container_name: GS_002
-    hostname: gs_node_02
-    command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
-              "GS_002"]
-    ports:
-      - "5002:5002"
-    restart: on-failure
-    networks:
-      - sagin_network
-  
-  # -----------------------------------------------------------
-  # 5. NODE UAV (UAV_001)
-  # -----------------------------------------------------------
-  uav_node_01:
-    build: 
-      context: ..
-      dockerfile: docker-config/Dockerfile
-    platform: linux/arm64
-    container_name: UAV_001
-    hostname: uav_node_01
-    command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
-              "UAV_001"]
-    ports:
-      - "4001:4001"
-    restart: on-failure
-    networks:
-      - sagin_network
-
-  # -----------------------------------------------------------
-  # 6. NODE TÀU BIỂN (SEA_001)
-  # -----------------------------------------------------------
-  sea_node_01:
-    build: 
-      context: ..
-      dockerfile: docker-config/Dockerfile
-    platform: linux/arm64
-    container_name: SEA_001
-    hostname: sea_node_01
-    command: ["java", "-Duser.language=en", "-Duser.country=US", "-jar", "app.jar",
-              "SEA_001"]
-    ports:
-      - "3001:3001"
+      - "8087:8087" 
     restart: on-failure
     networks:
       - sagin_network

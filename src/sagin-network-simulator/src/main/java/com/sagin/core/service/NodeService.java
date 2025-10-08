@@ -202,7 +202,6 @@ public class NodeService implements INodeService {
 
         // Lấy lại QoS (hoặc sử dụng các giá trị đã gán trong bước 0)
         double maxLatency = packet.getMaxAcceptableLatencyMs();
-        double minBandwidth = routeInfo.getMinBandwidthMbps();
 
         if (routeInfo.getTotalLatencyMs() > maxLatency) {
 
@@ -257,7 +256,6 @@ public class NodeService implements INodeService {
 
             // 3. Gửi ACK đi (ACK bắt đầu hành trình từ đây)
             // LƯU Ý: ACK là gói tin mới nên nó cần được đưa vào luồng gửi đi thông qua
-            // sendPacket().
             sendPacket(ackPacket);
 
         }
