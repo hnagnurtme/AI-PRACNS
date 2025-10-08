@@ -13,8 +13,12 @@ interface NodeDetailCardProps {
 
 const NodeDetailCard: React.FC<NodeDetailCardProps> = ({ node, onRefresh }) => {
     
-    const { setSelectedNode } = useNodeStore();
+    const { setSelectedNode, cameraFollowMode, setCameraFollowMode } = useNodeStore();
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+
+    const handleCameraToggle = () => {
+        setCameraFollowMode(!cameraFollowMode);
+    };
     
     return (
         <>
@@ -34,6 +38,11 @@ const NodeDetailCard: React.FC<NodeDetailCardProps> = ({ node, onRefresh }) => {
                         {node.isHealthy ? 'HEALTHY' : 'UNHEALTHY'}
                     </span>
                     <span className="ml-2 text-gray-500">({node.nodeType})</span>
+                    {cameraFollowMode && (
+                        <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 animate-pulse">
+                            📹 CAMERA TRACKING
+                        </span>
+                    )}
                 </p>
 
                 <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
@@ -45,8 +54,43 @@ const NodeDetailCard: React.FC<NodeDetailCardProps> = ({ node, onRefresh }) => {
                     <DetailItem label="Loss Rate" value={(node.packetLossRate * 100).toFixed(2) + '%'} />
                 </div>
 
+                {/* Orbital Information */}
+                {(node.orbit || node.velocity) && (
+                    <div className="mt-4 pt-3 border-t border-gray-200">
+                        <h4 className="text-sm font-semibold text-gray-700 mb-2">🛰️ Orbital Data</h4>
+                        <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs">
+                            {node.orbit && (
+                                <>
+                                    <DetailItem label="Semi-major Axis" value={`${node.orbit.semiMajorAxisKm.toFixed(0)} km`} />
+                                    <DetailItem label="Eccentricity" value={node.orbit.eccentricity.toFixed(4)} />
+                                    <DetailItem label="Inclination" value={`${node.orbit.inclinationDeg.toFixed(2)}°`} />
+                                    <DetailItem label="RAAN" value={`${node.orbit.raanDeg.toFixed(2)}°`} />
+                                </>
+                            )}
+                            {node.velocity && (
+                                <>
+                                    <DetailItem label="Velocity X" value={`${node.velocity.velocityX.toFixed(2)} km/s`} />
+                                    <DetailItem label="Velocity Y" value={`${node.velocity.velocityY.toFixed(2)} km/s`} />
+                                    <DetailItem label="Velocity Z" value={`${node.velocity.velocityZ.toFixed(2)} km/s`} />
+                                </>
+                            )}
+                        </div>
+                    </div>
+                )}
+
                 {/* Action Buttons */}
-                <div className="mt-5 flex justify-end space-x-2">
+                <div className="mt-5 flex justify-between space-x-2">
+                    <button 
+                        onClick={handleCameraToggle}
+                        className={`text-sm font-medium px-3 py-1 rounded border transition-colors ${
+                            cameraFollowMode 
+                                ? 'bg-green-600 text-white border-green-600 hover:bg-green-700' 
+                                : 'text-green-600 border-green-200 hover:bg-green-50'
+                        }`}
+                    >
+                        📹 {cameraFollowMode ? 'Following' : 'Follow Cam'}
+                    </button>
+                    
                     <button 
                         onClick={() => setIsEditFormOpen(true)}
                         className="text-sm text-blue-600 hover:text-blue-800 font-medium px-3 py-1 rounded border border-blue-200 hover:bg-blue-50"

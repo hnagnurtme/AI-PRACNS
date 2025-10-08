@@ -36,7 +36,7 @@ const Dashboard: React.FC = () => {
                 {/* Card thông tin chi tiết (Hiển thị nổi trên Map) */}
                 {/* Card chỉ hiển thị nếu selectedNode có dữ liệu */}
                 {selectedNode && (
-                    <div className="absolute top-4 right-4 z-10 w-96">
+                    <div className="absolute top-20 right-4 z-10 w-96">
                         <NodeDetailCard node={selectedNode} onRefresh={refetchNodes} />
                     </div>
                 )}

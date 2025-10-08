@@ -5,10 +5,12 @@ import type { NodeDTO } from '../types/NodeTypes';
 interface NodeState {
     nodes: NodeDTO[];
     selectedNode: NodeDTO | null;
+    cameraFollowMode: boolean;
     
     // Actions
     setNodes: (nodes: NodeDTO[]) => void;
     setSelectedNode: (node: NodeDTO | null) => void;
+    setCameraFollowMode: (follow: boolean) => void;
     
     // Action helper để cập nhật một node cụ thể trong danh sách
     updateNodeInStore: (updatedNode: NodeDTO) => void;
@@ -18,12 +20,15 @@ interface NodeState {
 export const useNodeStore = create<NodeState>((set) => ({
     nodes: [],
     selectedNode: null,
+    cameraFollowMode: false,
     
     setNodes: (nodes) => set({ nodes }),
     
     setSelectedNode: (node) => set({ 
         selectedNode: node 
     }),
+
+    setCameraFollowMode: (follow) => set({ cameraFollowMode: follow }),
 
     updateNodeInStore: (updatedNode) => 
         set((state) => ({
