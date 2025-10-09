@@ -154,7 +154,6 @@ public class DijkstraRoutingEngine implements IRoutingEngine {
 
         @Override
         public int compareTo(RouteCalculationState other) {
-            // So sánh dựa trên chi phí (ưu tiên chi phí thấp hơn)
             return Double.compare(this.cost, other.cost);
         }
     }

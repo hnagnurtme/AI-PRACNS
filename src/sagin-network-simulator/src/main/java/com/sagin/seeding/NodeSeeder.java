@@ -132,8 +132,9 @@ public class NodeSeeder {
         info.setNodeType(NodeType.GROUND_STATION);
         info.setPosition(new Geo3D(lat, lon, alt));
         
-        // Cấu hình mạng (Host sẽ được cập nhật khi Node khởi chạy)
-        info.setHost(id.toLowerCase()); 
+    // Cấu hình mạng (Host sẽ được cập nhật khi Node khởi chạy)
+    // NOTE: Do NOT auto-assign host from the node ID during seeding. Host
+    // should remain unset here so it isn't written to the DB as the node ID.
         info.setPort(port);
         
         info.setOperational(true); // BẮT BUỘC: Node phải hoạt động
@@ -160,8 +161,9 @@ public class NodeSeeder {
         info.setPosition(new Geo3D(lat, lon, alt));
         info.setVelocity(new Velocity(vx, vy, vz));
         
-        // Cấu hình mạng
-        info.setHost(id.toLowerCase()); 
+    // Cấu hình mạng
+    // NOTE: Do NOT auto-assign host from the node ID during seeding. Host
+    // should remain unset here so it isn't written to the DB as the node ID.
         info.setPort(port);
         
         info.setOrbit(new Orbit(alt + 6371.0, 0.001, inclinationDeg, random.nextDouble() * 360, 0.0, 0.0)); 

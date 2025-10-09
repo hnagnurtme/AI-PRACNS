@@ -34,7 +34,7 @@ public class NetworkManagerService implements INetworkManagerService {
 
     // Lịch trình cho vòng lặp mô phỏng định kỳ
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static final long ROUTING_UPDATE_INTERVAL_SECONDS = 20; // Cập nhật định tuyến 20 giây một lần
+    private static final long ROUTING_UPDATE_INTERVAL_SECONDS = 1; 
 
     // logger
     private static final Logger logger = LoggerFactory.getLogger(NetworkManagerService.class);

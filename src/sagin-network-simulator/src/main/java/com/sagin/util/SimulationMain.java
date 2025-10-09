@@ -1,6 +1,5 @@
 package com.sagin.util;
 
-import com.sagin.configuration.FireStoreConfiguration;
 import com.sagin.core.ILinkManagerService;
 import com.sagin.core.INodeService;
 import com.sagin.core.IUserService;
@@ -11,17 +10,14 @@ import com.sagin.core.service.UserService;
 import com.sagin.core.service.LinkManagerService;
 import com.sagin.core.service.NetworkManagerService; 
 import com.sagin.model.*;
-import com.sagin.repository.FirebaseNodeRepository;
 import com.sagin.repository.INodeRepository;
+import com.sagin.repository.MongoNodeRepository;
 import com.sagin.routing.DijkstraRoutingEngine;
 import com.sagin.routing.IRoutingEngine;
 import com.sagin.seeding.NodeSeeder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.net.UnknownHostException;
-
 
 public class SimulationMain {
 
@@ -46,16 +42,8 @@ public class SimulationMain {
     
     public void runSingleNode(String nodeId) {
 
-        try {
-            FireStoreConfiguration.init(); 
-            logger.info("Firebase SDK đã được khởi tạo thành công.");
-        } catch (Exception e) {
-            logger.error("LỖI KHỞI TẠO FIREBASE: Không thể tải cấu hình SDK.", e);
-            return;
-        }
-        
         // --- 1. KHỞI TẠO REPOSITORY VÀ SEEDING DỮ LIỆU ---
-        INodeRepository nodeRepository = new FirebaseNodeRepository();
+        INodeRepository nodeRepository = new MongoNodeRepository();
         checkAndSeedDatabase(nodeRepository);
         
         
@@ -72,13 +60,21 @@ public class SimulationMain {
         int port = initialInfo.getPort() > 0 ? initialInfo.getPort() : FALLBACK_PORT;
         
         try {
-            String hostName = getActualHostName(nodeId); 
+            String hostName = "localhost";
             
+            logger.info("Địa chỉ mạng hiện tại của Node {}: {}:{}", nodeId, hostName, port);
+            // Set host/port in-memory only. We intentionally do NOT persist the host
+            // (or overwrite the DB copy) here to avoid seeding/runtime logic that
+            // would set the host equal to the nodeId or otherwise leak local values
+            // into the shared database.
             initialInfo.setHost(hostName);
-            initialInfo.setPort(port); 
-            
-            nodeRepository.updateNodeInfo(nodeId, initialInfo); 
-            logger.info("Địa chỉ mạng Node {} đã được đồng bộ lên DB: {}:{}", nodeId, hostName, port);
+            initialInfo.setPort(port);
+
+            // NOTE: Do NOT call nodeRepository.updateNodeInfo(...) here. Persisting
+            // the host during node startup can overwrite the intended DB-stored
+            // network configuration (and previously was set from nodeId). Keep the
+            // change local to this process only.
+            logger.info("Địa chỉ mạng Node {} đã được cập nhật cục bộ: {}:{} (không ghi lên DB)", nodeId, hostName, port);
             
         } catch (Exception e) {
             logger.error("LỖI CẬP NHẬT ĐỊA CHỈ MẠNG: Không thể xác định Hostname. {}", e.getMessage());
@@ -132,11 +128,10 @@ public class SimulationMain {
         seeder.seedInitialNodes(false); 
     }
     
-    /**
-     * Hàm lấy Hostname thực tế cho môi trường Docker/Local.
-     */
-    private String getActualHostName(String nodeId) throws UnknownHostException {
-        // Sử dụng logic mặc định: Tên Service Docker (viết thường)
-        return nodeId.toLowerCase(); 
-    }
+    // /**
+    //  * Hàm lấy Hostname thực tế cho môi trường Docker/Local.
+    //  */
+    // private String getActualHostName(String nodeId) throws UnknownHostException {
+    //     return nodeId.toLowerCase(); 
+    // }
 }

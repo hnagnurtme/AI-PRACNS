@@ -51,19 +51,14 @@
             <version>2.0.12</version>
         </dependency>
         <dependency>
-            <groupId>com.google.firebase</groupId>
-            <artifactId>firebase-admin</artifactId>
-            <version>${firebase.version}</version>
-        </dependency>
+        <groupId>org.mongodb</groupId>
+        <artifactId>mongodb-driver-sync</artifactId>
+        <version>4.11.1</version> </dependency>
+
         <dependency>
-            <groupId>com.google.cloud</groupId>
-            <artifactId>google-cloud-firestore</artifactId>
-            <version>${google-cloud-firestore.version}</version> 
-        </dependency>
-        <dependency>
-            <groupId>com.google.auth</groupId>
-            <artifactId>google-auth-library-oauth2-http</artifactId>
-            <version>${google-auth.version}</version>
+            <groupId>org.mongodb</groupId>
+            <artifactId>bson</artifactId>
+            <version>4.11.1</version>
         </dependency>
     </dependencies>
 
