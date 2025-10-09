@@ -1,0 +1,27 @@
+{
+    "$id": "https://example.com/schemas/ue.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "UE",
+    "allOf": [{ "$ref": "node.json" }],
+    "properties": {
+        "nodeType": { "const": "UE" },
+        "trafficType": { "type": "string", "enum": ["video", "voice", "web", "iot"]},
+        "requiredBandwidthMbps": { "type": "number", "minimum": 0 },
+        "maxLatencyMs": { "type": "number", "minimum": 0 },
+        "priorityLevel": { "type": "integer", "minimum": 1, "maximum": 5 },
+        "mobilityPattern": { "type": "string", "enum": ["static", "pedestrian", "vehicular", "airborne"] },
+        "sessionDurationSec": { "type": "number", "minimum": 0 },
+        "energyLevel": { "type": "number", "minimum": 0, "maximum": 100 }
+    },
+    "required": [
+        "nodeType",
+        "nodeId",
+        "position",
+        "bandwidth",
+        "lastUpdated",
+        "requiredBandwidthMbps",
+        "maxLatencyMs",
+        "priorityLevel"
+    ],
+    "additionalProperties": false
+}

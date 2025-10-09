@@ -1,0 +1,3046 @@
+[
+  {
+    "id": 524,
+    "name": "TEC-CA",
+    "altitude": 1338,
+    "min_horizon": 10,
+    "lat": 9.8532,
+    "lng": -83.9059,
+    "qthlocator": "EJ89bu",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2019-02-27T21:17:25Z",
+    "last_seen": "2019-03-18T07:10:37Z",
+    "status": "Offline",
+    "observations": 15,
+    "future_observations": 0,
+    "description": "UHF ground station\r\nKenwood TS-2000\r\nRotator G5500",
+    "client_version": "0.9",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/Selection_018.png",
+    "success_rate": false,
+    "owner": "esteban88"
+  },
+  {
+    "id": 317,
+    "name": "Sergio Arboleda 5K3USA",
+    "altitude": 2600,
+    "min_horizon": 10,
+    "lat": 4.661182,
+    "lng": -74.059708,
+    "qthlocator": "FJ24xp",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2018-10-30T21:08:31Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": null,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "Max_Herrera"
+  },
+  {
+    "id": 1920,
+    "name": "VA6RPI Alberta Canada.",
+    "altitude": 550,
+    "min_horizon": 30,
+    "lat": 54.8917,
+    "lng": -112.2982,
+    "qthlocator": "DO34uv",
+    "antenna": [
+      {
+        "frequency": 400000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2020-12-13T02:43:39Z",
+    "last_seen": "2024-11-20T03:06:07Z",
+    "status": "Offline",
+    "observations": 6597,
+    "future_observations": 0,
+    "description": "(If Station is in Testing Mode it's being used for SSB Sat work or down for Maintenance) \r\nPi 3 B+, RSP1A, Nooelec LNA, DIY Folded Dipole Driven 7el X-Pol Yagi on 10ft Boom.\r\nhttps://www.arrl.org/shop/files/pdfs/Satellite%20project.pdf",
+    "client_version": "1.8.1",
+    "target_utilization": 50,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/IMG_5765.JPG",
+    "success_rate": 75,
+    "owner": "ve6kdx"
+  },
+  {
+    "id": 4313,
+    "name": "Franklin",
+    "altitude": 120,
+    "min_horizon": 10,
+    "lat": 40.147,
+    "lng": -75.1012,
+    "qthlocator": "JJ00aa",
+    "antenna": [],
+    "created": "2025-08-16T17:32:49Z",
+    "last_seen": "2025-09-05T23:02:00Z",
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "henningrodeo"
+  },
+  {
+    "id": 779,
+    "name": "N8HF",
+    "altitude": 288,
+    "min_horizon": 40,
+    "lat": 40.034866,
+    "lng": -82.384599,
+    "qthlocator": "EN80ta",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "vertical",
+        "antenna_type_name": "Vertical"
+      },
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "vertical",
+        "antenna_type_name": "Vertical"
+      }
+    ],
+    "created": "2019-06-04T16:53:15Z",
+    "last_seen": "2019-07-04T14:59:41Z",
+    "status": "Offline",
+    "observations": 76,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "0.9",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "rrittenhouse"
+  },
+  {
+    "id": 1146,
+    "name": "Ham Radio Ground Station",
+    "altitude": 114,
+    "min_horizon": 10,
+    "lat": 33.9150176,
+    "lng": -6.9161733,
+    "qthlocator": "IM63nv",
+    "antenna": [],
+    "created": "2019-11-14T15:38:22Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "Ground station project  specifically designed for communication with small satellites in Low Earth Orbit using VHF and UHF amateur radio frequencies and provide hands-on educational projects in the world\r\nThe ground station can autonomously track satellites by using these equipments :\r\n VHF / UHF amateur radio transceiver (Amateur bands 144-16 MHZ and 430-440 MHZ)\r\nRotator Controller\r\nAzimuth and elevation rotators \r\nUHF and VHF Yagi antennas (Amateur bands 144-16 MHZ and 430-440 MHZ)\r\nModems...",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "cn8ff"
+  },
+  {
+    "id": 1955,
+    "name": "Oxford",
+    "altitude": 60,
+    "min_horizon": 15,
+    "lat": 51.752765,
+    "lng": -1.277417,
+    "qthlocator": "IO91is",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "v-dipole",
+        "antenna_type_name": "V-Dipole"
+      }
+    ],
+    "created": "2021-01-04T18:38:42Z",
+    "last_seen": "2023-02-14T14:17:07Z",
+    "status": "Offline",
+    "observations": 1047,
+    "future_observations": 0,
+    "description": "51.7526892, -1.2774661",
+    "client_version": "1.6",
+    "target_utilization": 10,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/Oxford_GS.PNG",
+    "success_rate": 87,
+    "owner": "danisors"
+  },
+  {
+    "id": 1236,
+    "name": "PaczkowoStation",
+    "altitude": 96,
+    "min_horizon": 90,
+    "lat": 52.393752,
+    "lng": 17.150765,
+    "qthlocator": "JO82nj",
+    "antenna": [
+      {
+        "frequency": 29000000,
+        "frequency_max": 999999999,
+        "band": "HF, VHF, UHF",
+        "antenna_type": "dipole",
+        "antenna_type_name": "Dipole"
+      },
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "v-dipole",
+        "antenna_type_name": "V-Dipole"
+      }
+    ],
+    "created": "2019-12-24T11:01:21Z",
+    "last_seen": "2019-12-24T13:20:14Z",
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 100,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "pawelk"
+  },
+  {
+    "id": 4341,
+    "name": "N0NQD-SatScanner VHF",
+    "altitude": 325,
+    "min_horizon": 10,
+    "lat": 45.288962,
+    "lng": -93.74652,
+    "qthlocator": "EN35dg",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "eggbeater",
+        "antenna_type_name": "Eggbeater"
+      }
+    ],
+    "created": "2025-09-07T21:49:33Z",
+    "last_seen": "2025-09-20T16:19:34Z",
+    "status": "Online",
+    "observations": 192,
+    "future_observations": 0,
+    "description": "I have released the station to an active status due to a few decoded signals from satellites such as LILACSAT. This is my version of the EggNogs Eggbeater antenna that is tuned for the VHF band @ ~40'. The station is a Raspberry Pi 5, RTLSDR V4, along with a Nooelec LaNA. Final configuration will depend on performance during its use and will be adjusted where warranted. Additionally, this station will be remotely mounted at the antenna like its UHF sister station.",
+    "client_version": "1.9.3",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/VHF_SatNogs.JPG",
+    "success_rate": 85,
+    "owner": "n0nqd"
+  },
+  {
+    "id": 4302,
+    "name": "wilsat",
+    "altitude": 280,
+    "min_horizon": 40,
+    "lat": 33.37,
+    "lng": -84.79,
+    "qthlocator": "EM73ok",
+    "antenna": [
+      {
+        "frequency": 400000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "quadrafilar",
+        "antenna_type_name": "Quadrafilar"
+      }
+    ],
+    "created": "2025-08-06T14:28:59Z",
+    "last_seen": "2025-08-12T17:23:59Z",
+    "status": "Offline",
+    "observations": 33,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.9.3",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 0,
+    "owner": "weswiley"
+  },
+  {
+    "id": 723,
+    "name": "AFK1818",
+    "altitude": 1437,
+    "min_horizon": 10,
+    "lat": 35.744,
+    "lng": 51.5,
+    "qthlocator": "LM55sr",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      }
+    ],
+    "created": "2019-05-07T04:12:20Z",
+    "last_seen": "2019-05-07T18:50:59Z",
+    "status": "Offline",
+    "observations": 3,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "0.9",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "afshinmostafa"
+  },
+  {
+    "id": 1095,
+    "name": "UNISEC India BANGALORE-GS1",
+    "altitude": 923,
+    "min_horizon": 10,
+    "lat": 12.984,
+    "lng": 77.674,
+    "qthlocator": "MK82ux",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      }
+    ],
+    "created": "2019-10-21T16:44:55Z",
+    "last_seen": "2019-12-18T06:50:03Z",
+    "status": "Offline",
+    "observations": 121,
+    "future_observations": 0,
+    "description": "Research in the field of Nano-Satellites!\r\nThe Space Company.\r\nResearch Engineer and SPoC at UNISEC INDIA.\r\nI also have an Amateur Callsign, VU3HJT.\r\nAlso proud Partner of the INTERCONTINENTAL AEROSPACE COMMAND. (IACS) \r\nCommittee of Space Development, Novi Sad, Serbia. (CSPD)\r\n(INDO-SERBIA)\r\nhttp://2comnet.info/komsat/en/",
+    "client_version": "1.0",
+    "target_utilization": 100,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/IMG_20190428_011350_864.jpg",
+    "success_rate": 40,
+    "owner": "sainath.vu3hjt"
+  },
+  {
+    "id": 973,
+    "name": "WoodySat",
+    "altitude": 74,
+    "min_horizon": 20,
+    "lat": 51.946428,
+    "lng": -2.046122,
+    "qthlocator": "IO81xw",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      }
+    ],
+    "created": "2019-09-05T15:05:57Z",
+    "last_seen": "2019-12-07T11:02:07Z",
+    "status": "Offline",
+    "observations": 81,
+    "future_observations": 0,
+    "description": "Pi2 + RTL_SDR + Funcube Turnstile Antenna (no LNA yet)",
+    "client_version": "0.9",
+    "target_utilization": 23,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "dk_sat"
+  },
+  {
+    "id": 2806,
+    "name": "CEN@AMRITA",
+    "altitude": 141,
+    "min_horizon": 5,
+    "lat": 10.906247,
+    "lng": 76.897346,
+    "qthlocator": "MK80kv",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "quadrafilar",
+        "antenna_type_name": "Quadrafilar"
+      }
+    ],
+    "created": "2022-09-10T09:04:02Z",
+    "last_seen": "2022-09-10T11:18:58Z",
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 1,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "aie24"
+  },
+  {
+    "id": 4111,
+    "name": "Plyachka",
+    "altitude": 1100,
+    "min_horizon": 5,
+    "lat": 42.48304,
+    "lng": 23.445813,
+    "qthlocator": "KN12rl",
+    "antenna": [
+      {
+        "frequency": 400000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "helical",
+        "antenna_type_name": "Helical"
+      }
+    ],
+    "created": "2025-05-09T11:44:40Z",
+    "last_seen": "2025-09-20T16:19:59Z",
+    "status": "Testing",
+    "observations": 349,
+    "future_observations": 0,
+    "description": "UHF Omni antenna at the Plana Teleport",
+    "client_version": "1.9.3+5.g4eedaa1",
+    "target_utilization": 100,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 0,
+    "owner": "yurimdias"
+  },
+  {
+    "id": 959,
+    "name": "CE3VRT - VHF - UHF",
+    "altitude": 550,
+    "min_horizon": 5,
+    "lat": -33.659,
+    "lng": -70.727,
+    "qthlocator": "FF46pi",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2019-08-29T20:58:17Z",
+    "last_seen": "2020-03-05T05:03:40Z",
+    "status": "Offline",
+    "observations": 152,
+    "future_observations": 0,
+    "description": "Station on rural area (limited internet access). Please try to schedule Fox series sats only. \r\n\r\nGear:\r\n- VHF Turnstile\r\n- FM Filter + LNA4ALL\r\n- Nooelec RTLSDR",
+    "client_version": "0.9",
+    "target_utilization": 50,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/turnstile_satnogs_s.jpg",
+    "success_rate": 89,
+    "owner": "CE3VRT"
+  },
+  {
+    "id": 3280,
+    "name": "VlzStation",
+    "altitude": 200,
+    "min_horizon": 45,
+    "lat": 48.78,
+    "lng": 2.178,
+    "qthlocator": "JN18cs",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "v-dipole",
+        "antenna_type_name": "V-Dipole"
+      }
+    ],
+    "created": "2023-10-07T19:55:57Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "Small station in the attic",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "sareten"
+  },
+  {
+    "id": 3184,
+    "name": "SpaceTeam TMW",
+    "altitude": 185,
+    "min_horizon": 20,
+    "lat": 48.191,
+    "lng": 16.318,
+    "qthlocator": "JN88de",
+    "antenna": [
+      {
+        "frequency": 422000000,
+        "frequency_max": 445000000,
+        "band": "UHF",
+        "antenna_type": "quadrafilar",
+        "antenna_type_name": "Quadrafilar"
+      }
+    ],
+    "created": "2023-06-24T15:47:36Z",
+    "last_seen": "2025-09-20T16:20:02Z",
+    "status": "Online",
+    "observations": 1862,
+    "future_observations": 10,
+    "description": "Stationary ground station on a Pi3, RTLSDR, Custom LNA (PGA-103+), SAW Filter (SF2446E) and a 3D printed QFH antenna.",
+    "client_version": "1.8.1",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 54,
+    "owner": "spaceteam"
+  },
+  {
+    "id": 789,
+    "name": "Vlissingen",
+    "altitude": 12,
+    "min_horizon": 20,
+    "lat": 51.4622,
+    "lng": 3.5884,
+    "qthlocator": "JO11tl",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "quadrafilar",
+        "antenna_type_name": "Quadrafilar"
+      }
+    ],
+    "created": "2019-06-09T17:52:09Z",
+    "last_seen": "2019-07-20T12:01:25Z",
+    "status": "Offline",
+    "observations": 153,
+    "future_observations": 0,
+    "description": "2m QFH for now",
+    "client_version": "0.9",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "holysmokey"
+  },
+  {
+    "id": 1396,
+    "name": "PH3V - The Netherlands",
+    "altitude": 15,
+    "min_horizon": 5,
+    "lat": 51.4723,
+    "lng": 4.66379,
+    "qthlocator": "JO21hl",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "quadrafilar",
+        "antenna_type_name": "Quadrafilar"
+      }
+    ],
+    "created": "2020-03-05T22:20:04Z",
+    "last_seen": "2023-11-07T14:39:27Z",
+    "status": "Offline",
+    "observations": 4434,
+    "future_observations": 0,
+    "description": "Antenna > QFH | SDRplay RSPdx| \r\nLocated in Zundert, The Netherlands ]",
+    "client_version": "1.8.1",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/geocaching_background.png",
+    "success_rate": 71,
+    "owner": "ph3v"
+  },
+  {
+    "id": 3322,
+    "name": "VU2TUM",
+    "altitude": 280,
+    "min_horizon": 10,
+    "lat": 28.38958,
+    "lng": 76.95235,
+    "qthlocator": "ML88lj",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "ground",
+        "antenna_type_name": "Ground Plane"
+      },
+      {
+        "frequency": 400000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "ground",
+        "antenna_type_name": "Ground Plane"
+      }
+    ],
+    "created": "2023-11-11T07:48:37Z",
+    "last_seen": "2024-09-06T14:26:12Z",
+    "status": "Offline",
+    "observations": 32,
+    "future_observations": 0,
+    "description": "Station of VU2TUM",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 0,
+    "owner": "vu2tum"
+  },
+  {
+    "id": 1402,
+    "name": "NTU FYP",
+    "altitude": 15,
+    "min_horizon": 10,
+    "lat": 1.3521,
+    "lng": 103.82,
+    "qthlocator": "OJ11vi",
+    "antenna": [],
+    "created": "2020-03-09T15:35:45Z",
+    "last_seen": "2020-04-29T20:26:27Z",
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "FYP Project",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "riqo"
+  },
+  {
+    "id": 69,
+    "name": "VJTI Satellite Club",
+    "altitude": 17,
+    "min_horizon": 10,
+    "lat": 19.022,
+    "lng": 72.857,
+    "qthlocator": "MK69ka",
+    "antenna": [
+      {
+        "frequency": 144000000,
+        "frequency_max": 146000000,
+        "band": "VHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2018-04-02T21:32:08Z",
+    "last_seen": "2018-04-03T10:18:02Z",
+    "status": "Offline",
+    "observations": 1,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": null,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "Ashish_Kamble"
+  },
+  {
+    "id": 4127,
+    "name": "IW9GTD",
+    "altitude": 20,
+    "min_horizon": 10,
+    "lat": 37.95,
+    "lng": 12.514,
+    "qthlocator": "JM67gw",
+    "antenna": [
+      {
+        "frequency": 400000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      }
+    ],
+    "created": "2025-05-14T20:46:25Z",
+    "last_seen": "2025-05-15T15:30:42Z",
+    "status": "Offline",
+    "observations": 9,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 0,
+    "owner": "iw9gtd"
+  },
+  {
+    "id": 72,
+    "name": "Rokantiskes",
+    "altitude": 8,
+    "min_horizon": 10,
+    "lat": 54.705693,
+    "lng": 25.379382,
+    "qthlocator": "KO24qq",
+    "antenna": [
+      {
+        "frequency": 29000000,
+        "frequency_max": 999999999,
+        "band": "HF, VHF, UHF",
+        "antenna_type": "dipole",
+        "antenna_type_name": "Dipole"
+      }
+    ],
+    "created": "2018-04-05T13:35:42Z",
+    "last_seen": "2018-08-30T13:52:24Z",
+    "status": "Offline",
+    "observations": 64,
+    "future_observations": 0,
+    "description": "Third attempt.",
+    "client_version": "",
+    "target_utilization": null,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "emilis"
+  },
+  {
+    "id": 562,
+    "name": "AD7NP-X201",
+    "altitude": 65,
+    "min_horizon": 10,
+    "lat": 47.6458,
+    "lng": -122.2084,
+    "qthlocator": "CN87vp",
+    "antenna": [],
+    "created": "2019-03-21T05:58:26Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "AD7NP-X201",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "ad7np"
+  },
+  {
+    "id": 307,
+    "name": "FraunhoferEMI",
+    "altitude": 288,
+    "min_horizon": 13,
+    "lat": 48.0009,
+    "lng": 7.8467,
+    "qthlocator": "JN38wa",
+    "antenna": [
+      {
+        "frequency": 432000000,
+        "frequency_max": 439000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2018-10-26T13:38:17Z",
+    "last_seen": "2019-03-11T08:14:16Z",
+    "status": "Offline",
+    "observations": 842,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "0.9",
+    "target_utilization": null,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/vlcsnap-2018-12-05-14h44m51s076.jpg",
+    "success_rate": 79,
+    "owner": "EMIZadim"
+  },
+  {
+    "id": 2302,
+    "name": "AB3ZW",
+    "altitude": 3,
+    "min_horizon": 10,
+    "lat": 39.47224,
+    "lng": -76.33227,
+    "qthlocator": "FM19ul",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "eggbeater",
+        "antenna_type_name": "Eggbeater"
+      },
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "eggbeater",
+        "antenna_type_name": "Eggbeater"
+      }
+    ],
+    "created": "2021-07-21T17:15:40Z",
+    "last_seen": "2024-06-03T15:54:52Z",
+    "status": "Offline",
+    "observations": 35404,
+    "future_observations": 0,
+    "description": "SatNOGS project",
+    "client_version": "1.8.1",
+    "target_utilization": 13,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 73,
+    "owner": "hk4bha"
+  },
+  {
+    "id": 2510,
+    "name": "MAUSyagi",
+    "altitude": 1626,
+    "min_horizon": 10,
+    "lat": 40.009,
+    "lng": -105.248,
+    "qthlocator": "DN70ja",
+    "antenna": [
+      {
+        "frequency": 400000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "vertical",
+        "antenna_type_name": "Vertical"
+      }
+    ],
+    "created": "2022-01-18T03:27:07Z",
+    "last_seen": "2025-07-12T21:05:12Z",
+    "status": "Offline",
+    "observations": 27943,
+    "future_observations": 0,
+    "description": "MAUSyagi 2510  A static Diamond 15-element pointed west at 35 deg EL, rtlsdr, DownEast 437 MHz LNA.  satnogs-ansible client along with satnogs-gr_satellites and STRF.",
+    "client_version": "1.8.1",
+    "target_utilization": 100,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 49,
+    "owner": "satcolintel5"
+  },
+  {
+    "id": 1507,
+    "name": "Northampton - Development",
+    "altitude": 112,
+    "min_horizon": 10,
+    "lat": 52.212,
+    "lng": -0.904,
+    "qthlocator": "IO92nf",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "other omni",
+        "antenna_type_name": "Other Omni-Directional"
+      }
+    ],
+    "created": "2020-04-21T12:56:35Z",
+    "last_seen": "2020-05-07T16:16:08Z",
+    "status": "Offline",
+    "observations": 1,
+    "future_observations": 0,
+    "description": "Not sure I really need this to play with dev, but meh.",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "mat"
+  },
+  {
+    "id": 2694,
+    "name": "OE6ISP_LimeSDR",
+    "altitude": 410,
+    "min_horizon": 0,
+    "lat": 47.02,
+    "lng": 15.263,
+    "qthlocator": "JN77pa",
+    "antenna": [
+      {
+        "frequency": 800000000,
+        "frequency_max": 990000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2022-06-07T14:21:15Z",
+    "last_seen": "2025-08-26T21:11:46Z",
+    "status": "Offline",
+    "observations": 2624,
+    "future_observations": 0,
+    "description": "LimeSDR on Raspi 4 - Antenna: 5/8 vertical homemade - LNA1: SSB antenna preamp - LNA2: Hartwig ultra low noise amp + dual helical filter.",
+    "client_version": "2.0",
+    "target_utilization": 20,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 86,
+    "owner": "stefanp"
+  },
+  {
+    "id": 781,
+    "name": "DE-FRE-VHF",
+    "altitude": 25,
+    "min_horizon": 25,
+    "lat": 52.483,
+    "lng": 7.55,
+    "qthlocator": "JO32sl",
+    "antenna": [
+      {
+        "frequency": 29000000,
+        "frequency_max": 999999999,
+        "band": "HF, VHF, UHF",
+        "antenna_type": "dipole",
+        "antenna_type_name": "Dipole"
+      },
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "vertical",
+        "antenna_type_name": "Vertical"
+      },
+      {
+        "frequency": 100000000,
+        "frequency_max": 150000000,
+        "band": "VHF",
+        "antenna_type": "quadrafilar",
+        "antenna_type_name": "Quadrafilar"
+      }
+    ],
+    "created": "2019-06-05T05:29:04Z",
+    "last_seen": "2025-09-20T16:20:08Z",
+    "status": "Testing",
+    "observations": 139,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.8.1",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/fre300.png",
+    "success_rate": false,
+    "owner": "malte"
+  },
+  {
+    "id": 412,
+    "name": "StSavin",
+    "altitude": 300,
+    "min_horizon": 10,
+    "lat": 45.803,
+    "lng": 5.317,
+    "qthlocator": "JN25pt",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      },
+      {
+        "frequency": 144000000,
+        "frequency_max": 146000000,
+        "band": "VHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2018-12-19T17:08:36Z",
+    "last_seen": "2018-12-24T10:56:03Z",
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": null,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "Manust"
+  },
+  {
+    "id": 4067,
+    "name": "Ichigaya Campus",
+    "altitude": 0,
+    "min_horizon": 10,
+    "lat": 0.0,
+    "lng": 0.0,
+    "qthlocator": "JJ00aa",
+    "antenna": [],
+    "created": "2025-04-14T05:42:39Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "ngorongoro"
+  },
+  {
+    "id": 274,
+    "name": "F/EB2AT",
+    "altitude": 12,
+    "min_horizon": 2,
+    "lat": 43.789475,
+    "lng": -1.402423,
+    "qthlocator": "IN93hs",
+    "antenna": [
+      {
+        "frequency": 2200000000,
+        "frequency_max": 2300000000,
+        "band": "S",
+        "antenna_type": "helical",
+        "antenna_type_name": "Helical"
+      },
+      {
+        "frequency": 135000000,
+        "frequency_max": 146000000,
+        "band": "VHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      },
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2018-09-25T20:47:36Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": null,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "EB2AT"
+  },
+  {
+    "id": 1838,
+    "name": "pjotr",
+    "altitude": 3,
+    "min_horizon": 10,
+    "lat": 53.25667,
+    "lng": 6.45972,
+    "qthlocator": "JO33fg",
+    "antenna": [],
+    "created": "2020-10-18T14:00:20Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "luister en kijken",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "pjotr"
+  },
+  {
+    "id": 2574,
+    "name": "SKR-SAT",
+    "altitude": 98,
+    "min_horizon": 10,
+    "lat": 52.31389,
+    "lng": 14.44797,
+    "qthlocator": "JO72fh",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "ground",
+        "antenna_type_name": "Ground Plane"
+      },
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "ground",
+        "antenna_type_name": "Ground Plane"
+      }
+    ],
+    "created": "2022-03-06T10:40:41Z",
+    "last_seen": "2022-03-17T16:42:08Z",
+    "status": "Offline",
+    "observations": 39,
+    "future_observations": 0,
+    "description": "Test-Groundstation Germany near Frankfurt (Oder)",
+    "client_version": "1.6",
+    "target_utilization": 10,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/openwebrx-top-photo.jpg",
+    "success_rate": false,
+    "owner": "do2to"
+  },
+  {
+    "id": 705,
+    "name": "Provost Alberta Groundstation #1",
+    "altitude": 744,
+    "min_horizon": 10,
+    "lat": 52.449042,
+    "lng": -110.51078,
+    "qthlocator": "DO42rk",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "v-dipole",
+        "antenna_type_name": "V-Dipole"
+      }
+    ],
+    "created": "2019-05-02T04:28:04Z",
+    "last_seen": "2019-05-10T17:10:50Z",
+    "status": "Offline",
+    "observations": 43,
+    "future_observations": 0,
+    "description": "This station is a solar-powered raspberry pi, with a V-Dipole antenna, which may be relocated, and provided with a 3G/LTE data connection, for an even lower noise floor.  This station is also not close to any major towns or cities, meaning low interference. Future upgrades include \r\n\r\n-Adding A LNA\r\n-Adding an FM Bandpass filter (We have some nearby FM Stations that transmit at high power levels)\r\n-And a better power system that runs on lithium batteries instead of lead acid",
+    "client_version": "0.9",
+    "target_utilization": 25,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "fischerqf45"
+  },
+  {
+    "id": 3364,
+    "name": "EI5IN",
+    "altitude": 104,
+    "min_horizon": 0,
+    "lat": 53.526782,
+    "lng": -7.354422,
+    "qthlocator": "IO63hm",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 450000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      },
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2023-12-01T21:30:58Z",
+    "last_seen": "2025-03-18T21:25:20Z",
+    "status": "Offline",
+    "observations": 156,
+    "future_observations": 0,
+    "description": "Mullingar, 10+10 X-pol LFA, LNA, rtl-sdr",
+    "client_version": "1.8.1",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/EI5IN_antennas.jpg",
+    "success_rate": 50,
+    "owner": "keith"
+  },
+  {
+    "id": 4113,
+    "name": "M0JFP Staines Space and weather VHF",
+    "altitude": 15,
+    "min_horizon": 0,
+    "lat": 51.438,
+    "lng": -0.458,
+    "qthlocator": "IO91sk",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "eggbeater",
+        "antenna_type_name": "Eggbeater"
+      }
+    ],
+    "created": "2025-05-09T20:25:50Z",
+    "last_seen": "2025-09-20T16:20:07Z",
+    "status": "Online",
+    "observations": 350,
+    "future_observations": 0,
+    "description": "M2 egg beater raspberry pi3 lets see how well this works. IO91SK / Staines Middx.  rtlsdr v4 blog",
+    "client_version": "1.9.3",
+    "target_utilization": 100,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 72,
+    "owner": "M0JFP"
+  },
+  {
+    "id": 1760,
+    "name": "Lw9edz",
+    "altitude": 17,
+    "min_horizon": 0,
+    "lat": -34.695,
+    "lng": -58.48,
+    "qthlocator": "GF05sh",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      },
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "other omni",
+        "antenna_type_name": "Other Omni-Directional"
+      },
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "other omni",
+        "antenna_type_name": "Other Omni-Directional"
+      }
+    ],
+    "created": "2020-09-07T23:37:54Z",
+    "last_seen": "2025-09-12T23:26:07Z",
+    "status": "Offline",
+    "observations": 2322,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.6",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/IMG_20200908_214828714.jpg",
+    "success_rate": 65,
+    "owner": "lw9edz"
+  },
+  {
+    "id": 3750,
+    "name": "W6MSU V",
+    "altitude": 10,
+    "min_horizon": 16,
+    "lat": 38.054,
+    "lng": -121.361,
+    "qthlocator": "CM98hb",
+    "antenna": [
+      {
+        "frequency": 144000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2024-09-08T03:39:24Z",
+    "last_seen": "2025-09-20T16:19:52Z",
+    "status": "Online",
+    "observations": 1515,
+    "future_observations": 0,
+    "description": "SatNOGS ID 754, 1129, and 3750 changing from starlink to HughesNet. BRB",
+    "client_version": "1.9.3",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 82,
+    "owner": "W6MSU"
+  },
+  {
+    "id": 4098,
+    "name": "PLKFLPY (VR2UMD)",
+    "altitude": 37,
+    "min_horizon": 15,
+    "lat": 22.374,
+    "lng": 113.9953,
+    "qthlocator": "OL62xi",
+    "antenna": [
+      {
+        "frequency": 135500000,
+        "frequency_max": 155500000,
+        "band": "VHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      },
+      {
+        "frequency": 420000000,
+        "frequency_max": 450000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2025-04-30T01:35:04Z",
+    "last_seen": "2025-07-20T14:01:10Z",
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "This is a site in PLK Womens Welfare Club WD Fung Lee Pui Yiu Primary School (www.plkflpy.edu.hk). For enquiries please contact stem@plkflpy.edu.hk",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "plkflpy"
+  },
+  {
+    "id": 1141,
+    "name": "CSUM_test",
+    "altitude": 52,
+    "min_horizon": 10,
+    "lat": 43.637,
+    "lng": 3.843,
+    "qthlocator": "JN13wp",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2019-11-12T13:21:54Z",
+    "last_seen": "2020-03-02T14:57:22Z",
+    "status": "Offline",
+    "observations": 32,
+    "future_observations": 0,
+    "description": "CSUM test station",
+    "client_version": "0.9.1",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "elmarputs"
+  },
+  {
+    "id": 3790,
+    "name": "Stirling WA",
+    "altitude": 14,
+    "min_horizon": 0,
+    "lat": -31.890286,
+    "lng": 115.820105,
+    "qthlocator": "OF78vc",
+    "antenna": [
+      {
+        "frequency": 435000000,
+        "frequency_max": 437000000,
+        "band": "UHF",
+        "antenna_type": "lindenblad",
+        "antenna_type_name": "Lindenblad"
+      },
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      },
+      {
+        "frequency": 137000000,
+        "frequency_max": 147000000,
+        "band": "VHF",
+        "antenna_type": "lindenblad",
+        "antenna_type_name": "Lindenblad"
+      },
+      {
+        "frequency": 430000000,
+        "frequency_max": 440000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2024-10-12T13:34:04Z",
+    "last_seen": "2025-02-02T10:07:27Z",
+    "status": "Offline",
+    "observations": 128,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.8.1",
+    "target_utilization": 100,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 2,
+    "owner": "fincl"
+  },
+  {
+    "id": 487,
+    "name": "Anteater",
+    "altitude": 34,
+    "min_horizon": 10,
+    "lat": 33.644703,
+    "lng": -117.841113,
+    "qthlocator": "DM13bp",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "helical",
+        "antenna_type_name": "Helical"
+      }
+    ],
+    "created": "2019-02-08T07:45:53Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "UCI CubeSat's Groundstation",
+    "client_version": "",
+    "target_utilization": null,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "raneym"
+  },
+  {
+    "id": 923,
+    "name": "CCERES OMNI",
+    "altitude": 150,
+    "min_horizon": 25,
+    "lat": 48.804,
+    "lng": 2.227,
+    "qthlocator": "JN18ct",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "helical",
+        "antenna_type_name": "Helical"
+      }
+    ],
+    "created": "2019-08-14T11:52:23Z",
+    "last_seen": "2019-09-19T13:22:54Z",
+    "status": "Offline",
+    "observations": 221,
+    "future_observations": 0,
+    "description": "QFH 430mhz DIY antenna + china LNA 32db 0.01-2000Mhz (12v, no bias-t) + sdr AirSpy R2 + RG58 cable",
+    "client_version": "0.9",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/IMG_20190909_144127.jpg",
+    "success_rate": 75,
+    "owner": "cceres"
+  },
+  {
+    "id": 3164,
+    "name": "test999",
+    "altitude": 20,
+    "min_horizon": 5,
+    "lat": -20.74,
+    "lng": 116.807,
+    "qthlocator": "OG89jg",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      }
+    ],
+    "created": "2023-06-07T06:03:56Z",
+    "last_seen": "2025-07-02T03:08:16Z",
+    "status": "Offline",
+    "observations": 2867,
+    "future_observations": 0,
+    "description": "Schedule observations at your own peril",
+    "client_version": "1.9.3+5.g4eedaa1",
+    "target_utilization": 50,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/IMG_1252.JPG",
+    "success_rate": 77,
+    "owner": "kforrest"
+  },
+  {
+    "id": 2237,
+    "name": "f8avp",
+    "altitude": 230,
+    "min_horizon": 10,
+    "lat": 45.379,
+    "lng": 4.823,
+    "qthlocator": "JN25jj",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "v-dipole",
+        "antenna_type_name": "V-Dipole"
+      }
+    ],
+    "created": "2021-06-05T20:12:08Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "rx sat meteo",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "f8avp"
+  },
+  {
+    "id": 2382,
+    "name": "spectre",
+    "altitude": 650,
+    "min_horizon": 10,
+    "lat": 46.91,
+    "lng": 7.414,
+    "qthlocator": "JN36qv",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      },
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2021-09-07T18:03:23Z",
+    "last_seen": "2022-07-07T11:40:54Z",
+    "status": "Offline",
+    "observations": 766,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.6",
+    "target_utilization": 90,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 60,
+    "owner": "schwed0"
+  },
+  {
+    "id": 136,
+    "name": "F0FYF",
+    "altitude": 645,
+    "min_horizon": 280,
+    "lat": 45.941,
+    "lng": 6.184,
+    "qthlocator": "JN35cw",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 146000000,
+        "band": "VHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      },
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      },
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      }
+    ],
+    "created": "2018-06-13T10:43:16Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "FT897 / HackRf / Rtl-Sdr E4000",
+    "client_version": "",
+    "target_utilization": null,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "F0FYF"
+  },
+  {
+    "id": 438,
+    "name": "Timisoara - VHF QHA",
+    "altitude": 80,
+    "min_horizon": 10,
+    "lat": 45.7469,
+    "lng": 21.2125,
+    "qthlocator": "KN05or",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "quadrafilar",
+        "antenna_type_name": "Quadrafilar"
+      }
+    ],
+    "created": "2019-01-06T16:25:51Z",
+    "last_seen": "2025-09-20T16:19:42Z",
+    "status": "Online",
+    "observations": 22082,
+    "future_observations": 0,
+    "description": "Running on a Raspberry Pi3, SDR RX: RTL-SDR, Antenna: QHA.",
+    "client_version": "1.6",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 94,
+    "owner": "mitch_mrc"
+  },
+  {
+    "id": 10,
+    "name": "YFK",
+    "altitude": 183,
+    "min_horizon": 15,
+    "lat": 37.956,
+    "lng": 23.765,
+    "qthlocator": "KM17vw",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      },
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "eggbeater",
+        "antenna_type_name": "Eggbeater"
+      }
+    ],
+    "created": "2017-05-19T17:58:35Z",
+    "last_seen": "2025-08-01T16:25:39Z",
+    "status": "Offline",
+    "observations": 13360,
+    "future_observations": 0,
+    "description": "Twin RTLSDR station. \r\nADS-B Receiver for OpenSky network. \r\nradiosonde_auto_rx between SatNOGS observations",
+    "client_version": "1.9.3",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/IMG_20190409_193617.jpg",
+    "success_rate": 79,
+    "owner": "drid"
+  },
+  {
+    "id": 782,
+    "name": "Arizona",
+    "altitude": 586,
+    "min_horizon": 20,
+    "lat": 33.464,
+    "lng": -111.532,
+    "qthlocator": "DM43fl",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "quadrafilar",
+        "antenna_type_name": "Quadrafilar"
+      }
+    ],
+    "created": "2019-06-05T17:00:39Z",
+    "last_seen": "2020-04-03T04:22:43Z",
+    "status": "Offline",
+    "observations": 16,
+    "future_observations": 0,
+    "description": "VHF QFH antenna tuned to 137.5 MHz.\r\n  Raspberry Pi 3B.\r\n  RTL-SDR.com dongle.\r\n20db LNA\r\n\r\nMain objectives of site is to monitor NOAA and Meteor M2 weather transmissions.",
+    "client_version": "1.1.2",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "rdjohnston77"
+  },
+  {
+    "id": 1935,
+    "name": "GS001",
+    "altitude": 17,
+    "min_horizon": 16,
+    "lat": 54.922651,
+    "lng": -2.972936,
+    "qthlocator": "IO84mw",
+    "antenna": [
+      {
+        "frequency": 137000000,
+        "frequency_max": 152000000,
+        "band": "VHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      }
+    ],
+    "created": "2020-12-28T20:18:36Z",
+    "last_seen": "2023-04-16T15:54:09Z",
+    "status": "Offline",
+    "observations": 45,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.6",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "connor579e734860174984"
+  },
+  {
+    "id": 769,
+    "name": "FSA_Valdivia",
+    "altitude": 6,
+    "min_horizon": 20,
+    "lat": -39.801871,
+    "lng": -73.206336,
+    "qthlocator": "FF30je",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "vertical",
+        "antenna_type_name": "Vertical"
+      }
+    ],
+    "created": "2019-06-01T03:21:17Z",
+    "last_seen": "2019-11-06T22:37:58Z",
+    "status": "Offline",
+    "observations": 42,
+    "future_observations": 0,
+    "description": "First ground station from Foundation Spacio Australis located in Valdivia Chile Grid Locator FF30je operated by Nicolás Donoso CD3NDC.",
+    "client_version": "0.9",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "nicod"
+  },
+  {
+    "id": 2473,
+    "name": "YV6AE",
+    "altitude": 250,
+    "min_horizon": 10,
+    "lat": 9.4375,
+    "lng": -64.4583,
+    "qthlocator": "FJ79sk",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2021-12-16T23:13:54Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/yagi_yv6ae.jpg",
+    "success_rate": false,
+    "owner": "yv6ae"
+  },
+  {
+    "id": 3990,
+    "name": "BrokenAnkleFarm",
+    "altitude": 495,
+    "min_horizon": 20,
+    "lat": 45.581,
+    "lng": -89.5,
+    "qthlocator": "EN55gn",
+    "antenna": [
+      {
+        "frequency": 1050000000,
+        "frequency_max": 1750000000,
+        "band": "L",
+        "antenna_type": "parabolic",
+        "antenna_type_name": "Parabolic"
+      }
+    ],
+    "created": "2025-03-09T21:59:10Z",
+    "last_seen": "2025-06-08T16:17:01Z",
+    "status": "Offline",
+    "observations": 293,
+    "future_observations": 0,
+    "description": "Passes to the East of the QTH are not advised given the current antenna location. \r\nFuture: repositioning is planned for June 2025",
+    "client_version": "1.9.3",
+    "target_utilization": 7,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 0,
+    "owner": "haig123"
+  },
+  {
+    "id": 102,
+    "name": "PA3RVG VHF",
+    "altitude": 31,
+    "min_horizon": 5,
+    "lat": 51.472,
+    "lng": 5.558,
+    "qthlocator": "JO21sl",
+    "antenna": [
+      {
+        "frequency": 130000000,
+        "frequency_max": 150000000,
+        "band": "VHF",
+        "antenna_type": "dipole",
+        "antenna_type_name": "Dipole"
+      },
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "dipole",
+        "antenna_type_name": "Dipole"
+      }
+    ],
+    "created": "2018-05-09T19:58:52Z",
+    "last_seen": "2023-09-16T14:18:59Z",
+    "status": "Offline",
+    "observations": 15128,
+    "future_observations": 0,
+    "description": "Single dipole over chicken wire ground screen on flat roof with SPF5189 LNA at the feed point of the antenna followed by a 160 MHz low pass filter. Satnogs with Meteor M2 and M2 2 LRPT decoder, see this thread for more info: https://community.libre.space/t/meteor-mn2-decoder-for-rpi-3b/2493\r\n\r\nScheduling Meteor M2 passes is welcomed!",
+    "client_version": "1.4",
+    "target_utilization": 100,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/Satnogs_antenna_2.jpg",
+    "success_rate": 80,
+    "owner": "rico"
+  },
+  {
+    "id": 1308,
+    "name": "E22FFJ  Wijak Thaweesithichart",
+    "altitude": 10,
+    "min_horizon": 10,
+    "lat": 14.80976,
+    "lng": 100.63391,
+    "qthlocator": "OK04ht",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 146000000,
+        "band": "VHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2020-01-21T14:03:35Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "e22ffj"
+  },
+  {
+    "id": 3045,
+    "name": "FHWN VHF/UHF",
+    "altitude": 265,
+    "min_horizon": 0,
+    "lat": 47.839,
+    "lng": 16.248,
+    "qthlocator": "JN87cu",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 440000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      },
+      {
+        "frequency": 136000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2023-03-03T08:32:34Z",
+    "last_seen": "2025-09-20T16:19:38Z",
+    "status": "Testing",
+    "observations": 1844,
+    "future_observations": 0,
+    "description": "University of Applied Sciences Wiener Neustadt //  Setup:\r\n- RaspberryPi (SatNOGS Client, satnogs_gr-satellites, satnogs-auto-scheduler)\r\n- Windows PC (PstRotator)\r\n- ADALM-PLUTO SDR\r\n- RX: UHF Cross-Yagi (70 cm) + VHF Cross-Yagi (2 m) + Diamond MX-72N Duplexer + Sattrack BIG-RAS Rotator (0.5° Resolution) + SPID MD-01 Controller + Mast Pre-Amplifier DBA-270",
+    "client_version": "1.8.1",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/GS_UHF_FHWN_FoIcAJb.jpg",
+    "success_rate": 74,
+    "owner": "rudolf_pfeffer"
+  },
+  {
+    "id": 2220,
+    "name": "Mogielnica - S-band",
+    "altitude": 225,
+    "min_horizon": 15,
+    "lat": 49.979,
+    "lng": 21.913,
+    "qthlocator": "KN09wx",
+    "antenna": [
+      {
+        "frequency": 2240000000,
+        "frequency_max": 2450000000,
+        "band": "S",
+        "antenna_type": "helical",
+        "antenna_type_name": "Helical"
+      }
+    ],
+    "created": "2021-05-15T21:22:49Z",
+    "last_seen": "2025-09-20T16:19:38Z",
+    "status": "Online",
+    "observations": 45121,
+    "future_observations": 2,
+    "description": "hackrf + noelec lana + helical antena",
+    "client_version": "1.9.3+5.g4eedaa1",
+    "target_utilization": 100,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/Untitled_9bAVkos.jpg",
+    "success_rate": 64,
+    "owner": "michal.drzal"
+  },
+  {
+    "id": 2973,
+    "name": "Home",
+    "altitude": 230,
+    "min_horizon": 10,
+    "lat": 33.46,
+    "lng": -86.61,
+    "qthlocator": "EM63ql",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      },
+      {
+        "frequency": 400000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2023-01-07T16:23:02Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "kj4m"
+  },
+  {
+    "id": 1872,
+    "name": "M7BNN",
+    "altitude": 60,
+    "min_horizon": 30,
+    "lat": 50.603,
+    "lng": -3.622,
+    "qthlocator": "IO80eo",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "dipole",
+        "antenna_type_name": "Dipole"
+      }
+    ],
+    "created": "2020-11-10T09:56:33Z",
+    "last_seen": "2021-12-17T16:44:37Z",
+    "status": "Offline",
+    "observations": 202,
+    "future_observations": 0,
+    "description": "Raspberry Pi 4 with a homemade half wavelength dipole. \r\nGot ideas to homebrew my own turnstile antenna over the coming months.",
+    "client_version": "1.4",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 6,
+    "owner": "agritech-uk_ltd"
+  },
+  {
+    "id": 4215,
+    "name": "Ugur TABAKOGLU",
+    "altitude": 0,
+    "min_horizon": 10,
+    "lat": 0.0,
+    "lng": 0.0,
+    "qthlocator": "JJ00aa",
+    "antenna": [],
+    "created": "2025-06-29T00:46:29Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "TA3BPD",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "ugur"
+  },
+  {
+    "id": 2609,
+    "name": "KJ7SU - Subprime",
+    "altitude": 145,
+    "min_horizon": 0,
+    "lat": 45.462,
+    "lng": -122.727,
+    "qthlocator": "CN85pl",
+    "antenna": [
+      {
+        "frequency": 435000000,
+        "frequency_max": 438000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2022-03-29T04:29:22Z",
+    "last_seen": "2025-09-19T12:16:28Z",
+    "status": "Offline",
+    "observations": 264,
+    "future_observations": 0,
+    "description": "UniClOGS station",
+    "client_version": "1.8.1",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/KJ7SU_2609.jpg",
+    "success_rate": false,
+    "owner": "glennl"
+  },
+  {
+    "id": 88,
+    "name": "OZ3RF TEST",
+    "altitude": 10,
+    "min_horizon": 10,
+    "lat": 57.013805,
+    "lng": 9.987389,
+    "qthlocator": "JO47xa",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2018-04-15T20:59:53Z",
+    "last_seen": "2018-06-21T17:07:59Z",
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "This is a station allocation used mostly for testing, normal operation via aausat_gnd.",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "nickoe"
+  },
+  {
+    "id": 1936,
+    "name": "VK4JBE-UHF",
+    "altitude": 29,
+    "min_horizon": 20,
+    "lat": -27.492,
+    "lng": 153.069,
+    "qthlocator": "QG62mm",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      }
+    ],
+    "created": "2020-12-28T22:46:41Z",
+    "last_seen": "2025-09-20T16:20:04Z",
+    "status": "Online",
+    "observations": 158891,
+    "future_observations": 11,
+    "description": "",
+    "client_version": "1.8.1",
+    "target_utilization": 50,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/VK4JBE_SATNoGS.png",
+    "success_rate": 61,
+    "owner": "vk4jbe"
+  },
+  {
+    "id": 380,
+    "name": "jle-tum-VHF",
+    "altitude": 500,
+    "min_horizon": 5,
+    "lat": 48.2667,
+    "lng": 11.6681,
+    "qthlocator": "JN58ug",
+    "antenna": [
+      {
+        "frequency": 144000000,
+        "frequency_max": 146000000,
+        "band": "VHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      }
+    ],
+    "created": "2018-12-09T16:01:39Z",
+    "last_seen": "2025-08-13T23:51:14Z",
+    "status": "Offline",
+    "observations": 1780,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.3.4",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/20181210_133858.jpg",
+    "success_rate": 72,
+    "owner": "jle-tum"
+  },
+  {
+    "id": 1299,
+    "name": "JCF78",
+    "altitude": 45,
+    "min_horizon": 10,
+    "lat": 48.946578,
+    "lng": 2.148676,
+    "qthlocator": "JN18bw",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "helical",
+        "antenna_type_name": "Helical"
+      }
+    ],
+    "created": "2020-01-18T10:38:25Z",
+    "last_seen": "2024-09-22T09:29:12Z",
+    "status": "Offline",
+    "observations": 35,
+    "future_observations": 0,
+    "description": "TBD",
+    "client_version": "1.0",
+    "target_utilization": 15,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "jcf78"
+  },
+  {
+    "id": 1383,
+    "name": "EA5SW RTLSDR",
+    "altitude": 70,
+    "min_horizon": 10,
+    "lat": 39.45528,
+    "lng": -0.39611,
+    "qthlocator": "IM99tk",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "quadrafilar",
+        "antenna_type_name": "Quadrafilar"
+      },
+      {
+        "frequency": 430000000,
+        "frequency_max": 440000000,
+        "band": "UHF",
+        "antenna_type": "quadrafilar",
+        "antenna_type_name": "Quadrafilar"
+      }
+    ],
+    "created": "2020-02-27T21:58:31Z",
+    "last_seen": "2020-02-28T06:04:43Z",
+    "status": "Offline",
+    "observations": 52,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 27,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "ea5sw"
+  },
+  {
+    "id": 1997,
+    "name": "CERGA - ACRI-ST",
+    "altitude": 500,
+    "min_horizon": 0,
+    "lat": 43.665221,
+    "lng": 6.915273,
+    "qthlocator": "JN33kp",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2021-01-25T14:53:44Z",
+    "last_seen": "2021-06-25T13:10:06Z",
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 25,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "cergaone"
+  },
+  {
+    "id": 2881,
+    "name": "PARSEC 3",
+    "altitude": 90,
+    "min_horizon": 10,
+    "lat": 37.308828,
+    "lng": 15.121621,
+    "qthlocator": "JM77nh",
+    "antenna": [
+      {
+        "frequency": 25000000,
+        "frequency_max": 1300000000,
+        "band": "HF, VHF, UHF, L",
+        "antenna_type": "discone",
+        "antenna_type_name": "Discone"
+      }
+    ],
+    "created": "2022-11-07T08:17:34Z",
+    "last_seen": "2025-06-02T16:38:17Z",
+    "status": "Offline",
+    "observations": 2829,
+    "future_observations": 0,
+    "description": "SatNOGS station of PARSEC AB, RTL-SDR, Discone VHF and UHF",
+    "client_version": "1.8.1",
+    "target_utilization": 100,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/e780aba5-458e-4bce-a566-8eda7344eea0.jpeg",
+    "success_rate": 65,
+    "owner": "cai-catania"
+  },
+  {
+    "id": 334,
+    "name": "CyberOps III",
+    "altitude": 49,
+    "min_horizon": 10,
+    "lat": -34.953,
+    "lng": 138.603,
+    "qthlocator": "PF95hb",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      },
+      {
+        "frequency": 150000000,
+        "frequency_max": 151000000,
+        "band": "VHF",
+        "antenna_type": "helical",
+        "antenna_type_name": "Helical"
+      }
+    ],
+    "created": "2018-11-10T04:35:25Z",
+    "last_seen": "2020-04-18T08:15:01Z",
+    "status": "Offline",
+    "observations": 3301,
+    "future_observations": 0,
+    "description": "VK5TCP",
+    "client_version": "1.3.1",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 90,
+    "owner": "Cyberops"
+  },
+  {
+    "id": 4120,
+    "name": "1g helicone",
+    "altitude": 512,
+    "min_horizon": 10,
+    "lat": 32.657,
+    "lng": -99.844,
+    "qthlocator": "JJ00aa",
+    "antenna": [
+      {
+        "frequency": 1050000000,
+        "frequency_max": 1750000000,
+        "band": "L",
+        "antenna_type": "helical",
+        "antenna_type_name": "Helical"
+      }
+    ],
+    "created": "2025-05-12T20:29:22Z",
+    "last_seen": "2025-08-02T13:41:42Z",
+    "status": "Offline",
+    "observations": 46,
+    "future_observations": 0,
+    "description": "Helicone antenna on diy wingard RV dish platform repurposed into an antenna rotor",
+    "client_version": "1.9.3",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 0,
+    "owner": "kpalivec"
+  },
+  {
+    "id": 2975,
+    "name": "HB9WDF",
+    "altitude": 560,
+    "min_horizon": 14,
+    "lat": 47.187922,
+    "lng": 8.075786,
+    "qthlocator": "JN47ae",
+    "antenna": [],
+    "created": "2023-01-07T23:20:37Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/download_3uQen7x.jpg",
+    "success_rate": false,
+    "owner": "hb9wdf"
+  },
+  {
+    "id": 2143,
+    "name": "VHF Liptov",
+    "altitude": 582,
+    "min_horizon": 5,
+    "lat": 49.052,
+    "lng": 19.398,
+    "qthlocator": "JN99qb",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "v-dipole",
+        "antenna_type_name": "V-Dipole"
+      }
+    ],
+    "created": "2021-04-06T15:23:59Z",
+    "last_seen": "2023-10-12T03:59:13Z",
+    "status": "Offline",
+    "observations": 638,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.8.1",
+    "target_utilization": 100,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 80,
+    "owner": "triver112"
+  },
+  {
+    "id": 4353,
+    "name": "skystick",
+    "altitude": 40,
+    "min_horizon": 10,
+    "lat": -37.8011,
+    "lng": 144.9559,
+    "qthlocator": "QF22le",
+    "antenna": [
+      {
+        "frequency": 134000000,
+        "frequency_max": 148000003,
+        "band": "VHF",
+        "antenna_type": "helical",
+        "antenna_type_name": "Helical"
+      },
+      {
+        "frequency": 1050000000,
+        "frequency_max": 1750000000,
+        "band": "L",
+        "antenna_type": "helical",
+        "antenna_type_name": "Helical"
+      }
+    ],
+    "created": "2025-09-14T05:20:39Z",
+    "last_seen": "2025-09-20T12:06:11Z",
+    "status": "Offline",
+    "observations": 5,
+    "future_observations": 0,
+    "description": "This is a Quadrifilar Helix antenna",
+    "client_version": "1.9.3",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 0,
+    "owner": "kanishka"
+  },
+  {
+    "id": 1192,
+    "name": "Old Gore",
+    "altitude": 150,
+    "min_horizon": 10,
+    "lat": 51.95023,
+    "lng": -2.54445,
+    "qthlocator": "IO81rw",
+    "antenna": [
+      {
+        "frequency": 29000000,
+        "frequency_max": 999999999,
+        "band": "HF, VHF, UHF",
+        "antenna_type": "dipole",
+        "antenna_type_name": "Dipole"
+      }
+    ],
+    "created": "2019-12-08T13:28:44Z",
+    "last_seen": "2020-10-28T13:16:44Z",
+    "status": "Offline",
+    "observations": 53,
+    "future_observations": 0,
+    "description": "Raspberry PI, SDR, wideband collinear (for now ...)",
+    "client_version": "0.9.1",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "daveake"
+  },
+  {
+    "id": 2470,
+    "name": "ExpoSat-UHF",
+    "altitude": 4,
+    "min_horizon": 40,
+    "lat": 43.535,
+    "lng": -5.661,
+    "qthlocator": "IN73em",
+    "antenna": [
+      {
+        "frequency": 400000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      }
+    ],
+    "created": "2021-12-13T16:35:37Z",
+    "last_seen": "2025-09-20T16:11:23Z",
+    "status": "Offline",
+    "observations": 1097,
+    "future_observations": 0,
+    "description": "https://www.sites.google.com/site/astronauticamateur/expo3d",
+    "client_version": "1.8.1",
+    "target_utilization": 40,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/combib.jpg",
+    "success_rate": 50,
+    "owner": "spaceastur"
+  },
+  {
+    "id": 2474,
+    "name": "garage_uj",
+    "altitude": 222,
+    "min_horizon": 10,
+    "lat": 50.02943,
+    "lng": 19.90531,
+    "qthlocator": "JO90wa",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "dipole",
+        "antenna_type_name": "Dipole"
+      }
+    ],
+    "created": "2021-12-17T15:51:22Z",
+    "last_seen": "2023-05-10T12:55:24Z",
+    "status": "Offline",
+    "observations": 2,
+    "future_observations": 0,
+    "description": "Antena on FAiS",
+    "client_version": "1.6",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "garage_uj"
+  },
+  {
+    "id": 2058,
+    "name": "Kermit's Freehold",
+    "altitude": 85,
+    "min_horizon": 10,
+    "lat": 39.107,
+    "lng": -76.874,
+    "qthlocator": "FM19nc",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "discone",
+        "antenna_type_name": "Discone"
+      }
+    ],
+    "created": "2021-02-24T18:48:44Z",
+    "last_seen": "2021-03-18T12:02:45Z",
+    "status": "Offline",
+    "observations": 44,
+    "future_observations": 0,
+    "description": "Experimenting with fixed antenna.  Planning to build SatNOGS Rotator.",
+    "client_version": "1.4",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 45,
+    "owner": "stevenlavalle"
+  },
+  {
+    "id": 1639,
+    "name": "RIIS_TESTING",
+    "altitude": 1141,
+    "min_horizon": 25,
+    "lat": 44.756,
+    "lng": -106.966,
+    "qthlocator": "DN64ms",
+    "antenna": [
+      {
+        "frequency": 400000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "eggbeater",
+        "antenna_type_name": "Eggbeater"
+      }
+    ],
+    "created": "2020-06-24T22:49:51Z",
+    "last_seen": "2020-08-27T20:13:45Z",
+    "status": "Offline",
+    "observations": 58,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.3.4",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 0,
+    "owner": "xriis"
+  },
+  {
+    "id": 2531,
+    "name": "rommac vhf qfh",
+    "altitude": 347,
+    "min_horizon": 10,
+    "lat": 33.28849,
+    "lng": -111.86859,
+    "qthlocator": "DM43ak",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 140000000,
+        "band": "VHF",
+        "antenna_type": "other omni",
+        "antenna_type_name": "Other Omni-Directional"
+      }
+    ],
+    "created": "2022-02-04T04:51:02Z",
+    "last_seen": "2025-09-20T16:19:26Z",
+    "status": "Testing",
+    "observations": 472,
+    "future_observations": 0,
+    "description": "qfh with nooelec sawbird noaa lna",
+    "client_version": "2.0.1+47.g34bec7a",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 50,
+    "owner": "rommac100"
+  },
+  {
+    "id": 192,
+    "name": "t1st",
+    "altitude": 3,
+    "min_horizon": 3,
+    "lat": 12.345678,
+    "lng": 98.7654321,
+    "qthlocator": "NK92ji",
+    "antenna": [
+      {
+        "frequency": 29000000,
+        "frequency_max": 999999999,
+        "band": "HF, VHF, UHF",
+        "antenna_type": "dipole",
+        "antenna_type_name": "Dipole"
+      }
+    ],
+    "created": "2018-08-15T22:50:07Z",
+    "last_seen": "2018-08-15T22:59:43Z",
+    "status": "Offline",
+    "observations": 2,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": null,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "ryby"
+  },
+  {
+    "id": 346,
+    "name": "UA-Ground-Station",
+    "altitude": 93,
+    "min_horizon": 10,
+    "lat": 33.21327,
+    "lng": -87.54468,
+    "qthlocator": "EM63ff",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "vertical",
+        "antenna_type_name": "Vertical"
+      }
+    ],
+    "created": "2018-11-18T22:35:09Z",
+    "last_seen": "2021-10-15T01:49:02Z",
+    "status": "Offline",
+    "observations": 47,
+    "future_observations": 0,
+    "description": "Unbalanced monopole using RTL-SDR <https://www.rtl-sdr.com/>. Expecting frequency to be incorrectly centered until tested properly. Added in LNA from rtl-sdr.",
+    "client_version": "0.9",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 0,
+    "owner": "crsimpson"
+  },
+  {
+    "id": 1503,
+    "name": "trgo.sk BA1",
+    "altitude": 202,
+    "min_horizon": 10,
+    "lat": 48.151,
+    "lng": 17.051,
+    "qthlocator": "JN88md",
+    "antenna": [
+      {
+        "frequency": 400000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "other direct",
+        "antenna_type_name": "Other Directional"
+      },
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2020-04-19T09:36:44Z",
+    "last_seen": "2025-03-05T18:32:53Z",
+    "status": "Offline",
+    "observations": 313,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.4",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/Logoooo-empty.jpg",
+    "success_rate": 65,
+    "owner": "trgo.sk"
+  },
+  {
+    "id": 4273,
+    "name": "pc_test",
+    "altitude": 32,
+    "min_horizon": 10,
+    "lat": 21.016964141310577,
+    "lng": 105.85508046074675,
+    "qthlocator": "OL21wa",
+    "antenna": [
+      {
+        "frequency": 400000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2025-07-24T02:38:22Z",
+    "last_seen": "2025-07-25T07:01:53Z",
+    "status": "Offline",
+    "observations": 25,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.9.3",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 0,
+    "owner": "ngdacan"
+  },
+  {
+    "id": 4079,
+    "name": "Pie9",
+    "altitude": 0,
+    "min_horizon": 10,
+    "lat": 0.0,
+    "lng": 0.0,
+    "qthlocator": "JJ00aa",
+    "antenna": [],
+    "created": "2025-04-18T16:23:57Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "chicken11"
+  },
+  {
+    "id": 3737,
+    "name": "jj",
+    "altitude": 0,
+    "min_horizon": 10,
+    "lat": 0.0,
+    "lng": 0.0,
+    "qthlocator": "JJ00aa",
+    "antenna": [],
+    "created": "2024-09-01T23:32:04Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "ENSFNM"
+  },
+  {
+    "id": 1877,
+    "name": "W2KGY",
+    "altitude": 3,
+    "min_horizon": 10,
+    "lat": 41.391482,
+    "lng": -73.955972,
+    "qthlocator": "FN31aj",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      },
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2020-11-13T13:27:13Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "ke8jct"
+  },
+  {
+    "id": 290,
+    "name": "Home",
+    "altitude": 200,
+    "min_horizon": 10,
+    "lat": 43.52,
+    "lng": -84.11,
+    "qthlocator": "EN73wm",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      },
+      {
+        "frequency": 144000000,
+        "frequency_max": 146000000,
+        "band": "VHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2018-10-11T13:30:42Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": null,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "n8xd"
+  },
+  {
+    "id": 1521,
+    "name": "AE4ML",
+    "altitude": 411,
+    "min_horizon": 10,
+    "lat": 38.187658,
+    "lng": -77.69588,
+    "qthlocator": "FM18de",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      },
+      {
+        "frequency": 144000000,
+        "frequency_max": 146000000,
+        "band": "VHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2020-04-24T20:32:44Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 5,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "ae4ml"
+  },
+  {
+    "id": 979,
+    "name": "Valpo WIRED Lab 5",
+    "altitude": 240,
+    "min_horizon": 0,
+    "lat": 41.462582,
+    "lng": -87.038378,
+    "qthlocator": "EN61ll",
+    "antenna": [
+      {
+        "frequency": 425000000,
+        "frequency_max": 450000000,
+        "band": "UHF",
+        "antenna_type": "ground",
+        "antenna_type_name": "Ground Plane"
+      },
+      {
+        "frequency": 130000000,
+        "frequency_max": 160000000,
+        "band": "VHF",
+        "antenna_type": "ground",
+        "antenna_type_name": "Ground Plane"
+      }
+    ],
+    "created": "2019-09-12T19:12:36Z",
+    "last_seen": "2019-09-19T23:30:03Z",
+    "status": "Offline",
+    "observations": 3,
+    "future_observations": 0,
+    "description": "EXPERIMENTAL Raspberry Pi 4, 4GB.   Raspbian buster testing image.",
+    "client_version": "0.9",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "wiredlab"
+  },
+  {
+    "id": 3167,
+    "name": "EscuchSat",
+    "altitude": 830,
+    "min_horizon": 18,
+    "lat": 6.0,
+    "lng": 42.0,
+    "qthlocator": "LJ16aa",
+    "antenna": [
+      {
+        "frequency": 400000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "other omni",
+        "antenna_type_name": "Other Omni-Directional"
+      }
+    ],
+    "created": "2023-06-08T21:54:18Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "*",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "escuchsat"
+  },
+  {
+    "id": 2790,
+    "name": "ON4MU",
+    "altitude": 100,
+    "min_horizon": 10,
+    "lat": 50.823,
+    "lng": 4.36,
+    "qthlocator": "JO20et",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "turnstile",
+        "antenna_type_name": "Turnstile"
+      }
+    ],
+    "created": "2022-08-28T13:13:45Z",
+    "last_seen": "2022-09-03T14:38:21Z",
+    "status": "Offline",
+    "observations": 1,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.6",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 100,
+    "owner": "on4mu"
+  },
+  {
+    "id": 3974,
+    "name": "Satnogs1",
+    "altitude": 150,
+    "min_horizon": 10,
+    "lat": 55.7698,
+    "lng": 37.691,
+    "qthlocator": "KO85us",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 147000000,
+        "band": "VHF",
+        "antenna_type": "quadrafilar",
+        "antenna_type_name": "Quadrafilar"
+      }
+    ],
+    "created": "2025-03-03T13:24:23Z",
+    "last_seen": "2025-09-20T16:19:30Z",
+    "status": "Online",
+    "observations": 617,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.8.1",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": 80,
+    "owner": "nikn52"
+  },
+  {
+    "id": 936,
+    "name": "N6RFM Bristol, RI, USA",
+    "altitude": 25,
+    "min_horizon": 10,
+    "lat": 41.6771,
+    "lng": -71.2662,
+    "qthlocator": "FN41iq",
+    "antenna": [
+      {
+        "frequency": 430000000,
+        "frequency_max": 470000000,
+        "band": "UHF",
+        "antenna_type": "yagi",
+        "antenna_type_name": "Yagi"
+      }
+    ],
+    "created": "2019-08-19T13:26:22Z",
+    "last_seen": null,
+    "status": "Offline",
+    "observations": 0,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "",
+    "target_utilization": 0,
+    "image": "/static/img/ground_station_no_image.png",
+    "success_rate": false,
+    "owner": "N6RFM"
+  },
+  {
+    "id": 2031,
+    "name": "Astre'Nogs Nanostar ISAE-SUPAERO 01",
+    "altitude": 115,
+    "min_horizon": 10,
+    "lat": 43.6044,
+    "lng": 1.444,
+    "qthlocator": "JJ00aa",
+    "antenna": [
+      {
+        "frequency": 135000000,
+        "frequency_max": 148000000,
+        "band": "VHF",
+        "antenna_type": "cross-yagi",
+        "antenna_type_name": "Cross Yagi"
+      }
+    ],
+    "created": "2021-02-08T15:14:23Z",
+    "last_seen": "2025-09-20T16:20:16Z",
+    "status": "Testing",
+    "observations": 2792,
+    "future_observations": 0,
+    "description": "",
+    "client_version": "1.4",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/LOGO_REGLES_EUvalide_l15xmyi.png",
+    "success_rate": 90,
+    "owner": "astrenogsdce4a9994ff64926"
+  },
+  {
+    "id": 3084,
+    "name": "UB3ALB-2",
+    "altitude": 180,
+    "min_horizon": 7,
+    "lat": 55.576179,
+    "lng": 37.14252,
+    "qthlocator": "KO85nn",
+    "antenna": [
+      {
+        "frequency": 1670000000,
+        "frequency_max": 1720000000,
+        "band": "L",
+        "antenna_type": "parabolic",
+        "antenna_type_name": "Parabolic"
+      }
+    ],
+    "created": "2023-04-10T15:40:24Z",
+    "last_seen": "2023-08-27T15:45:42Z",
+    "status": "Offline",
+    "observations": 4046,
+    "future_observations": 0,
+    "description": "1.1 meter ANTEX-E dish with SuperAntennaz clone and SatNOGS rotator controller + Nooelec birdsaw LNA + RTL-SDR v3 + Raspberry Pi",
+    "client_version": "1.8.1",
+    "target_utilization": 0,
+    "image": "https://network-satnogs.freetls.fastly.net/media/ground_stations/photo_2023-04-29_13.03.42.jpeg",
+    "success_rate": 74,
+    "owner": "belovictor"
+  }
+]

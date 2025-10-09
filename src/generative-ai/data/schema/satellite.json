@@ -1,0 +1,35 @@
+{
+    "$id": "file:///D:/PBL4_AIPrancns/AI-PRACNS/src/generative-ai/data/schema/satellite.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "Satellite",
+    "allOf": [{ "$ref": "./node.json" }],
+    "properties": {
+        "nodeType": { "const": "SATELLITE" },
+        "orbit": {
+            "type": ["object", "null"],
+            "properties": {
+                "type": { "type": "string", "enum": ["LEO", "MEO", "GEO"] },
+                "inclination": { "type": "number" },
+                "period": { "type": "number" },
+                "semiMajorAxis": { "type": "number" },
+                "tle": { 
+                    "type": ["object", "null"], 
+                    "properties": {
+                        "line1": { "type": "string" },
+                        "line2": { "type": "string" }
+                    },
+                    "required": ["line1", "line2"]
+                }
+            },
+            "required": ["type", "inclination", "period", "semiMajorAxis", "tle"]
+        },
+        "payloadType": { "type": "string", "enum": ["transparent", "regenerative", "hybrid"] },
+        "beamCoverageKm": { "type": "number" },
+        "islCapable": { "type": "boolean" },
+        "bandwidthMbps": { "type": "number", "minimum": 0 },
+        "latencyMs": { "type": "number" },
+        "linkAvailable": { "type": "boolean" },
+        "healthy": { "type": "boolean" }
+    },
+    "required": ["nodeId", "nodeType", "position", "orbit", "payloadType"]
+}

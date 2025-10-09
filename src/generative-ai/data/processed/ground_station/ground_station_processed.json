@@ -1,0 +1,4546 @@
+[
+  {
+    "nodeId": "gs_524",
+    "nodeName": "TEC-CA",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 9.8532,
+      "longitude": -83.9059,
+      "altitude": 1.338
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 128.594,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 4036.7433333333333,
+    "lastUpdated": "2019-03-18T07:10:37+00:00",
+    "pathLengthKm": 1210.873,
+    "meta": {
+      "description": "UHF ground station\r\nKenwood TS-2000\r\nRotator G5500",
+      "owner": "esteban88",
+      "qthlocator": "EJ89bu",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_317",
+    "nodeName": "Sergio Arboleda 5K3USA",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 4.661182,
+      "longitude": -74.059708,
+      "altitude": 2.6
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 179.267,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 2616.28,
+    "lastUpdated": "2025-09-21T08:30:54.414143Z",
+    "pathLengthKm": 784.734,
+    "meta": {
+      "description": "",
+      "owner": "Max_Herrera",
+      "qthlocator": "FJ24xp",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 35,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1920",
+    "nodeName": "VA6RPI Alberta Canada.",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 54.8917,
+      "longitude": -112.2982,
+      "altitude": 0.55
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 72.5,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 20475.45,
+    "lastUpdated": "2024-11-20T03:06:07+00:00",
+    "pathLengthKm": 6142.485,
+    "meta": {
+      "description": "(If Station is in Testing Mode it's being used for SSB Sat work or down for Maintenance) \r\nPi 3 B+, RSP1A, Nooelec LNA, DIY Folded Dipole Driven 7el X-Pol Yagi on 10ft Boom.\r\nhttps://www.arrl.org/shop/files/pdfs/Satellite%20project.pdf",
+      "owner": "ve6kdx",
+      "qthlocator": "DO34uv",
+      "antenna": [
+        {
+          "frequency": 400000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_4313",
+    "nodeName": "Franklin",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 40.147,
+      "longitude": -75.1012,
+      "altitude": 0.12
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 38.509,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 15018.379999999997,
+    "lastUpdated": "2025-09-05T23:02:00+00:00",
+    "pathLengthKm": 4505.364,
+    "meta": {
+      "description": "",
+      "owner": "henningrodeo",
+      "qthlocator": "JJ00aa",
+      "antenna": []
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_779",
+    "nodeName": "N8HF",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 40.034866,
+      "longitude": -82.384599,
+      "altitude": 0.288
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 46.406,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 14948.45,
+    "lastUpdated": "2019-07-04T14:59:41+00:00",
+    "pathLengthKm": 4484.385,
+    "meta": {
+      "description": "",
+      "owner": "rrittenhouse",
+      "qthlocator": "EN80ta",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "vertical",
+          "antenna_type_name": "Vertical"
+        },
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "vertical",
+          "antenna_type_name": "Vertical"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 23,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1146",
+    "nodeName": "Ham Radio Ground Station",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 33.9150176,
+      "longitude": -6.9161733,
+      "altitude": 0.114
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 37.534,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 12770.24,
+    "lastUpdated": "2025-09-21T08:30:58.173160Z",
+    "pathLengthKm": 3830.922,
+    "meta": {
+      "description": "Ground station project  specifically designed for communication with small satellites in Low Earth Orbit using VHF and UHF amateur radio frequencies and provide hands-on educational projects in the world\r\nThe ground station can autonomously track satellites by using these equipments :\r\n VHF / UHF amateur radio transceiver (Amateur bands 144-16 MHZ and 430-440 MHZ)\r\nRotator Controller\r\nAzimuth and elevation rotators \r\nUHF and VHF Yagi antennas (Amateur bands 144-16 MHZ and 430-440 MHZ)\r\nModems...",
+      "owner": "cn8ff",
+      "qthlocator": "IM63nv",
+      "antenna": []
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 81,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1955",
+    "nodeName": "Oxford",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 51.752765,
+      "longitude": -1.277417,
+      "altitude": 0.06
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 26.708,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 16432.533333333333,
+    "lastUpdated": "2023-02-14T14:17:07+00:00",
+    "pathLengthKm": 4929.61,
+    "meta": {
+      "description": "51.7526892, -1.2774661",
+      "owner": "danisors",
+      "qthlocator": "IO91is",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "v-dipole",
+          "antenna_type_name": "V-Dipole"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 86,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1236",
+    "nodeName": "PaczkowoStation",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 52.393752,
+      "longitude": 17.150765,
+      "altitude": 0.096
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 0.0,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 14974.253333333334,
+    "lastUpdated": "2019-12-24T13:20:14+00:00",
+    "pathLengthKm": 4492.126,
+    "meta": {
+      "description": "",
+      "owner": "pawelk",
+      "qthlocator": "JO82nj",
+      "antenna": [
+        {
+          "frequency": 29000000,
+          "frequency_max": 999999999,
+          "band": "HF, VHF, UHF",
+          "antenna_type": "dipole",
+          "antenna_type_name": "Dipole"
+        },
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "v-dipole",
+          "antenna_type_name": "V-Dipole"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 1,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_4341",
+    "nodeName": "N0NQD-SatScanner VHF",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 45.288962,
+      "longitude": -93.74652,
+      "altitude": 0.325
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 63.375,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 16885.45333333333,
+    "lastUpdated": "2025-09-20T16:19:34+00:00",
+    "pathLengthKm": 5065.486,
+    "meta": {
+      "description": "I have released the station to an active status due to a few decoded signals from satellites such as LILACSAT. This is my version of the EggNogs Eggbeater antenna that is tuned for the VHF band @ ~40'. The station is a Raspberry Pi 5, RTLSDR V4, along with a Nooelec LaNA. Final configuration will depend on performance during its use and will be adjusted where warranted. Additionally, this station will be remotely mounted at the antenna like its UHF sister station.",
+      "owner": "n0nqd",
+      "qthlocator": "EN35dg",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "eggbeater",
+          "antenna_type_name": "Eggbeater"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_4302",
+    "nodeName": "wilsat",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 33.37,
+      "longitude": -84.79,
+      "altitude": 0.28
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 45.757,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 12491.756666666666,
+    "lastUpdated": "2025-08-12T17:23:59+00:00",
+    "pathLengthKm": 3747.377,
+    "meta": {
+      "description": "",
+      "owner": "weswiley",
+      "qthlocator": "EM73ok",
+      "antenna": [
+        {
+          "frequency": 400000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "quadrafilar",
+          "antenna_type_name": "Quadrafilar"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_723",
+    "nodeName": "AFK1818",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 35.744,
+      "longitude": 51.5,
+      "altitude": 1.437
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 133.267,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 12668.763333333332,
+    "lastUpdated": "2019-05-07T18:50:59+00:00",
+    "pathLengthKm": 3800.479,
+    "meta": {
+      "description": "",
+      "owner": "afshinmostafa",
+      "qthlocator": "LM55sr",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1095",
+    "nodeName": "UNISEC India BANGALORE-GS1",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 12.984,
+      "longitude": 77.674,
+      "altitude": 0.923
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 106.804,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 6603.966666666667,
+    "lastUpdated": "2019-12-18T06:50:03+00:00",
+    "pathLengthKm": 1981.04,
+    "meta": {
+      "description": "Research in the field of Nano-Satellites!\r\nThe Space Company.\r\nResearch Engineer and SPoC at UNISEC INDIA.\r\nI also have an Amateur Callsign, VU3HJT.\r\nAlso proud Partner of the INTERCONTINENTAL AEROSPACE COMMAND. (IACS) \r\nCommittee of Space Development, Novi Sad, Serbia. (CSPD)\r\n(INDO-SERBIA)\r\nhttp://2comnet.info/komsat/en/",
+      "owner": "sainath.vu3hjt",
+      "qthlocator": "MK82ux",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 53,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_973",
+    "nodeName": "WoodySat",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 51.946428,
+      "longitude": -2.046122,
+      "altitude": 0.074
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 28.855,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 16595.376666666663,
+    "lastUpdated": "2019-12-07T11:02:07+00:00",
+    "pathLengthKm": 4978.463,
+    "meta": {
+      "description": "Pi2 + RTL_SDR + Funcube Turnstile Antenna (no LNA yet)",
+      "owner": "dk_sat",
+      "qthlocator": "IO81xw",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 73,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2806",
+    "nodeName": "CEN@AMRITA",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 10.906247,
+      "longitude": 76.897346,
+      "altitude": 0.141
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 42.226,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 5982.413333333334,
+    "lastUpdated": "2022-09-10T11:18:58+00:00",
+    "pathLengthKm": 1794.574,
+    "meta": {
+      "description": "",
+      "owner": "aie24",
+      "qthlocator": "MK80kv",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "quadrafilar",
+          "antenna_type_name": "Quadrafilar"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_4111",
+    "nodeName": "Plyachka",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 42.48304,
+      "longitude": 23.445813,
+      "altitude": 1.1
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 117.945,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 11183.503333333334,
+    "lastUpdated": "2025-09-20T16:19:59+00:00",
+    "pathLengthKm": 3354.901,
+    "meta": {
+      "description": "UHF Omni antenna at the Plana Teleport",
+      "owner": "yurimdias",
+      "qthlocator": "KN12rl",
+      "antenna": [
+        {
+          "frequency": 400000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "helical",
+          "antenna_type_name": "Helical"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_959",
+    "nodeName": "CE3VRT - VHF - UHF",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": -33.659,
+      "longitude": -70.727,
+      "altitude": 0.55
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 83.398,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 12670.716666666667,
+    "lastUpdated": "2020-03-05T05:03:40+00:00",
+    "pathLengthKm": 3801.065,
+    "meta": {
+      "description": "Station on rural area (limited internet access). Please try to schedule Fox series sats only. \r\n\r\nGear:\r\n- VHF Turnstile\r\n- FM Filter + LNA4ALL\r\n- Nooelec RTLSDR",
+      "owner": "CE3VRT",
+      "qthlocator": "FF46pi",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 2.4,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 33.34993681958636,
+      "snrReduction_dB": 16.675
+    }
+  },
+  {
+    "nodeId": "gs_3280",
+    "nodeName": "VlzStation",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 48.78,
+      "longitude": 2.178,
+      "altitude": 0.2
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 35.696,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 15065.326666666668,
+    "lastUpdated": "2025-09-21T08:31:11.142002Z",
+    "pathLengthKm": 4519.448,
+    "meta": {
+      "description": "Small station in the attic",
+      "owner": "sareten",
+      "qthlocator": "JN18cs",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "v-dipole",
+          "antenna_type_name": "V-Dipole"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_3184",
+    "nodeName": "SpaceTeam TMW",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 48.191,
+      "longitude": 16.318,
+      "altitude": 0.185
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 45.624,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 13493.03,
+    "lastUpdated": "2025-09-20T16:20:02+00:00",
+    "pathLengthKm": 4047.759,
+    "meta": {
+      "description": "Stationary ground station on a Pi3, RTLSDR, Custom LNA (PGA-103+), SAW Filter (SF2446E) and a 3D printed QFH antenna.",
+      "owner": "spaceteam",
+      "qthlocator": "JN88de",
+      "antenna": [
+        {
+          "frequency": 422000000,
+          "frequency_max": 445000000,
+          "band": "UHF",
+          "antenna_type": "quadrafilar",
+          "antenna_type_name": "Quadrafilar"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_789",
+    "nodeName": "Vlissingen",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 51.4622,
+      "longitude": 3.5884,
+      "altitude": 0.012
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.62,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 15727.273333333334,
+    "lastUpdated": "2019-07-20T12:01:25+00:00",
+    "pathLengthKm": 4718.032,
+    "meta": {
+      "description": "2m QFH for now",
+      "owner": "holysmokey",
+      "qthlocator": "JO11tl",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "quadrafilar",
+          "antenna_type_name": "Quadrafilar"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1396",
+    "nodeName": "PH3V - The Netherlands",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 51.4723,
+      "longitude": 4.66379,
+      "altitude": 0.015
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 13.772,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 15608.443333333333,
+    "lastUpdated": "2023-11-07T14:39:27+00:00",
+    "pathLengthKm": 4682.383,
+    "meta": {
+      "description": "Antenna > QFH | SDRplay RSPdx| \r\nLocated in Zundert, The Netherlands ]",
+      "owner": "ph3v",
+      "qthlocator": "JO21hl",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "quadrafilar",
+          "antenna_type_name": "Quadrafilar"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_3322",
+    "nodeName": "VU2TUM",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 28.38958,
+      "longitude": 76.95235,
+      "altitude": 0.28
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 58.824,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 11400.806666666667,
+    "lastUpdated": "2024-09-06T14:26:12+00:00",
+    "pathLengthKm": 3420.092,
+    "meta": {
+      "description": "Station of VU2TUM",
+      "owner": "vu2tum",
+      "qthlocator": "ML88lj",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "ground",
+          "antenna_type_name": "Ground Plane"
+        },
+        {
+          "frequency": 400000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "ground",
+          "antenna_type_name": "Ground Plane"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 4,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1402",
+    "nodeName": "NTU FYP",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 1.3521,
+      "longitude": 103.82,
+      "altitude": 0.015
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 13.615,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 2702.7033333333334,
+    "lastUpdated": "2020-04-29T20:26:27+00:00",
+    "pathLengthKm": 810.661,
+    "meta": {
+      "description": "FYP Project",
+      "owner": "riqo",
+      "qthlocator": "OJ11vi",
+      "antenna": []
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 40,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_69",
+    "nodeName": "VJTI Satellite Club",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 19.022,
+      "longitude": 72.857,
+      "altitude": 0.017
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 14.494,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 8100.1900000000005,
+    "lastUpdated": "2018-04-03T10:18:02+00:00",
+    "pathLengthKm": 2429.907,
+    "meta": {
+      "description": "",
+      "owner": "Ashish_Kamble",
+      "qthlocator": "MK69ka",
+      "antenna": [
+        {
+          "frequency": 144000000,
+          "frequency_max": 146000000,
+          "band": "VHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.9,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 4.360539769416622,
+      "snrReduction_dB": 2.18
+    }
+  },
+  {
+    "nodeId": "gs_4127",
+    "nodeName": "IW9GTD",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 37.95,
+      "longitude": 12.514,
+      "altitude": 0.02
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 15.721,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 10238.363333333333,
+    "lastUpdated": "2025-05-15T15:30:42+00:00",
+    "pathLengthKm": 3071.359,
+    "meta": {
+      "description": "",
+      "owner": "iw9gtd",
+      "qthlocator": "JM67gw",
+      "antenna": [
+        {
+          "frequency": 400000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 23,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_72",
+    "nodeName": "Rokantiskes",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 54.705693,
+      "longitude": 25.379382,
+      "altitude": 0.008
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 9.943,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 15696.283333333333,
+    "lastUpdated": "2018-08-30T13:52:24+00:00",
+    "pathLengthKm": 4708.735,
+    "meta": {
+      "description": "Third attempt.",
+      "owner": "emilis",
+      "qthlocator": "KO24qq",
+      "antenna": [
+        {
+          "frequency": 29000000,
+          "frequency_max": 999999999,
+          "band": "HF, VHF, UHF",
+          "antenna_type": "dipole",
+          "antenna_type_name": "Dipole"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 2,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_562",
+    "nodeName": "AD7NP-X201",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 47.6458,
+      "longitude": -122.2084,
+      "altitude": 0.065
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 28.342,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 17747.393333333333,
+    "lastUpdated": "2025-09-21T08:31:22.727405Z",
+    "pathLengthKm": 5324.068,
+    "meta": {
+      "description": "AD7NP-X201",
+      "owner": "ad7np",
+      "qthlocator": "CN87vp",
+      "antenna": []
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_307",
+    "nodeName": "FraunhoferEMI",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 48.0009,
+      "longitude": 7.8467,
+      "altitude": 0.288
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 59.026,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 14121.269999999999,
+    "lastUpdated": "2019-03-11T08:14:16+00:00",
+    "pathLengthKm": 4236.231,
+    "meta": {
+      "description": "",
+      "owner": "EMIZadim",
+      "qthlocator": "JN38wa",
+      "antenna": [
+        {
+          "frequency": 432000000,
+          "frequency_max": 439000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 92,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2302",
+    "nodeName": "AB3ZW",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 39.47224,
+      "longitude": -76.33227,
+      "altitude": 0.003
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 6.089,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 14790.573333333334,
+    "lastUpdated": "2024-06-03T15:54:52+00:00",
+    "pathLengthKm": 4437.022,
+    "meta": {
+      "description": "SatNOGS project",
+      "owner": "hk4bha",
+      "qthlocator": "FM19ul",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "eggbeater",
+          "antenna_type_name": "Eggbeater"
+        },
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "eggbeater",
+          "antenna_type_name": "Eggbeater"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 34,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2510",
+    "nodeName": "MAUSyagi",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 40.009,
+      "longitude": -105.248,
+      "altitude": 1.626
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 141.761,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 15079.589999999998,
+    "lastUpdated": "2025-07-12T21:05:12+00:00",
+    "pathLengthKm": 4523.727,
+    "meta": {
+      "description": "MAUSyagi 2510  A static Diamond 15-element pointed west at 35 deg EL, rtlsdr, DownEast 437 MHz LNA.  satnogs-ansible client along with satnogs-gr_satellites and STRF.",
+      "owner": "satcolintel5",
+      "qthlocator": "DN70ja",
+      "antenna": [
+        {
+          "frequency": 400000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "vertical",
+          "antenna_type_name": "Vertical"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1507",
+    "nodeName": "Northampton - Development",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 52.212,
+      "longitude": -0.904,
+      "altitude": 0.112
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 37.203,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 16519.1,
+    "lastUpdated": "2020-05-07T16:16:08+00:00",
+    "pathLengthKm": 4955.58,
+    "meta": {
+      "description": "Not sure I really need this to play with dev, but meh.",
+      "owner": "mat",
+      "qthlocator": "IO92nf",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "other omni",
+          "antenna_type_name": "Other Omni-Directional"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 88,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2694",
+    "nodeName": "OE6ISP_LimeSDR",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 47.02,
+      "longitude": 15.263,
+      "altitude": 0.41
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 72.28,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 13135.570000000002,
+    "lastUpdated": "2025-08-26T21:11:46+00:00",
+    "pathLengthKm": 3940.521,
+    "meta": {
+      "description": "LimeSDR on Raspi 4 - Antenna: 5/8 vertical homemade - LNA1: SSB antenna preamp - LNA2: Hartwig ultra low noise amp + dual helical filter.",
+      "owner": "stefanp",
+      "qthlocator": "JN77pa",
+      "antenna": [
+        {
+          "frequency": 800000000,
+          "frequency_max": 990000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_781",
+    "nodeName": "DE-FRE-VHF",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 52.483,
+      "longitude": 7.55,
+      "altitude": 0.025
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 16.176,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 15648.856666666665,
+    "lastUpdated": "2025-09-20T16:20:08+00:00",
+    "pathLengthKm": 4694.507,
+    "meta": {
+      "description": "",
+      "owner": "malte",
+      "qthlocator": "JO32sl",
+      "antenna": [
+        {
+          "frequency": 29000000,
+          "frequency_max": 999999999,
+          "band": "HF, VHF, UHF",
+          "antenna_type": "dipole",
+          "antenna_type_name": "Dipole"
+        },
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "vertical",
+          "antenna_type_name": "Vertical"
+        },
+        {
+          "frequency": 100000000,
+          "frequency_max": 150000000,
+          "band": "VHF",
+          "antenna_type": "quadrafilar",
+          "antenna_type_name": "Quadrafilar"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 99,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_412",
+    "nodeName": "StSavin",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 45.803,
+      "longitude": 5.317,
+      "altitude": 0.3
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 60.889,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 13716.500000000002,
+    "lastUpdated": "2018-12-24T10:56:03+00:00",
+    "pathLengthKm": 4114.8,
+    "meta": {
+      "description": "",
+      "owner": "Manust",
+      "qthlocator": "JN25pt",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        },
+        {
+          "frequency": 144000000,
+          "frequency_max": 146000000,
+          "band": "VHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 54,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_4067",
+    "nodeName": "Ichigaya Campus",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 0.0,
+      "longitude": 0.0,
+      "altitude": 0.0
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 0.0,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 1647.2466666666667,
+    "lastUpdated": "2025-09-21T08:31:32.993312Z",
+    "pathLengthKm": 494.024,
+    "meta": {
+      "description": "",
+      "owner": "ngorongoro",
+      "qthlocator": "JJ00aa",
+      "antenna": []
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 67,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_274",
+    "nodeName": "F/EB2AT",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 43.789475,
+      "longitude": -1.402423,
+      "altitude": 0.012
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 10000.0,
+    "capacityMbps": 15000.0,
+    "coverageRadiusKm": 12.358,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 14183.069999999998,
+    "lastUpdated": "2025-09-21T08:31:34.232391Z",
+    "pathLengthKm": 4254.771,
+    "meta": {
+      "description": "",
+      "owner": "EB2AT",
+      "qthlocator": "IN93hs",
+      "antenna": [
+        {
+          "frequency": 2200000000,
+          "frequency_max": 2300000000,
+          "band": "S",
+          "antenna_type": "helical",
+          "antenna_type_name": "Helical"
+        },
+        {
+          "frequency": 135000000,
+          "frequency_max": 146000000,
+          "band": "VHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        },
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1838",
+    "nodeName": "pjotr",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 53.25667,
+      "longitude": 6.45972,
+      "altitude": 0.003
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 6.089,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 16010.333333333332,
+    "lastUpdated": "2025-09-21T08:31:35.460582Z",
+    "pathLengthKm": 4802.95,
+    "meta": {
+      "description": "luister en kijken",
+      "owner": "pjotr",
+      "qthlocator": "JO33fg",
+      "antenna": []
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 11,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2574",
+    "nodeName": "SKR-SAT",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 52.31389,
+      "longitude": 14.44797,
+      "altitude": 0.098
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 34.8,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 15075.513333333332,
+    "lastUpdated": "2022-03-17T16:42:08+00:00",
+    "pathLengthKm": 4522.504,
+    "meta": {
+      "description": "Test-Groundstation Germany near Frankfurt (Oder)",
+      "owner": "do2to",
+      "qthlocator": "JO72fh",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "ground",
+          "antenna_type_name": "Ground Plane"
+        },
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "ground",
+          "antenna_type_name": "Ground Plane"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_705",
+    "nodeName": "Provost Alberta Groundstation #1",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 52.449042,
+      "longitude": -110.51078,
+      "altitude": 0.744
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 95.889,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 19634.550000000003,
+    "lastUpdated": "2019-05-10T17:10:50+00:00",
+    "pathLengthKm": 5890.215,
+    "meta": {
+      "description": "This station is a solar-powered raspberry pi, with a V-Dipole antenna, which may be relocated, and provided with a 3G/LTE data connection, for an even lower noise floor.  This station is also not close to any major towns or cities, meaning low interference. Future upgrades include \r\n\r\n-Adding A LNA\r\n-Adding an FM Bandpass filter (We have some nearby FM Stations that transmit at high power levels)\r\n-And a better power system that runs on lithium batteries instead of lead acid",
+      "owner": "fischerqf45",
+      "qthlocator": "DO42rk",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "v-dipole",
+          "antenna_type_name": "V-Dipole"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 78,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_3364",
+    "nodeName": "EI5IN",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 53.526782,
+      "longitude": -7.354422,
+      "altitude": 0.104
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 36.403,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 17808.653333333332,
+    "lastUpdated": "2025-03-18T21:25:20+00:00",
+    "pathLengthKm": 5342.446,
+    "meta": {
+      "description": "Mullingar, 10+10 X-pol LFA, LNA, rtl-sdr",
+      "owner": "keith",
+      "qthlocator": "IO63hm",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 450000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        },
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 86,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_4113",
+    "nodeName": "M0JFP Staines Space and weather VHF",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 51.438,
+      "longitude": -0.458,
+      "altitude": 0.015
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 13.825,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 16227.646666666666,
+    "lastUpdated": "2025-09-20T16:20:07+00:00",
+    "pathLengthKm": 4868.144,
+    "meta": {
+      "description": "M2 egg beater raspberry pi3 lets see how well this works. IO91SK / Staines Middx.  rtlsdr v4 blog",
+      "owner": "M0JFP",
+      "qthlocator": "IO91sk",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "eggbeater",
+          "antenna_type_name": "Eggbeater"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 43,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1760",
+    "nodeName": "Lw9edz",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": -34.695,
+      "longitude": -58.48,
+      "altitude": 0.017
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 14.718,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 13452.173333333334,
+    "lastUpdated": "2025-09-12T23:26:07+00:00",
+    "pathLengthKm": 4035.502,
+    "meta": {
+      "description": "",
+      "owner": "lw9edz",
+      "qthlocator": "GF05sh",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        },
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "other omni",
+          "antenna_type_name": "Other Omni-Directional"
+        },
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "other omni",
+          "antenna_type_name": "Other Omni-Directional"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.1,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 1.5728281379564033,
+      "snrReduction_dB": 0.786
+    }
+  },
+  {
+    "nodeId": "gs_3750",
+    "nodeName": "W6MSU V",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 38.054,
+      "longitude": -121.361,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 10.851,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 14203.866666666667,
+    "lastUpdated": "2025-09-20T16:19:52+00:00",
+    "pathLengthKm": 4261.01,
+    "meta": {
+      "description": "SatNOGS ID 754, 1129, and 3750 changing from starlink to HughesNet. BRB",
+      "owner": "W6MSU",
+      "qthlocator": "CM98hb",
+      "antenna": [
+        {
+          "frequency": 144000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_4098",
+    "nodeName": "PLKFLPY (VR2UMD)",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 22.374,
+      "longitude": 113.9953,
+      "altitude": 0.037
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 20.973,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 8444.276666666667,
+    "lastUpdated": "2025-07-20T14:01:10+00:00",
+    "pathLengthKm": 2533.133,
+    "meta": {
+      "description": "This is a site in PLK Womens Welfare Club WD Fung Lee Pui Yiu Primary School (www.plkflpy.edu.hk). For enquiries please contact stem@plkflpy.edu.hk",
+      "owner": "plkflpy",
+      "qthlocator": "OL62xi",
+      "antenna": [
+        {
+          "frequency": 135500000,
+          "frequency_max": 155500000,
+          "band": "VHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        },
+        {
+          "frequency": 420000000,
+          "frequency_max": 450000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 4.4,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 12.500278437999727,
+      "snrReduction_dB": 6.25
+    }
+  },
+  {
+    "nodeId": "gs_1141",
+    "nodeName": "CSUM_test",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 43.637,
+      "longitude": 3.843,
+      "altitude": 0.052
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 25.35,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 13260.233333333334,
+    "lastUpdated": "2020-03-02T14:57:22+00:00",
+    "pathLengthKm": 3977.92,
+    "meta": {
+      "description": "CSUM test station",
+      "owner": "elmarputs",
+      "qthlocator": "JN13wp",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 83,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_3790",
+    "nodeName": "Stirling WA",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": -31.890286,
+      "longitude": 115.820105,
+      "altitude": 0.014
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 13.356,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 11936.753333333334,
+    "lastUpdated": "2025-02-02T10:07:27+00:00",
+    "pathLengthKm": 3580.876,
+    "meta": {
+      "description": "",
+      "owner": "fincl",
+      "qthlocator": "OF78vc",
+      "antenna": [
+        {
+          "frequency": 435000000,
+          "frequency_max": 437000000,
+          "band": "UHF",
+          "antenna_type": "lindenblad",
+          "antenna_type_name": "Lindenblad"
+        },
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        },
+        {
+          "frequency": 137000000,
+          "frequency_max": 147000000,
+          "band": "VHF",
+          "antenna_type": "lindenblad",
+          "antenna_type_name": "Lindenblad"
+        },
+        {
+          "frequency": 430000000,
+          "frequency_max": 440000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 33,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_487",
+    "nodeName": "Anteater",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 33.644703,
+      "longitude": -117.841113,
+      "altitude": 0.034
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 20.498,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 12574.296666666667,
+    "lastUpdated": "2025-09-21T08:31:47.938409Z",
+    "pathLengthKm": 3772.139,
+    "meta": {
+      "description": "UCI CubeSat's Groundstation",
+      "owner": "raneym",
+      "qthlocator": "DM13bp",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "helical",
+          "antenna_type_name": "Helical"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 66,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_923",
+    "nodeName": "CCERES OMNI",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 48.804,
+      "longitude": 2.227,
+      "altitude": 0.15
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 39.623,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 15066.066666666668,
+    "lastUpdated": "2019-09-19T13:22:54+00:00",
+    "pathLengthKm": 4519.67,
+    "meta": {
+      "description": "QFH 430mhz DIY antenna + china LNA 32db 0.01-2000Mhz (12v, no bias-t) + sdr AirSpy R2 + RG58 cable",
+      "owner": "cceres",
+      "qthlocator": "JN18ct",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "helical",
+          "antenna_type_name": "Helical"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_3164",
+    "nodeName": "test999",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": -20.74,
+      "longitude": 116.807,
+      "altitude": 0.02
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 15.903,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 7897.3133333333335,
+    "lastUpdated": "2025-07-02T03:08:16+00:00",
+    "pathLengthKm": 2369.044,
+    "meta": {
+      "description": "Schedule observations at your own peril",
+      "owner": "kforrest",
+      "qthlocator": "OG89jg",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2237",
+    "nodeName": "f8avp",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 45.379,
+      "longitude": 4.823,
+      "altitude": 0.23
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 53.314,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 13650.966666666667,
+    "lastUpdated": "2025-09-21T08:31:51.688294Z",
+    "pathLengthKm": 4095.14,
+    "meta": {
+      "description": "rx sat meteo",
+      "owner": "f8avp",
+      "qthlocator": "JN25jj",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "v-dipole",
+          "antenna_type_name": "V-Dipole"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 69,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2382",
+    "nodeName": "spectre",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 46.91,
+      "longitude": 7.414,
+      "altitude": 0.65
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 89.627,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 13810.359999999999,
+    "lastUpdated": "2022-07-07T11:40:54+00:00",
+    "pathLengthKm": 4142.958,
+    "meta": {
+      "description": "",
+      "owner": "schwed0",
+      "qthlocator": "JN36qv",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        },
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 94,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_136",
+    "nodeName": "F0FYF",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 45.941,
+      "longitude": 6.184,
+      "altitude": 0.645
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 15.743,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 13646.739999999998,
+    "lastUpdated": "2025-09-21T08:31:54.300155Z",
+    "pathLengthKm": 4093.872,
+    "meta": {
+      "description": "FT897 / HackRf / Rtl-Sdr E4000",
+      "owner": "F0FYF",
+      "qthlocator": "JN35cw",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 146000000,
+          "band": "VHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        },
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        },
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 51,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_438",
+    "nodeName": "Timisoara - VHF QHA",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 45.7469,
+      "longitude": 21.2125,
+      "altitude": 0.08
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 31.442,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 12414.646666666667,
+    "lastUpdated": "2025-09-20T16:19:42+00:00",
+    "pathLengthKm": 3724.244,
+    "meta": {
+      "description": "Running on a Raspberry Pi3, SDR RX: RTL-SDR, Antenna: QHA.",
+      "owner": "mitch_mrc",
+      "qthlocator": "KN05or",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "quadrafilar",
+          "antenna_type_name": "Quadrafilar"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_10",
+    "nodeName": "YFK",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 37.956,
+      "longitude": 23.765,
+      "altitude": 0.183
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 46.644,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 9518.673333333334,
+    "lastUpdated": "2025-08-01T16:25:39+00:00",
+    "pathLengthKm": 2855.452,
+    "meta": {
+      "description": "Twin RTLSDR station. \r\nADS-B Receiver for OpenSky network. \r\nradiosonde_auto_rx between SatNOGS observations",
+      "owner": "drid",
+      "qthlocator": "KM17vw",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        },
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "eggbeater",
+          "antenna_type_name": "Eggbeater"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_782",
+    "nodeName": "Arizona",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 33.464,
+      "longitude": -111.532,
+      "altitude": 0.586
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 81.201,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 12690.77,
+    "lastUpdated": "2020-04-03T04:22:43+00:00",
+    "pathLengthKm": 3807.081,
+    "meta": {
+      "description": "VHF QFH antenna tuned to 137.5 MHz.\r\n  Raspberry Pi 3B.\r\n  RTL-SDR.com dongle.\r\n20db LNA\r\n\r\nMain objectives of site is to monitor NOAA and Meteor M2 weather transmissions.",
+      "owner": "rdjohnston77",
+      "qthlocator": "DM43fl",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "quadrafilar",
+          "antenna_type_name": "Quadrafilar"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1935",
+    "nodeName": "GS001",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 54.922651,
+      "longitude": -2.972936,
+      "altitude": 0.017
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 14.148,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 17594.743333333336,
+    "lastUpdated": "2023-04-16T15:54:09+00:00",
+    "pathLengthKm": 5278.273,
+    "meta": {
+      "description": "",
+      "owner": "connor579e734860174984",
+      "qthlocator": "IO84mw",
+      "antenna": [
+        {
+          "frequency": 137000000,
+          "frequency_max": 152000000,
+          "band": "VHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_769",
+    "nodeName": "FSA_Valdivia",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": -39.801871,
+      "longitude": -73.206336,
+      "altitude": 0.006
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 8.216,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 14884.323333333334,
+    "lastUpdated": "2019-11-06T22:37:58+00:00",
+    "pathLengthKm": 4465.147,
+    "meta": {
+      "description": "First ground station from Foundation Spacio Australis located in Valdivia Chile Grid Locator FF30je operated by Nicol\u00e1s Donoso CD3NDC.",
+      "owner": "nicod",
+      "qthlocator": "FF30je",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "vertical",
+          "antenna_type_name": "Vertical"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 1.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 21.79134057960021,
+      "snrReduction_dB": 10.896
+    }
+  },
+  {
+    "nodeId": "gs_2473",
+    "nodeName": "YV6AE",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 9.4375,
+      "longitude": -64.4583,
+      "altitude": 0.25
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 55.583,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 5252.406666666667,
+    "lastUpdated": "2025-09-21T08:32:01.993352Z",
+    "pathLengthKm": 1575.572,
+    "meta": {
+      "description": "",
+      "owner": "yv6ae",
+      "qthlocator": "FJ79sk",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 39,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_3990",
+    "nodeName": "BrokenAnkleFarm",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 45.581,
+      "longitude": -89.5,
+      "altitude": 0.495
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 10000.0,
+    "capacityMbps": 15000.0,
+    "coverageRadiusKm": 74.63,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 17079.143333333333,
+    "lastUpdated": "2025-06-08T16:17:01+00:00",
+    "pathLengthKm": 5123.593,
+    "meta": {
+      "description": "Passes to the East of the QTH are not advised given the current antenna location. \r\nFuture: repositioning is planned for June 2025",
+      "owner": "haig123",
+      "qthlocator": "EN55gn",
+      "antenna": [
+        {
+          "frequency": 1050000000,
+          "frequency_max": 1750000000,
+          "band": "L",
+          "antenna_type": "parabolic",
+          "antenna_type_name": "Parabolic"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_102",
+    "nodeName": "PA3RVG VHF",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 51.472,
+      "longitude": 5.558,
+      "altitude": 0.031
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 19.799,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 15511.153333333334,
+    "lastUpdated": "2023-09-16T14:18:59+00:00",
+    "pathLengthKm": 4653.196,
+    "meta": {
+      "description": "Single dipole over chicken wire ground screen on flat roof with SPF5189 LNA at the feed point of the antenna followed by a 160 MHz low pass filter. Satnogs with Meteor M2 and M2 2 LRPT decoder, see this thread for more info: https://community.libre.space/t/meteor-mn2-decoder-for-rpi-3b/2493\r\n\r\nScheduling Meteor M2 passes is welcomed!",
+      "owner": "rico",
+      "qthlocator": "JO21sl",
+      "antenna": [
+        {
+          "frequency": 130000000,
+          "frequency_max": 150000000,
+          "band": "VHF",
+          "antenna_type": "dipole",
+          "antenna_type_name": "Dipole"
+        },
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "dipole",
+          "antenna_type_name": "Dipole"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1308",
+    "nodeName": "E22FFJ  Wijak Thaweesithichart",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 14.80976,
+      "longitude": 100.63391,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 5839.61,
+    "lastUpdated": "2025-09-21T08:32:05.792774Z",
+    "pathLengthKm": 1751.733,
+    "meta": {
+      "description": "",
+      "owner": "e22ffj",
+      "qthlocator": "OK04ht",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 146000000,
+          "band": "VHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_3045",
+    "nodeName": "FHWN VHF/UHF",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 47.839,
+      "longitude": 16.248,
+      "altitude": 0.265
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 58.109,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 13370.186666666666,
+    "lastUpdated": "2025-09-20T16:19:38+00:00",
+    "pathLengthKm": 4010.906,
+    "meta": {
+      "description": "University of Applied Sciences Wiener Neustadt //  Setup:\r\n- RaspberryPi (SatNOGS Client, satnogs_gr-satellites, satnogs-auto-scheduler)\r\n- Windows PC (PstRotator)\r\n- ADALM-PLUTO SDR\r\n- RX: UHF Cross-Yagi (70 cm) + VHF Cross-Yagi (2 m) + Diamond MX-72N Duplexer + Sattrack BIG-RAS Rotator (0.5\u00b0 Resolution) + SPID MD-01 Controller + Mast Pre-Amplifier DBA-270",
+      "owner": "rudolf_pfeffer",
+      "qthlocator": "JN87cu",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 440000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        },
+        {
+          "frequency": 136000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2220",
+    "nodeName": "Mogielnica - S-band",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 49.979,
+      "longitude": 21.913,
+      "altitude": 0.225
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 10000.0,
+    "capacityMbps": 15000.0,
+    "coverageRadiusKm": 51.72,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 13959.27,
+    "lastUpdated": "2025-09-20T16:19:38+00:00",
+    "pathLengthKm": 4187.631,
+    "meta": {
+      "description": "hackrf + noelec lana + helical antena",
+      "owner": "michal.drzal",
+      "qthlocator": "KN09wx",
+      "antenna": [
+        {
+          "frequency": 2240000000,
+          "frequency_max": 2450000000,
+          "band": "S",
+          "antenna_type": "helical",
+          "antenna_type_name": "Helical"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 20,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2973",
+    "nodeName": "Home",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 33.46,
+      "longitude": -86.61,
+      "altitude": 0.23
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 53.314,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 12555.519999999999,
+    "lastUpdated": "2025-09-21T08:32:09.673420Z",
+    "pathLengthKm": 3766.506,
+    "meta": {
+      "description": "",
+      "owner": "kj4m",
+      "qthlocator": "EM63ql",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        },
+        {
+          "frequency": 400000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1872",
+    "nodeName": "M7BNN",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 50.603,
+      "longitude": -3.622,
+      "altitude": 0.06
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 23.946,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 16438.27,
+    "lastUpdated": "2021-12-17T16:44:37+00:00",
+    "pathLengthKm": 4931.331,
+    "meta": {
+      "description": "Raspberry Pi 4 with a homemade half wavelength dipole. \r\nGot ideas to homebrew my own turnstile antenna over the coming months.",
+      "owner": "agritech-uk_ltd",
+      "qthlocator": "IO80eo",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "dipole",
+          "antenna_type_name": "Dipole"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_4215",
+    "nodeName": "Ugur TABAKOGLU",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 0.0,
+      "longitude": 0.0,
+      "altitude": 0.0
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 0.0,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 1647.2466666666667,
+    "lastUpdated": "2025-09-21T08:32:12.484487Z",
+    "pathLengthKm": 494.024,
+    "meta": {
+      "description": "TA3BPD",
+      "owner": "ugur",
+      "qthlocator": "JJ00aa",
+      "antenna": []
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 67,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2609",
+    "nodeName": "KJ7SU - Subprime",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 45.462,
+      "longitude": -122.727,
+      "altitude": 0.145
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 42.984,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 16950.533333333333,
+    "lastUpdated": "2025-09-19T12:16:28+00:00",
+    "pathLengthKm": 5085.01,
+    "meta": {
+      "description": "UniClOGS station",
+      "owner": "glennl",
+      "qthlocator": "CN85pl",
+      "antenna": [
+        {
+          "frequency": 435000000,
+          "frequency_max": 438000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 48,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_88",
+    "nodeName": "OZ3RF TEST",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 57.013805,
+      "longitude": 9.987389,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 17011.833333333332,
+    "lastUpdated": "2018-06-21T17:07:59+00:00",
+    "pathLengthKm": 5103.4,
+    "meta": {
+      "description": "This is a station allocation used mostly for testing, normal operation via aausat_gnd.",
+      "owner": "nickoe",
+      "qthlocator": "JO47xa",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 96,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1936",
+    "nodeName": "VK4JBE-UHF",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": -27.492,
+      "longitude": 153.069,
+      "altitude": 0.029
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 18.064,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 10354.803333333333,
+    "lastUpdated": "2025-09-20T16:20:04+00:00",
+    "pathLengthKm": 3106.291,
+    "meta": {
+      "description": "",
+      "owner": "vk4jbe",
+      "qthlocator": "QG62mm",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_380",
+    "nodeName": "jle-tum-VHF",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 48.2667,
+      "longitude": 11.6681,
+      "altitude": 0.5
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 79.516,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 13842.02,
+    "lastUpdated": "2025-08-13T23:51:14+00:00",
+    "pathLengthKm": 4152.456,
+    "meta": {
+      "description": "",
+      "owner": "jle-tum",
+      "qthlocator": "JN58ug",
+      "antenna": [
+        {
+          "frequency": 144000000,
+          "frequency_max": 146000000,
+          "band": "VHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 13,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1299",
+    "nodeName": "JCF78",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 48.946578,
+      "longitude": 2.148676,
+      "altitude": 0.045
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 23.582,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 15120.423333333332,
+    "lastUpdated": "2024-09-22T09:29:12+00:00",
+    "pathLengthKm": 4535.977,
+    "meta": {
+      "description": "TBD",
+      "owner": "jcf78",
+      "qthlocator": "JN18bw",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "helical",
+          "antenna_type_name": "Helical"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.7,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 6.51133790820833,
+      "snrReduction_dB": 3.256
+    }
+  },
+  {
+    "nodeId": "gs_1383",
+    "nodeName": "EA5SW RTLSDR",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 39.45528,
+      "longitude": -0.39611,
+      "altitude": 0.07
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 29.412,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 12838.986666666666,
+    "lastUpdated": "2020-02-28T06:04:43+00:00",
+    "pathLengthKm": 3851.546,
+    "meta": {
+      "description": "",
+      "owner": "ea5sw",
+      "qthlocator": "IM99tk",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "quadrafilar",
+          "antenna_type_name": "Quadrafilar"
+        },
+        {
+          "frequency": 430000000,
+          "frequency_max": 440000000,
+          "band": "UHF",
+          "antenna_type": "quadrafilar",
+          "antenna_type_name": "Quadrafilar"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 82,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1997",
+    "nodeName": "CERGA - ACRI-ST",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 43.665221,
+      "longitude": 6.915273,
+      "altitude": 0.5
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 79.82,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 12824.843333333332,
+    "lastUpdated": "2021-06-25T13:10:06+00:00",
+    "pathLengthKm": 3847.303,
+    "meta": {
+      "description": "",
+      "owner": "cergaone",
+      "qthlocator": "JN33kp",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 5,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2881",
+    "nodeName": "PARSEC 3",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 37.308828,
+      "longitude": 15.121621,
+      "altitude": 0.09
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 33.35,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 9731.14,
+    "lastUpdated": "2025-06-02T16:38:17+00:00",
+    "pathLengthKm": 2919.192,
+    "meta": {
+      "description": "SatNOGS station of PARSEC AB, RTL-SDR, Discone VHF and UHF",
+      "owner": "cai-catania",
+      "qthlocator": "JM77nh",
+      "antenna": [
+        {
+          "frequency": 25000000,
+          "frequency_max": 1300000000,
+          "band": "HF, VHF, UHF, L",
+          "antenna_type": "discone",
+          "antenna_type_name": "Discone"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_334",
+    "nodeName": "CyberOps III",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": -34.953,
+      "longitude": 138.603,
+      "altitude": 0.049
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 24.608,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 13514.710000000001,
+    "lastUpdated": "2020-04-18T08:15:01+00:00",
+    "pathLengthKm": 4054.263,
+    "meta": {
+      "description": "VK5TCP",
+      "owner": "Cyberops",
+      "qthlocator": "PF95hb",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        },
+        {
+          "frequency": 150000000,
+          "frequency_max": 151000000,
+          "band": "VHF",
+          "antenna_type": "helical",
+          "antenna_type_name": "Helical"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.1,
+      "cloud_cover_percent": 99,
+      "attenuation_dB": 1.5801401969508482,
+      "snrReduction_dB": 0.79
+    }
+  },
+  {
+    "nodeId": "gs_4120",
+    "nodeName": "1g helicone",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 32.657,
+      "longitude": -99.844,
+      "altitude": 0.512
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 10000.0,
+    "capacityMbps": 15000.0,
+    "coverageRadiusKm": 79.545,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 12180.72,
+    "lastUpdated": "2025-08-02T13:41:42+00:00",
+    "pathLengthKm": 3654.066,
+    "meta": {
+      "description": "Helicone antenna on diy wingard RV dish platform repurposed into an antenna rotor",
+      "owner": "kpalivec",
+      "qthlocator": "JJ00aa",
+      "antenna": [
+        {
+          "frequency": 1050000000,
+          "frequency_max": 1750000000,
+          "band": "L",
+          "antenna_type": "helical",
+          "antenna_type_name": "Helical"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 99,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2975",
+    "nodeName": "HB9WDF",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 47.187922,
+      "longitude": 8.075786,
+      "altitude": 0.56
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 81.965,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 13826.813333333334,
+    "lastUpdated": "2025-09-21T08:32:23.600497Z",
+    "pathLengthKm": 4147.894,
+    "meta": {
+      "description": "",
+      "owner": "hb9wdf",
+      "qthlocator": "JN47ae",
+      "antenna": []
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 58,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2143",
+    "nodeName": "VHF Liptov",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 49.052,
+      "longitude": 19.398,
+      "altitude": 0.582
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 85.79,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 13674.68,
+    "lastUpdated": "2023-10-12T03:59:13+00:00",
+    "pathLengthKm": 4102.254,
+    "meta": {
+      "description": "",
+      "owner": "triver112",
+      "qthlocator": "JN99qb",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "v-dipole",
+          "antenna_type_name": "V-Dipole"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_4353",
+    "nodeName": "skystick",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": -37.8011,
+      "longitude": 144.9559,
+      "altitude": 0.04
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 22.233,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 14161.3,
+    "lastUpdated": "2025-09-20T12:06:11+00:00",
+    "pathLengthKm": 4248.24,
+    "meta": {
+      "description": "This is a Quadrifilar Helix antenna",
+      "owner": "kanishka",
+      "qthlocator": "QF22le",
+      "antenna": [
+        {
+          "frequency": 134000000,
+          "frequency_max": 148000003,
+          "band": "VHF",
+          "antenna_type": "helical",
+          "antenna_type_name": "Helical"
+        },
+        {
+          "frequency": 1050000000,
+          "frequency_max": 1750000000,
+          "band": "L",
+          "antenna_type": "helical",
+          "antenna_type_name": "Helical"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 80,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1192",
+    "nodeName": "Old Gore",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 51.95023,
+      "longitude": -2.54445,
+      "altitude": 0.15
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 43.054,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 16666.059999999998,
+    "lastUpdated": "2020-10-28T13:16:44+00:00",
+    "pathLengthKm": 4999.668,
+    "meta": {
+      "description": "Raspberry PI, SDR, wideband collinear (for now ...)",
+      "owner": "daveake",
+      "qthlocator": "IO81rw",
+      "antenna": [
+        {
+          "frequency": 29000000,
+          "frequency_max": 999999999,
+          "band": "HF, VHF, UHF",
+          "antenna_type": "dipole",
+          "antenna_type_name": "Dipole"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 27,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2470",
+    "nodeName": "ExpoSat-UHF",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 43.535,
+      "longitude": -5.661,
+      "altitude": 0.004
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 5.469,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 14929.156666666666,
+    "lastUpdated": "2025-09-20T16:11:23+00:00",
+    "pathLengthKm": 4478.597,
+    "meta": {
+      "description": "https://www.sites.google.com/site/astronauticamateur/expo3d",
+      "owner": "spaceastur",
+      "qthlocator": "IN73em",
+      "antenna": [
+        {
+          "frequency": 400000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2474",
+    "nodeName": "garage_uj",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 50.02943,
+      "longitude": 19.90531,
+      "altitude": 0.222
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 52.378,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 14018.116666666667,
+    "lastUpdated": "2023-05-10T12:55:24+00:00",
+    "pathLengthKm": 4205.285,
+    "meta": {
+      "description": "Antena on FAiS",
+      "owner": "garage_uj",
+      "qthlocator": "JO90wa",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "dipole",
+          "antenna_type_name": "Dipole"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 10,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2058",
+    "nodeName": "Kermit's Freehold",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 39.107,
+      "longitude": -76.874,
+      "altitude": 0.085
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 32.41,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 14669.36,
+    "lastUpdated": "2021-03-18T12:02:45+00:00",
+    "pathLengthKm": 4400.658,
+    "meta": {
+      "description": "Experimenting with fixed antenna.  Planning to build SatNOGS Rotator.",
+      "owner": "stevenlavalle",
+      "qthlocator": "FM19nc",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "discone",
+          "antenna_type_name": "Discone"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1639",
+    "nodeName": "RIIS_TESTING",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 44.756,
+      "longitude": -106.966,
+      "altitude": 1.141
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 109.284,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 16893.336666666662,
+    "lastUpdated": "2020-08-27T20:13:45+00:00",
+    "pathLengthKm": 5067.851,
+    "meta": {
+      "description": "",
+      "owner": "xriis",
+      "qthlocator": "DN64ms",
+      "antenna": [
+        {
+          "frequency": 400000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "eggbeater",
+          "antenna_type_name": "Eggbeater"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2531",
+    "nodeName": "rommac vhf qfh",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 33.28849,
+      "longitude": -111.86859,
+      "altitude": 0.347
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 65.485,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 12608.103333333334,
+    "lastUpdated": "2025-09-20T16:19:26+00:00",
+    "pathLengthKm": 3782.281,
+    "meta": {
+      "description": "qfh with nooelec sawbird noaa lna",
+      "owner": "rommac100",
+      "qthlocator": "DM43ak",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 140000000,
+          "band": "VHF",
+          "antenna_type": "other omni",
+          "antenna_type_name": "Other Omni-Directional"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_192",
+    "nodeName": "t1st",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 12.345678,
+      "longitude": 98.7654321,
+      "altitude": 0.003
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 6.174,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 4940.876666666666,
+    "lastUpdated": "2018-08-15T22:59:43+00:00",
+    "pathLengthKm": 1482.113,
+    "meta": {
+      "description": "",
+      "owner": "ryby",
+      "qthlocator": "NK92ji",
+      "antenna": [
+        {
+          "frequency": 29000000,
+          "frequency_max": 999999999,
+          "band": "HF, VHF, UHF",
+          "antenna_type": "dipole",
+          "antenna_type_name": "Dipole"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.3,
+      "cloud_cover_percent": 93,
+      "attenuation_dB": 0.32628030190028384,
+      "snrReduction_dB": 0.163
+    }
+  },
+  {
+    "nodeId": "gs_346",
+    "nodeName": "UA-Ground-Station",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 33.21327,
+      "longitude": -87.54468,
+      "altitude": 0.093
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 33.901,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 12493.75,
+    "lastUpdated": "2021-10-15T01:49:02+00:00",
+    "pathLengthKm": 3747.975,
+    "meta": {
+      "description": "Unbalanced monopole using RTL-SDR <https://www.rtl-sdr.com/>. Expecting frequency to be incorrectly centered until tested properly. Added in LNA from rtl-sdr.",
+      "owner": "crsimpson",
+      "qthlocator": "EM63ff",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "vertical",
+          "antenna_type_name": "Vertical"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 1,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1503",
+    "nodeName": "trgo.sk BA1",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 48.151,
+      "longitude": 17.051,
+      "altitude": 0.202
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 49.963,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 13440.913333333332,
+    "lastUpdated": "2025-03-05T18:32:53+00:00",
+    "pathLengthKm": 4032.124,
+    "meta": {
+      "description": "",
+      "owner": "trgo.sk",
+      "qthlocator": "JN88md",
+      "antenna": [
+        {
+          "frequency": 400000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "other direct",
+          "antenna_type_name": "Other Directional"
+        },
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 5,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_4273",
+    "nodeName": "pc_test",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 21.016964141310577,
+      "longitude": 105.85508046074675,
+      "altitude": 0.032
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 19.886,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 8103.383333333333,
+    "lastUpdated": "2025-07-25T07:01:53+00:00",
+    "pathLengthKm": 2430.865,
+    "meta": {
+      "description": "",
+      "owner": "ngdacan",
+      "qthlocator": "OL21wa",
+      "antenna": [
+        {
+          "frequency": 400000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 31,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_4079",
+    "nodeName": "Pie9",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 0.0,
+      "longitude": 0.0,
+      "altitude": 0.0
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 0.0,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 1647.2466666666667,
+    "lastUpdated": "2025-09-21T08:32:35.622150Z",
+    "pathLengthKm": 494.024,
+    "meta": {
+      "description": "",
+      "owner": "chicken11",
+      "qthlocator": "JJ00aa",
+      "antenna": []
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 67,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_3737",
+    "nodeName": "jj",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 0.0,
+      "longitude": 0.0,
+      "altitude": 0.0
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 0.0,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 1647.2466666666667,
+    "lastUpdated": "2025-09-21T08:32:36.505642Z",
+    "pathLengthKm": 494.024,
+    "meta": {
+      "description": "",
+      "owner": "ENSFNM",
+      "qthlocator": "JJ00aa",
+      "antenna": []
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 67,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1877",
+    "nodeName": "W2KGY",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 41.391482,
+      "longitude": -73.955972,
+      "altitude": 0.003
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 6.089,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 15468.106666666667,
+    "lastUpdated": "2025-09-21T08:32:37.405142Z",
+    "pathLengthKm": 4640.282,
+    "meta": {
+      "description": "",
+      "owner": "ke8jct",
+      "qthlocator": "FN31aj",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        },
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 3,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_290",
+    "nodeName": "Home",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 43.52,
+      "longitude": -84.11,
+      "altitude": 0.2
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 49.715,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 16222.943333333335,
+    "lastUpdated": "2025-09-21T08:32:38.260076Z",
+    "pathLengthKm": 4866.733,
+    "meta": {
+      "description": "",
+      "owner": "n8xd",
+      "qthlocator": "EN73wm",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        },
+        {
+          "frequency": 144000000,
+          "frequency_max": 146000000,
+          "band": "VHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_1521",
+    "nodeName": "AE4ML",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 38.187658,
+      "longitude": -77.69588,
+      "altitude": 0.411
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 71.269,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 14357.269999999999,
+    "lastUpdated": "2025-09-21T08:32:39.165443Z",
+    "pathLengthKm": 4307.031,
+    "meta": {
+      "description": "",
+      "owner": "ae4ml",
+      "qthlocator": "FM18de",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        },
+        {
+          "frequency": 144000000,
+          "frequency_max": 146000000,
+          "band": "VHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_979",
+    "nodeName": "Valpo WIRED Lab 5",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 41.462582,
+      "longitude": -87.038378,
+      "altitude": 0.24
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 55.3,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 15499.293333333333,
+    "lastUpdated": "2019-09-19T23:30:03+00:00",
+    "pathLengthKm": 4649.638,
+    "meta": {
+      "description": "EXPERIMENTAL Raspberry Pi 4, 4GB.   Raspbian buster testing image.",
+      "owner": "wiredlab",
+      "qthlocator": "EN61ll",
+      "antenna": [
+        {
+          "frequency": 425000000,
+          "frequency_max": 450000000,
+          "band": "UHF",
+          "antenna_type": "ground",
+          "antenna_type_name": "Ground Plane"
+        },
+        {
+          "frequency": 130000000,
+          "frequency_max": 160000000,
+          "band": "VHF",
+          "antenna_type": "ground",
+          "antenna_type_name": "Ground Plane"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 99,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_3167",
+    "nodeName": "EscuchSat",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 6.0,
+      "longitude": 42.0,
+      "altitude": 0.83
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 97.809,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 6241.683333333333,
+    "lastUpdated": "2025-09-21T08:32:40.978223Z",
+    "pathLengthKm": 1872.355,
+    "meta": {
+      "description": "*",
+      "owner": "escuchsat",
+      "qthlocator": "LJ16aa",
+      "antenna": [
+        {
+          "frequency": 400000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "other omni",
+          "antenna_type_name": "Other Omni-Directional"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 46,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2790",
+    "nodeName": "ON4MU",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 50.823,
+      "longitude": 4.36,
+      "altitude": 0.1
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 35.154,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 15433.446666666667,
+    "lastUpdated": "2022-09-03T14:38:21+00:00",
+    "pathLengthKm": 4629.884,
+    "meta": {
+      "description": "",
+      "owner": "on4mu",
+      "qthlocator": "JO20et",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "turnstile",
+          "antenna_type_name": "Turnstile"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.4,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 4.568083223373643,
+      "snrReduction_dB": 2.284
+    }
+  },
+  {
+    "nodeId": "gs_3974",
+    "nodeName": "Satnogs1",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 55.7698,
+      "longitude": 37.691,
+      "altitude": 0.15
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 43.054,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 16564.183333333334,
+    "lastUpdated": "2025-09-20T16:19:30+00:00",
+    "pathLengthKm": 4969.105,
+    "meta": {
+      "description": "",
+      "owner": "nikn52",
+      "qthlocator": "KO85us",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 147000000,
+          "band": "VHF",
+          "antenna_type": "quadrafilar",
+          "antenna_type_name": "Quadrafilar"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_936",
+    "nodeName": "N6RFM Bristol, RI, USA",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 41.6771,
+      "longitude": -71.2662,
+      "altitude": 0.025
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 17.577,
+    "maintenanceStatus": "maintenance",
+    "healthy": true,
+    "linkAvailable": false,
+    "latencyMs": 15593.083333333332,
+    "lastUpdated": "2025-09-21T08:32:43.775794Z",
+    "pathLengthKm": 4677.775,
+    "meta": {
+      "description": "",
+      "owner": "N6RFM",
+      "qthlocator": "FN41iq",
+      "antenna": [
+        {
+          "frequency": 430000000,
+          "frequency_max": 470000000,
+          "band": "UHF",
+          "antenna_type": "yagi",
+          "antenna_type_name": "Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 23,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_2031",
+    "nodeName": "Astre'Nogs Nanostar ISAE-SUPAERO 01",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 43.6044,
+      "longitude": 1.444,
+      "altitude": 0.115
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 37.698,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 13636.026666666665,
+    "lastUpdated": "2025-09-20T16:20:16+00:00",
+    "pathLengthKm": 4090.658,
+    "meta": {
+      "description": "",
+      "owner": "astrenogsdce4a9994ff64926",
+      "qthlocator": "JJ00aa",
+      "antenna": [
+        {
+          "frequency": 135000000,
+          "frequency_max": 148000000,
+          "band": "VHF",
+          "antenna_type": "cross-yagi",
+          "antenna_type_name": "Cross Yagi"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  },
+  {
+    "nodeId": "gs_3084",
+    "nodeName": "UB3ALB-2",
+    "nodeType": "GROUND_STATION",
+    "position": {
+      "latitude": 55.576179,
+      "longitude": 37.14252,
+      "altitude": 0.18
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 10000.0,
+    "capacityMbps": 15000.0,
+    "coverageRadiusKm": 47.534,
+    "maintenanceStatus": "maintenance",
+    "healthy": false,
+    "linkAvailable": false,
+    "latencyMs": 16459.373333333333,
+    "lastUpdated": "2023-08-27T15:45:42+00:00",
+    "pathLengthKm": 4937.662,
+    "meta": {
+      "description": "1.1 meter ANTEX-E dish with SuperAntennaz clone and SatNOGS rotator controller + Nooelec birdsaw LNA + RTL-SDR v3 + Raspberry Pi",
+      "owner": "belovictor",
+      "qthlocator": "KO85nn",
+      "antenna": [
+        {
+          "frequency": 1670000000,
+          "frequency_max": 1720000000,
+          "band": "L",
+          "antenna_type": "parabolic",
+          "antenna_type_name": "Parabolic"
+        }
+      ]
+    },
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    }
+  }
+]

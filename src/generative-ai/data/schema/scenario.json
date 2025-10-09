@@ -1,0 +1,275 @@
+{
+  "$id": "file:///D:/PBL4_AIPrancns/AI-PRACNS/src/generative-ai/data/schema/scenario.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Scenario",
+  "type": "object",
+  "required": ["scenarioId", "timestamp", "nodes", "trafficProfile", "events"],
+  "properties": {
+    "scenarioId": { "type": "string" },
+    "timestamp": { "type": "number" },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          { "$ref": "#/$defs/satellite" },
+          { "$ref": "#/$defs/ground_station" },
+          { "$ref": "#/$defs/sea_station" },
+          { "$ref": "#/$defs/ue" }
+        ]
+      },
+      "minItems": 4,
+      "contains": [
+        { "properties": { "nodeType": { "const": "SATELLITE" } } },
+        { "properties": { "nodeType": { "const": "GROUND_STATION" } } },
+        { "properties": { "nodeType": { "const": "SEA_STATION" } } },
+        { "properties": { "nodeType": { "const": "UE" } } }
+      ]
+    },
+    "trafficProfile": {
+      "type": "object",
+      "required": ["flows", "mix"],
+      "properties": {
+        "flows": { "type": "integer" },
+        "mix": {
+          "type": "object",
+          "properties": {
+            "video": { "type": "number" },
+            "voice": { "type": "number" },
+            "web": { "type": "number" },
+            "iot": { "type": "number" }
+          }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["type", "target", "start", "durationSec"],
+        "properties": {
+          "type": { "type": "string", "enum": ["node_failure", "traffic_spike", "weather_change"] },
+          "target": { "type": "string" },
+          "start": { "type": "number" },
+          "durationSec": { "type": "number" }
+        }
+      }
+    },
+    "routes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sourceNodeId": { "type": "string" },
+          "destinationNodeId": { "type": "string" },
+          "path": { "type": "array", "items": { "type": "string" } },
+          "totalLatencyMs": { "type": "number" },
+          "totalBandwidthMbps": { "type": "number" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "satellite": {
+      "type": "object",
+      "required": ["nodeId", "nodeType", "position", "velocity", "bandwidth", "healthy", "linkAvailable", "lastUpdated", "weather", "pathLengthKm", "latencyMs"],
+      "properties": {
+        "nodeId": { "type": "string" },
+        "nodeType": { "type": "string", "enum": ["SATELLITE"] },
+        "position": {
+          "type": "object",
+          "properties": {
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" },
+            "altitude": { "type": "number" }
+          }
+        },
+        "velocity": {
+          "type": "object",
+          "properties": {
+            "vx": { "type": "number" },
+            "vy": { "type": "number" },
+            "vz": { "type": "number" }
+          }
+        },
+        "bandwidth": { "type": "number" },
+        "beamCoverageKm": { "type": "number" },
+        "islCapable": { "type": "boolean" },
+        "healthy": { "type": "boolean" },
+        "linkAvailable": { "type": "boolean" },
+        "lastUpdated": { "type": "string" },
+        "tle": { "type": "array", "items": { "type": "string" } },
+        "weather": {
+          "type": "object",
+          "properties": {
+            "precipitation_mm_h": { "type": "number" },
+            "cloud_cover_percent": { "type": "number" },
+            "attenuation_dB": { "type": "number" },
+            "snrReduction_dB": { "type": "number" },
+            "snr_dB": { "type": "number" }
+          }
+        },
+        "pathLengthKm": { "type": "number" },
+        "latencyMs": { "type": "number" }
+      }
+    },
+    "ground_station": {
+      "type": "object",
+      "required": ["nodeId", "nodeType", "position", "bandwidth", "capacityMbps", "healthy", "linkAvailable", "lastUpdated", "weather", "pathLengthKm", "latencyMs"],
+      "properties": {
+        "nodeId": { "type": "string" },
+        "nodeType": { "type": "string", "enum": ["GROUND_STATION"] },
+        "position": {
+          "type": "object",
+          "properties": {
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" },
+            "altitude": { "type": "number" }
+          }
+        },
+        "velocity": {
+          "type": "object",
+          "properties": {
+            "vx": { "type": "number" },
+            "vy": { "type": "number" },
+            "vz": { "type": "number" }
+          }
+        },
+        "bandwidth": { "type": "number" },
+        "capacityMbps": { "type": "number" },
+        "coverageRadiusKm": { "type": "number" },
+        "maintenanceStatus": { "type": "string", "enum": ["operational", "maintenance"] },
+        "healthy": { "type": "boolean" },
+        "linkAvailable": { "type": "boolean" },
+        "lastUpdated": { "type": "string" },
+        "weather": {
+          "type": "object",
+          "properties": {
+            "precipitation_mm_h": { "type": "number" },
+            "cloud_cover_percent": { "type": "number" },
+            "attenuation_dB": { "type": "number" },
+            "snrReduction_dB": { "type": "number" },
+            "snr_dB": { "type": "number" }
+          }
+        },
+        "pathLengthKm": { "type": "number" },
+        "latencyMs": { "type": "number" },
+        "meta": {
+          "type": "object",
+          "properties": {
+            "description": { "type": "string" },
+            "owner": { "type": "string" },
+            "qthlocator": { "type": "string" },
+            "antenna": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "frequency": { "type": "number" },
+                  "frequency_max": { "type": "number" },
+                  "band": { "type": "string" },
+                  "antenna_type": { "type": "string" },
+                  "antenna_type_name": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "sea_station": {
+      "type": "object",
+      "required": ["nodeId", "nodeType", "position", "bandwidth", "capacityMbps", "healthy", "linkAvailable", "lastUpdated", "weather", "pathLengthKm", "latencyMs"],
+      "properties": {
+        "nodeId": { "type": "string" },
+        "nodeType": { "type": "string", "enum": ["SEA_STATION"] },
+        "position": {
+          "type": "object",
+          "properties": {
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" },
+            "altitude": { "type": "number" }
+          }
+        },
+        "velocity": {
+          "type": "object",
+          "properties": {
+            "vx": { "type": "number" },
+            "vy": { "type": "number" },
+            "vz": { "type": "number" }
+          }
+        },
+        "bandwidth": { "type": "number" },
+        "capacityMbps": { "type": "number" },
+        "coverageRadiusKm": { "type": "number" },
+        "maintenanceStatus": { "type": "string", "enum": ["operational", "maintenance"] },
+        "healthy": { "type": "boolean" },
+        "linkAvailable": { "type": "boolean" },
+        "lastUpdated": { "type": "string" },
+        "weather": {
+          "type": "object",
+          "properties": {
+            "precipitation_mm_h": { "type": "number" },
+            "cloud_cover_percent": { "type": "number" },
+            "attenuation_dB": { "type": "number" },
+            "snrReduction_dB": { "type": "number" },
+            "snr_dB": { "type": "number" }
+          }
+        },
+        "pathLengthKm": { "type": "number" },
+        "latencyMs": { "type": "number" }
+      }
+    },
+    "ue": {
+      "type": "object",
+      "required": ["nodeId", "nodeType", "position", "velocity", "bandwidth", "healthy", "linkAvailable", "lastUpdated", "weather", "pathLengthKm", "latencyMs", "service", "energyLevel", "sessionDurationSec", "mobilityPattern"],
+      "properties": {
+        "nodeId": { "type": "string" },
+        "nodeType": { "type": "string", "enum": ["UE"] },
+        "position": {
+          "type": "object",
+          "properties": {
+            "latitude": { "type": "number" },
+            "longitude": { "type": "number" },
+            "altitude": { "type": "number" }
+          }
+        },
+        "velocity": {
+          "type": "object",
+          "properties": {
+            "vx": { "type": "number" },
+            "vy": { "type": "number" },
+            "vz": { "type": "number" }
+          }
+        },
+        "bandwidth": { "type": "number" },
+        "healthy": { "type": "boolean" },
+        "linkAvailable": { "type": "boolean" },
+        "lastUpdated": { "type": "string" },
+        "weather": {
+          "type": "object",
+          "properties": {
+            "precipitation_mm_h": { "type": "number" },
+            "cloud_cover_percent": { "type": "number" },
+            "attenuation_dB": { "type": "number" },
+            "snrReduction_dB": { "type": "number" },
+            "snr_dB": { "type": "number" }
+          }
+        },
+        "pathLengthKm": { "type": "number" },
+        "latencyMs": { "type": "number" },
+        "service": {
+          "type": "object",
+          "properties": {
+            "trafficType": { "type": "string", "enum": ["video", "voice", "web", "iot"] },
+            "requiredBandwidthMbps": { "type": "number" },
+            "maxLatencyMs": { "type": "number" },
+            "priorityLevel": { "type": "integer" }
+          }
+        },
+        "energyLevel": { "type": "number" },
+        "sessionDurationSec": { "type": "number" },
+        "mobilityPattern": { "type": "string", "enum": ["static", "pedestrian", "vehicle", "aircraft"] }
+      }
+    }
+  }
+}

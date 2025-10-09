@@ -1,0 +1,47 @@
+{
+    "$id": "file:///D:/PBL4_AIPrancns/AI-PRACNS/src/generative-ai/data/schema/node.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "NodeBase",
+    "type": "object",
+    "required": ["nodeId", "nodeType", "position", "bandwidth", "lastUpdated"],
+    "properties": {
+        "nodeId": { "type": "string", "description": "Unique identifier for the node" },
+        "nodeType": { "type": "string", "enum": ["UE", "GROUND_STATION", "SATELLITE", "SEA"] },
+        "bandwidth": { "type": "number", "minimum": 0 },
+        "bufferSize": { "type": "number", "minimum": 0 },
+        "throughput": { "type": "number", "minimum": 0 },
+        "packetLossRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "latencyMs": { "type": "number", "minimum": 0 },
+        "linkAvailable": { "type": "boolean" },
+        "healthy": { "type": "boolean" },
+        "lastUpdated": { "type": "string", "format": "date-time" },
+        "pathLengthKm": { "type": "number"},
+        "position": {
+            "type": "object",
+            "required": ["latitude", "longitude", "altitude"],
+            "properties": {
+                "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
+                "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
+                "altitude": { "type": "number" }
+            }
+        },
+        "velocity": {
+            "type": "object",
+            "properties": {
+                "vx": { "type": "number" },
+                "vy": { "type": "number" },
+                "vz": { "type": "number" }
+            }
+        },
+        "weather": {
+            "type": "object",
+            "properties": {
+                "precipitation_mm_h": { "type": "number" },
+                "cloud_cover_percent": { "type": "number" },
+                "attenuation_dB": { "type": "number" },
+                "snrReduction_dB": { "type": "number" }
+            }
+        }
+    },
+    "additionalProperties": true
+}

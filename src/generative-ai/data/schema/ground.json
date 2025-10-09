@@ -1,0 +1,13 @@
+{
+    "$id": "file:///D:/PBL4_AIPrancns/AI-PRACNS/src/generative-ai/data/schema/ground.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "GroundOrSeaStation",
+    "allOf": [{ "$ref": "node.json" }],
+    "properties": {
+        "nodeType": { "enum": ["GROUND_STATION", "SEA"] },
+        "capacityMbps": { "type": "number", "minimum": 0 },
+        "coverageRadiusKm": { "type": "number", "minimum": 0 },
+        "maintenanceStatus": { "type": "string", "enum": ["operational", "maintenance", "degraded"] }
+    },
+    "required": ["nodeId", "nodeType", "position", "capacityMbps"]
+}

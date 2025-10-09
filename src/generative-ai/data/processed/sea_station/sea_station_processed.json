@@ -1,0 +1,2925 @@
+[
+  {
+    "nodeId": "sea_5401000",
+    "nodeName": "NZC - Offshore Gisborne Hikurangi",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -38.2,
+      "longitude": -179.797,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 14447.74,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 4334.172,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "NZ",
+      "hull": null,
+      "location_raw": "38.200 S 179.797 W (38\u00b012'0\" S 179\u00b047'49\" W)",
+      "note": "Data are not quality controlled by NDBC."
+    }
+  },
+  {
+    "nodeId": "sea_34002",
+    "nodeName": "OOI Southern Ocean Buoy",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -55.0,
+      "longitude": -90.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 20541.13333333333,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 6162.19,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 90,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "OO",
+      "hull": null,
+      "location_raw": "55.000 S 90.000 W (55\u00b00'0\" S 90\u00b00'0\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_31053",
+    "nodeName": "RIO GRANDE DO SUL",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -32.595,
+      "longitude": -51.353,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 12329.513333333334,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3698.704,
+    "weather": {
+      "precipitation_mm_h": 0.3,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 155.5713598729584,
+      "snrReduction_dB": 77.7856799364792
+    },
+    "meta": {
+      "description": "",
+      "owner": "HC",
+      "hull": null,
+      "location_raw": "32.595 S 51.353 W (32\u00b035'42\" S 51\u00b021'11\" W)",
+      "note": "Data from this station are not quality controlled by NDBC"
+    }
+  },
+  {
+    "nodeId": "sea_31261",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -31.538,
+      "longitude": -49.862,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 11926.619999999999,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3577.836,
+    "weather": {
+      "precipitation_mm_h": 0.4,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 182.4775553699277,
+      "snrReduction_dB": 91.23877768496385
+    },
+    "meta": {
+      "description": "",
+      "owner": "IP",
+      "hull": null,
+      "location_raw": "31.538 S 49.862 W (31\u00b032'17\" S 49\u00b051'43\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_15008",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -20.0,
+      "longitude": -10.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 8074.900000000001,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 2422.32,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 78,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "PR",
+      "hull": null,
+      "location_raw": "20.000 S 10.000 W (20\u00b00'0\" S 10\u00b00'0\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_14049",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -12.0,
+      "longitude": 65.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 5677.193333333334,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1703.008,
+    "weather": {
+      "precipitation_mm_h": 0.1,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 34.310379239194255,
+      "snrReduction_dB": 17.155189619597127
+    },
+    "meta": {
+      "description": "",
+      "owner": "RM",
+      "hull": null,
+      "location_raw": "12.000 S 65.000 E (12\u00b00'0\" S 65\u00b00'0\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_56055",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -25.0,
+      "longitude": 100.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 9463.303333333333,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 2838.841,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 55,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "RM",
+      "hull": null,
+      "location_raw": "25.000 S 100.000 E (25\u00b00'0\" S 100\u00b00'0\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_55039",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -38.36,
+      "longitude": 148.11,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 14310.766666666666,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 4293.08,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 79,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "ES",
+      "hull": null,
+      "location_raw": "38.360 S 148.110 E (38\u00b021'36\" S 148\u00b06'36\" E)",
+      "note": "Data from this station are not quality controlled by NDBC"
+    }
+  },
+  {
+    "nodeId": "sea_55015",
+    "nodeName": "TASMAN SEA 1     -     1110km ESE of Hobart",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -46.956,
+      "longitude": 160.343,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 17473.226666666666,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 5241.818,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 54,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "AU",
+      "hull": null,
+      "location_raw": "46.956 S 160.343 E (46\u00b057'22\" S 160\u00b020'35\" E)",
+      "note": "Data are not quality controlled by NDBC."
+    }
+  },
+  {
+    "nodeId": "sea_5501002",
+    "nodeName": "NZA - Offshore Wellington Hikurangi",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -42.371,
+      "longitude": 176.911,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 15818.176666666666,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 4745.303,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "NZ",
+      "hull": null,
+      "location_raw": "42.371 S 176.911 E (42\u00b022'16\" S 176\u00b054'40\" E)",
+      "note": "Data are not quality controlled by NDBC."
+    }
+  },
+  {
+    "nodeId": "sea_54d01",
+    "nodeName": "NORTHEAST NEW ZEALAND - 640NM NE of Auckland, NZ",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -33.005,
+      "longitude": -172.985,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 13287.98,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3986.244,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 49,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "2.6D46",
+      "location_raw": "33.005 S 172.985 W (33\u00b00'19\" S 172\u00b059'6\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_34420",
+    "nodeName": "119NM NW of Concepcion, Chile",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -35.758,
+      "longitude": -75.243,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 13410.716666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 4023.065,
+    "weather": {
+      "precipitation_mm_h": 0.1,
+      "cloud_cover_percent": 70,
+      "attenuation_dB": 81.05240013783202,
+      "snrReduction_dB": 40.52620006891601
+    },
+    "meta": {
+      "description": "",
+      "owner": "CD",
+      "hull": null,
+      "location_raw": "35.758 S 75.243 W (35\u00b045'29\" S 75\u00b014'35\" W)",
+      "note": "US Research System placed in Chilean waters through a cooperative effort with Chile."
+    }
+  },
+  {
+    "nodeId": "sea_5401002",
+    "nodeName": "NZF - Offshore Raoul Island Kermadec",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -29.683,
+      "longitude": -175.012,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 11907.696666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3572.159,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 53,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "NZ",
+      "hull": null,
+      "location_raw": "29.683 S 175.012 W (29\u00b040'57\" S 175\u00b00'45\" W)",
+      "note": "Data are not quality controlled by NDBC."
+    }
+  },
+  {
+    "nodeId": "sea_51d26",
+    "nodeName": "SOUTHEAST TONGA - 400NM SE of Tonga",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -22.993,
+      "longitude": -168.133,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 11068.689999999999,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3320.457,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 55,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "2.6D45",
+      "location_raw": "22.993 S 168.133 W (22\u00b059'34\" S 168\u00b07'58\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_32301",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -9.9,
+      "longitude": -105.2,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 4691.626666666666,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1407.338,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 38,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": null,
+      "location_raw": "9.900 S 105.200 W (9\u00b054'0\" S 105\u00b012'0\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_32st0",
+    "nodeName": "Stratus",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -22.0,
+      "longitude": -85.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 8343.330000000002,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 2502.849,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 70,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "WH",
+      "hull": null,
+      "location_raw": "22.000 S 85.000 W (22\u00b00'0\" S 85\u00b00'0\" W)",
+      "note": "Wave data from this station is available at 32012."
+    }
+  },
+  {
+    "nodeId": "sea_31201",
+    "nodeName": "Floripa, Brazil (109)",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -27.705,
+      "longitude": -48.134,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 10545.133333333333,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3163.39,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 95,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "R",
+      "hull": null,
+      "location_raw": "27.705 S 48.134 W (27\u00b042'17\" S 48\u00b08'2\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_15007",
+    "nodeName": "SE Extension",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -6.0,
+      "longitude": 8.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 2747.7400000000002,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 824.172,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 38,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "PR",
+      "hull": "PM-605A",
+      "location_raw": "6.000 S 8.000 E (6\u00b00'0\" S 8\u00b00'0\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_14041",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -8.0,
+      "longitude": 55.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 3588.7233333333334,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1076.467,
+    "weather": {
+      "precipitation_mm_h": 0.1,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 21.6875029409596,
+      "snrReduction_dB": 10.8437514704798
+    },
+    "meta": {
+      "description": "",
+      "owner": "RM",
+      "hull": null,
+      "location_raw": "8.000 S 55.000 E (8\u00b00'0\" S 55\u00b00'0\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_56053",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -16.0,
+      "longitude": 81.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 6810.04,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 2042.862,
+    "weather": {
+      "precipitation_mm_h": 0.1,
+      "cloud_cover_percent": 48,
+      "attenuation_dB": 41.15739324380088,
+      "snrReduction_dB": 20.57869662190044
+    },
+    "meta": {
+      "description": "",
+      "owner": "RM",
+      "hull": null,
+      "location_raw": "16.000 S 81.000 E (16\u00b00'0\" S 81\u00b00'0\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_56003",
+    "nodeName": "Indian Ocean 2     -     630km NNE of Dampier",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -15.019,
+      "longitude": 118.073,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 5941.62,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1782.336,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "AU",
+      "hull": null,
+      "location_raw": "15.019 S 118.073 E (15\u00b01'9\" S 118\u00b04'22\" E)",
+      "note": "Data are not quality controlled by NDBC."
+    }
+  },
+  {
+    "nodeId": "sea_55016",
+    "nodeName": "ETD Fiji Basin",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -26.0,
+      "longitude": 176.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 9789.863333333335,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 2936.809,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 19,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "AU",
+      "hull": null,
+      "location_raw": "26.000 S 176.000 E (26\u00b00'0\" S 176\u00b00'0\" E)",
+      "note": "The Australian ETD buoy went adrift 1/4/2011. The buoy has been recovered as of 2/8/2011.\u00a0 Until it is re-deployed, there will be no water column height data from this station.\u00a0 Station is non operational. No restoration planned."
+    }
+  },
+  {
+    "nodeId": "sea_51425",
+    "nodeName": "NORTHWEST APIA - 370 NM NW of Apia, Samoa",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -9.511,
+      "longitude": -176.258,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 5559.576666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1667.723,
+    "weather": {
+      "precipitation_mm_h": 0.2,
+      "cloud_cover_percent": 82,
+      "attenuation_dB": 53.459248043610536,
+      "snrReduction_dB": 26.729624021805268
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "2.6D09",
+      "location_raw": "9.511 S 176.258 W (9\u00b030'41\" S 176\u00b015'28\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_51028",
+    "nodeName": "Christmas Island",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 0.0,
+      "longitude": -153.913,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 5961.000000000001,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1788.15,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 56,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "3D30",
+      "location_raw": "0.000 N 153.913 W (0\u00b00'1\" N 153\u00b054'46\" W)",
+      "note": "Station 51028 has failed and stopped transmitting at 00Z, 03/11/2009.\u00a0This station has been disestablished as of 6/1/09.  The station is a non-NWS funded station for which the operating agreement between the NWS and the Program Sponsor has expired and will not be renewed."
+    }
+  },
+  {
+    "nodeId": "sea_32066",
+    "nodeName": "Ecuador INOCAR",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -1.136,
+      "longitude": -81.765,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 1951.3100000000002,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 585.243,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "IR",
+      "hull": null,
+      "location_raw": "1.136 S 81.765 W (1\u00b08'9\" S 81\u00b045'55\" W)",
+      "note": "Data are not quality controlled by NDBC."
+    }
+  },
+  {
+    "nodeId": "sea_31052",
+    "nodeName": "RECIFE",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -8.15,
+      "longitude": -34.567,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 3522.766666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1056.68,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 99,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "HC",
+      "hull": null,
+      "location_raw": "8.150 S 34.567 W (8\u00b09'0\" S 34\u00b034'0\" W)",
+      "note": "Data from this station are not quality controlled by NDBC"
+    }
+  },
+  {
+    "nodeId": "sea_15001",
+    "nodeName": "Gavotte",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -10.0,
+      "longitude": -10.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 4922.87,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1476.711,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 79,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "PR",
+      "hull": "PM-597",
+      "location_raw": "10.000 S 10.000 W (10\u00b00'0\" S 10\u00b00'0\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_53005",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -8.0,
+      "longitude": 81.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 4493.7699999999995,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1347.981,
+    "weather": {
+      "precipitation_mm_h": 0.1,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 27.157675898896724,
+      "snrReduction_dB": 13.578837949448362
+    },
+    "meta": {
+      "description": "",
+      "owner": "RM",
+      "hull": null,
+      "location_raw": "8.000 S 81.000 E (8\u00b00'0\" S 81\u00b00'0\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_53046",
+    "nodeName": "South Bali",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -11.445,
+      "longitude": 113.607,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 4529.8,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1358.79,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 68,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "AU",
+      "hull": null,
+      "location_raw": "11.445 S 113.607 E (11\u00b026'42\" S 113\u00b036'25\" E)",
+      "note": "Station non operational, no restoration planned."
+    }
+  },
+  {
+    "nodeId": "sea_55023",
+    "nodeName": "Coral Sea 2     -     870km NE of Townsville",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -14.715,
+      "longitude": 153.537,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 5755.6466666666665,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1726.544,
+    "weather": {
+      "precipitation_mm_h": 0.1,
+      "cloud_cover_percent": 73,
+      "attenuation_dB": 34.7845573321766,
+      "snrReduction_dB": 17.3922786660883
+    },
+    "meta": {
+      "description": "",
+      "owner": "AU",
+      "hull": null,
+      "location_raw": "14.715 S 153.537 E (14\u00b042'53\" S 153\u00b032'14\" E)",
+      "note": "Data are not quality controlled by NDBC."
+    }
+  },
+  {
+    "nodeId": "sea_52d06",
+    "nodeName": "NORTHEAST SOLOMON",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -5.373,
+      "longitude": 164.99,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 2719.9500000000003,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 815.835,
+    "weather": {
+      "precipitation_mm_h": 0.1,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 16.436568851472245,
+      "snrReduction_dB": 8.218284425736123
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "2.6D09",
+      "location_raw": "5.373 S 164.990 E (5\u00b022'24\" S 164\u00b059'24\" E)",
+      "note": "Hull from station 52406 went adrift 12/11/23."
+    }
+  },
+  {
+    "nodeId": "sea_51542",
+    "nodeName": "TAO Buoy Adrift",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 0.018,
+      "longitude": -179.903,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 3043.1133333333332,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 912.784,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 28,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": null,
+      "location_raw": "0.018 N 179.903 W (0\u00b01'6\" N 179\u00b054'12\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_52009",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 13.729,
+      "longitude": -144.668,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 5814.126666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1744.088,
+    "weather": {
+      "precipitation_mm_h": 0.1,
+      "cloud_cover_percent": 64,
+      "attenuation_dB": 35.138015033709664,
+      "snrReduction_dB": 17.569007516854832
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": null,
+      "location_raw": "13.729 N 144.668 W (13\u00b043'46\" N 144\u00b040'4\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_43412",
+    "nodeName": "SOUTHWEST MANZANILLO - 240 NM SW of Manzanillo, MX",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 16.012,
+      "longitude": -107.004,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 6898.150000000001,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 2069.295,
+    "weather": {
+      "precipitation_mm_h": 0.1,
+      "cloud_cover_percent": 74,
+      "attenuation_dB": 41.68993698665448,
+      "snrReduction_dB": 20.84496849332724
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "2.6D84",
+      "location_raw": "16.012 N 107.004 W (16\u00b00'45\" N 107\u00b00'13\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_32488",
+    "nodeName": "Bahia Solano, Colombia",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 6.258,
+      "longitude": -77.511,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 3361.403333333333,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1008.271,
+    "weather": {
+      "precipitation_mm_h": 0.6,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 67.47570707839887,
+      "snrReduction_dB": 33.737853539199435
+    },
+    "meta": {
+      "description": "",
+      "owner": "DC",
+      "hull": null,
+      "location_raw": "6.258 N 77.511 W (6\u00b015'27\" N 77\u00b030'40\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_41041",
+    "nodeName": "NORTH EQUATORIAL TWO - 890 NM East of Martinique",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 14.453,
+      "longitude": -46.327,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 5956.829999999999,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1786.899,
+    "weather": {
+      "precipitation_mm_h": 0.6,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 119.58320084846619,
+      "snrReduction_dB": 59.791600424233096
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "3D48",
+      "location_raw": "14.453 N 46.327 W (14\u00b027'12\" N 46\u00b019'36\" W)",
+      "note": "The buoy from station 41041 has been recovered as of 10/14/21."
+    }
+  },
+  {
+    "nodeId": "sea_13001",
+    "nodeName": "NE Extension",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 12.0,
+      "longitude": -23.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 6912.79,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 2073.687,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 59,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "PR",
+      "hull": "PM-595",
+      "location_raw": "12.000 N 23.000 W (12\u00b00'0\" N 23\u00b00'0\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_14047",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": -4.0,
+      "longitude": 57.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 2405.4533333333334,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 721.486,
+    "weather": {
+      "precipitation_mm_h": 1.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 67.98870022398609,
+      "snrReduction_dB": 33.99435011199304
+    },
+    "meta": {
+      "description": "",
+      "owner": "RM",
+      "hull": null,
+      "location_raw": "4.000 S 57.000 E (4\u00b00'0\" S 57\u00b00'0\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_23401",
+    "nodeName": "BAY OF BENGAL - 600 NM WNW of Phuket, Thailand",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 8.86,
+      "longitude": 88.55,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 3516.456666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1054.787,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 62,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "TH",
+      "hull": null,
+      "location_raw": "8.860 N 88.550 E (8\u00b051'36\" N 88\u00b033'0\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_52405",
+    "nodeName": "SOUTH PHILIPPINE SEA -725 NM West of Agana, Guam",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 12.992,
+      "longitude": 132.232,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 5370.336666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1610.951,
+    "weather": {
+      "precipitation_mm_h": 0.4,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 82.16206676346832,
+      "snrReduction_dB": 41.08103338173416
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "2.6D82",
+      "location_raw": "12.992 N 132.232 E (12\u00b059'30\" N 132\u00b013'55\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_91328",
+    "nodeName": "Ulul Atoll, Caroline",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 8.6,
+      "longitude": 149.67,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 3589.35,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1076.655,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 86,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": null,
+      "location_raw": "8.600 N 149.670 E (8\u00b035'60\" N 149\u00b040'12\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_91377",
+    "nodeName": "Mili, Marshalls Is.",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 6.1,
+      "longitude": 172.1,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 2566.9599999999996,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 769.938,
+    "weather": {
+      "precipitation_mm_h": 0.2,
+      "cloud_cover_percent": 61,
+      "attenuation_dB": 24.680541384991038,
+      "snrReduction_dB": 12.340270692495519
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": null,
+      "location_raw": "6.100 N 172.100 E (6\u00b05'60\" N 172\u00b05'60\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_sndp5",
+    "nodeName": "1619910 - Sand Island, Midway Islands",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 28.215,
+      "longitude": -177.361,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 11119.363333333333,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3335.659,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 56,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "O",
+      "hull": null,
+      "location_raw": "28.215 N 177.361 W (28\u00b012'54\" N 177\u00b021'40\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_51000",
+    "nodeName": "NORTHERN HAWAII ONE - 245NM NE of Honolulu HI",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 23.528,
+      "longitude": -153.792,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 10451.33,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3135.249,
+    "weather": {
+      "precipitation_mm_h": 0.2,
+      "cloud_cover_percent": 38,
+      "attenuation_dB": 100.50113476247668,
+      "snrReduction_dB": 50.25056738123834
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "3DV37",
+      "location_raw": "23.528 N 153.792 W (23\u00b031'42\" N 153\u00b047'30\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_tiqc1",
+    "nodeName": "Oneonta Slough, Tijuana River Reserve, CA",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 32.568,
+      "longitude": -117.131,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 12180.136666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3653.891,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 33,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "NR",
+      "hull": null,
+      "location_raw": "32.568 N 117.131 W (32\u00b034'6\" N 117\u00b07'53\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_fmrf1",
+    "nodeName": "8725520 - Fort Myers, FL",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 26.647,
+      "longitude": -81.871,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 10053.946666666669,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3016.034,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "O",
+      "hull": null,
+      "location_raw": "26.647 N 81.871 W (26\u00b038'50\" N 81\u00b052'15\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_41044",
+    "nodeName": "NE ST MARTIN - 330 NM NE St Martin Is",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 21.582,
+      "longitude": -58.63,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 8990.390000000001,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 2696.967,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 42,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "3D70",
+      "location_raw": "21.582 N 58.630 W (21\u00b034'57\" N 58\u00b037'48\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_41852",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 23.24,
+      "longitude": -24.02,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 9882.786666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 2964.686,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 68,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "AO",
+      "hull": null,
+      "location_raw": "23.240 N 24.020 W (23\u00b014'24\" N 24\u00b01'12\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_61001",
+    "nodeName": "Nice Buoy",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 43.4,
+      "longitude": 7.8,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 12622.759999999998,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3786.678,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 58,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "F",
+      "hull": null,
+      "location_raw": "43.400 N 7.800 E (43\u00b024'0\" N 7\u00b048'0\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_23020",
+    "nodeName": "Red Sea",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 22.162,
+      "longitude": 38.5,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 6398.756666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1919.477,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 65,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "KA",
+      "hull": "2.8DX1",
+      "location_raw": "22.162 N 38.500 E (22\u00b09'43\" N 38\u00b030'0\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_23223",
+    "nodeName": "Bay of Bengal",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 17.333,
+      "longitude": 89.483,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 6536.433333333333,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 1960.78,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 91,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "OT",
+      "hull": "09",
+      "location_raw": "17.333 N 89.483 E (17\u00b020'0\" N 89\u00b029'0\" E)",
+      "note": "Data are not quality controlled by NDBC."
+    }
+  },
+  {
+    "nodeId": "sea_22107",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 33.08,
+      "longitude": 126.03,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 12391.823333333332,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3717.397,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 8,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "KO",
+      "hull": null,
+      "location_raw": "33.080 N 126.030 E (33\u00b04'48\" N 126\u00b01'48\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_21413",
+    "nodeName": "SOUTHEAST TOKYO - 700NM ESE of Tokyo, JP",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 30.492,
+      "longitude": 152.085,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 11450.106666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 3434.882,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 25,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "2.6D75",
+      "location_raw": "30.492 N 152.085 E (30\u00b029'31\" N 152\u00b05'6\" E)",
+      "note": "Buoy adrift 11/22/24."
+    }
+  },
+  {
+    "nodeId": "sea_wakp8",
+    "nodeName": "1890000 - Wake Island",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 19.291,
+      "longitude": 166.618,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 6987.9800000000005,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 2096.244,
+    "weather": {
+      "precipitation_mm_h": 0.1,
+      "cloud_cover_percent": 43,
+      "attenuation_dB": 42.23287654425906,
+      "snrReduction_dB": 21.11643827212953
+    },
+    "meta": {
+      "description": "",
+      "owner": "O",
+      "hull": null,
+      "location_raw": "19.291 N 166.618 E (19\u00b017'26\" N 166\u00b037'3\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_46413",
+    "nodeName": "SOUTH-SOUTHEAST ADAK - 243 NM SSE of Adak Island, AK",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 48.045,
+      "longitude": -173.897,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 18373.086666666666,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 5511.776,
+    "weather": {
+      "precipitation_mm_h": 0.4,
+      "cloud_cover_percent": 79,
+      "attenuation_dB": 281.11277605419554,
+      "snrReduction_dB": 140.55638802709777
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "2.6D71",
+      "location_raw": "48.045 N 173.897 W (48\u00b02'42\" N 173\u00b053'49\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_46246",
+    "nodeName": "Ocean Station PAPA  (166)",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 50.042,
+      "longitude": -145.17,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 18742.566666666666,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 5622.62,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "WQ",
+      "hull": null,
+      "location_raw": "50.042 N 145.170 W (50\u00b02'30\" N 145\u00b010'12\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_lpoi1",
+    "nodeName": "Lake Pend Oreille, ID",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 48.06,
+      "longitude": -116.5,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 17890.56666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 5367.02,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": null,
+      "location_raw": "48.060 N 116.500 W (48\u00b03'36\" N 116\u00b030'0\" W)",
+      "note": "The C-Man station at LPOI1 has been disestablished on December 16, 1999."
+    }
+  },
+  {
+    "nodeId": "sea_45008",
+    "nodeName": "SOUTH HURON - 43NM East of Oscoda, MI",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 44.283,
+      "longitude": -82.416,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 16511.996666666666,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 4953.449,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 0,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "2.6D57",
+      "location_raw": "44.283 N 82.416 W (44\u00b017'0\" N 82\u00b024'59\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_44140",
+    "nodeName": "Tail of the Bank",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 42.87,
+      "longitude": -51.47,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 16079.633333333331,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 4823.74,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "C",
+      "hull": null,
+      "location_raw": "42.870 N 51.470 W (42\u00b052'12\" N 51\u00b028'12\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_41933",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 44.95,
+      "longitude": -12.8,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 16739.656666666666,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 5021.747,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 17,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "AO",
+      "hull": null,
+      "location_raw": "44.950 N 12.800 W (44\u00b057'0\" N 12\u00b048'0\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_22101",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 37.23,
+      "longitude": 126.02,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 13913.706666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 4173.962,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 21,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "KO",
+      "hull": null,
+      "location_raw": "37.230 N 126.020 E (37\u00b013'48\" N 126\u00b01'12\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_21346",
+    "nodeName": "21346  380km East of Iwate, Japan",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 40.302,
+      "longitude": 146.192,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 15048.55,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 4514.415,
+    "weather": {
+      "precipitation_mm_h": 1.1,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 453.4646213275403,
+      "snrReduction_dB": 226.73231066377016
+    },
+    "meta": {
+      "description": "",
+      "owner": "JM",
+      "hull": null,
+      "location_raw": "40.302 N 146.192 E (40\u00b018'9\" N 146\u00b011'32\" E)",
+      "note": "Data from these stations was discontinued \u00a000:00Z\u00a0on\u00a01 Sep 2016. station disestablished."
+    }
+  },
+  {
+    "nodeId": "sea_21414",
+    "nodeName": "AMCHITKA - 170 NM South of Amchitka, AK",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 48.97,
+      "longitude": 178.165,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 18279.12,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 5483.586,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 55,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "2.6D70",
+      "location_raw": "48.970 N 178.165 E (48\u00b058'12\" N 178\u00b09'54\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_46018",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 60.283,
+      "longitude": -177.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 22563.266666666666,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 6768.83,
+    "weather": {
+      "precipitation_mm_h": 0.2,
+      "cloud_cover_percent": 80,
+      "attenuation_dB": 216.9764175076031,
+      "snrReduction_dB": 108.48820875380154
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": null,
+      "location_raw": "60.283 N 177.000 W (60\u00b017'0\" N 177\u00b00'0\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_mrka2",
+    "nodeName": "Middle Rock Light, AK",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 61.081,
+      "longitude": -146.653,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 22819.163333333334,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 6845.599,
+    "weather": {
+      "precipitation_mm_h": 0.6,
+      "cloud_cover_percent": 97,
+      "attenuation_dB": 458.12250168871293,
+      "snrReduction_dB": 229.06125084435646
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": null,
+      "location_raw": "61.081 N 146.653 W (61\u00b04'52\" N 146\u00b039'11\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_45150",
+    "nodeName": "Great Slave Lake, North Arm",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 61.98,
+      "longitude": -114.13,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 23051.48,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 6915.294,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "C",
+      "hull": null,
+      "location_raw": "61.980 N 114.130 W (61\u00b058'48\" N 114\u00b07'48\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_45158",
+    "nodeName": "Hudson Bay",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 59.0,
+      "longitude": -94.0,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 21931.56,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 6579.318,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 71,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "C",
+      "hull": null,
+      "location_raw": "59.000 N 94.000 W (59\u00b00'0\" N 94\u00b00'0\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_sm058",
+    "nodeName": "Woods Hole Test Camera",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 59.923,
+      "longitude": -39.528,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 22286.203333333335,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 6685.711,
+    "weather": {
+      "precipitation_mm_h": 0.5,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 395.97369196152727,
+      "snrReduction_dB": 197.98684598076363
+    },
+    "meta": {
+      "description": "",
+      "owner": "WH",
+      "hull": null,
+      "location_raw": "59.923 N 39.528 W (59\u00b055'22\" N 39\u00b031'40\" W)",
+      "note": "Woods Hole Institute Test Camera"
+    }
+  },
+  {
+    "nodeId": "sea_64045",
+    "nodeName": "K5 Buoy",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 59.15,
+      "longitude": -11.79,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 19934.386666666665,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 5980.166,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 51,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "U",
+      "hull": null,
+      "location_raw": "59.150 N 11.790 W (59\u00b09'0\" N 11\u00b047'24\" W)",
+      "note": "For realtime data go to?U.K. Met Office"
+    }
+  },
+  {
+    "nodeId": "sea_62147",
+    "nodeName": "Galaxy 111",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 55.7,
+      "longitude": 4.7,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 16987.140000000003,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 5095.992,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 83,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "X",
+      "hull": null,
+      "location_raw": "55.700 N 4.700 E (55\u00b042'0\" N 4\u00b042'0\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_23226",
+    "nodeName": "Arabian Sea",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 20.2,
+      "longitude": 67.333,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 8599.313333333332,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 2579.644,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 84,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "OT",
+      "hull": null,
+      "location_raw": "20.200 N 67.333 E (20\u00b012'0\" N 67\u00b020'0\" E)",
+      "note": "Data are not quality controlled by NDBC.Due to processing issues, event data may not display on this webpage."
+    }
+  },
+  {
+    "nodeId": "sea_21402",
+    "nodeName": "286NM East of Simushir Island",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 46.488,
+      "longitude": 158.343,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 17026.586666666666,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 5107.826,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 71,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "HY",
+      "hull": null,
+      "location_raw": "46.488 N 158.343 E (46\u00b029'15\" N 158\u00b020'36\" E)",
+      "note": "Deployed 9/29/2012"
+    }
+  },
+  {
+    "nodeId": "sea_46070",
+    "nodeName": "SOUTHWEST BERING SEA - 142NM NNE OF ATTU IS, AK",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 55.05,
+      "longitude": 175.261,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 20278.456666666665,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 6083.387,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 16,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "N",
+      "hull": "3D73",
+      "location_raw": "55.050 N 175.261 E (55\u00b03'0\" N 175\u00b015'41\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_48677",
+    "nodeName": null,
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 72.568,
+      "longitude": -177.61,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 26816.236666666668,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 8044.721,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "SH",
+      "hull": null,
+      "location_raw": "72.568 N 177.610 W (72\u00b034'5\" N 177\u00b036'36\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_48212",
+    "nodeName": "Harrison Bay (Shell Arctic)",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 70.874,
+      "longitude": -150.279,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 26477.086666666666,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 7942.976,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 95,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "SB",
+      "hull": null,
+      "location_raw": "70.874 N 150.279 W (70\u00b052'27\" N 150\u00b016'46\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_44078",
+    "nodeName": "OOI Irminger Sea Surface Mooring",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 59.94,
+      "longitude": -39.52,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 22292.393333333333,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 6687.568,
+    "weather": {
+      "precipitation_mm_h": 0.5,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 396.0836762468146,
+      "snrReduction_dB": 198.0418381234073
+    },
+    "meta": {
+      "description": "",
+      "owner": "OO",
+      "hull": null,
+      "location_raw": "59.940 N 39.520 W (59\u00b056'24\" N 39\u00b031'12\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_tfblk",
+    "nodeName": "10.0 nm WNW on Blakknes, Iceland",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 65.698,
+      "longitude": -24.778,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 23181.06,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 6954.168,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 100,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "IM",
+      "hull": null,
+      "location_raw": "65.698 N 24.778 W (65\u00b041'52\" N 24\u00b046'41\" W)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_63115",
+    "nodeName": "Magnus AWS",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 61.6,
+      "longitude": 1.3,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 19222.0,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 5766.45,
+    "weather": {
+      "precipitation_mm_h": 5.4,
+      "cloud_cover_percent": 88,
+      "attenuation_dB": 1681.981365900726,
+      "snrReduction_dB": 840.990682950363
+    },
+    "meta": {
+      "description": "",
+      "owner": "X",
+      "hull": null,
+      "location_raw": "61.600 N 1.300 E (61\u00b036'0\" N 1\u00b018'0\" E)",
+      "note": null
+    }
+  },
+  {
+    "nodeId": "sea_23228",
+    "nodeName": "Arabian Sea",
+    "nodeType": "SEA",
+    "position": {
+      "latitude": 20.764,
+      "longitude": 65.284,
+      "altitude": 0.01
+    },
+    "velocity": {
+      "vx": 0.0,
+      "vy": 0.0,
+      "vz": 0.0
+    },
+    "bandwidth": 2500.0,
+    "capacityMbps": 3750.0,
+    "coverageRadiusKm": 11.117,
+    "maintenanceStatus": "operational",
+    "healthy": true,
+    "linkAvailable": true,
+    "latencyMs": 8487.056666666667,
+    "lastUpdated": "2019-03-18T07:10:37Z",
+    "pathLengthKm": 2545.967,
+    "weather": {
+      "precipitation_mm_h": 0.0,
+      "cloud_cover_percent": 61,
+      "attenuation_dB": 0.0,
+      "snrReduction_dB": 0.0
+    },
+    "meta": {
+      "description": "",
+      "owner": "IS",
+      "hull": null,
+      "location_raw": "20.764 N 65.284 E (20\u00b045'51\" N 65\u00b017'2\" E)",
+      "note": "Data are not quality controlled by NDBC."
+    }
+  }
+]

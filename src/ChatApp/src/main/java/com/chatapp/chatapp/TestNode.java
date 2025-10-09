@@ -13,8 +13,8 @@ public class TestNode {
         // 1. Khởi tạo Firestore
         Firestore db = FirebaseConfig.getFirestore();
         // 3. User mock: ví dụ đang ở Hà Nội
-        double userLat = 10.8220;
-        double userLon = 106.6257;
+        double userLat = 48.151;
+        double userLon = 17.051;
 
         User user = new User("luongvanvo29@gmail.com", null, userLat, userLon);
         // 4. Tìm node gần nhất
