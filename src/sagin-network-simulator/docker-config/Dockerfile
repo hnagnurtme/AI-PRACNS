@@ -1,30 +1,31 @@
-# File: src/sagin-network-simulator/docker-config/Dockerfile
-
-# === GIAI ĐOẠN 1: BUILD (Giữ nguyên) ===
+# -----------------------------------------------------------
+# Build stage: Maven multiarch
+# -----------------------------------------------------------
 FROM maven:3.9.5-eclipse-temurin-17 AS build
 
 WORKDIR /app
 
+# Tải dependencies
 COPY pom.xml .
 RUN mvn dependency:go-offline
 
+# Build ứng dụng
 COPY src ./src
-
-# Đóng gói ứng dụng thành file JAR
 RUN mvn package -DskipTests
 
-# === GIAI ĐOẠN 2: RUNTIME ===
-FROM eclipse-temurin:17-jre-alpine
+# -----------------------------------------------------------
+# Runtime stage: dùng ARM hoặc AMD đều được (multiarch)
+# -----------------------------------------------------------
 
-# LƯU Ý: ĐÃ XÓA JAVA_TOOL_OPTIONS KHỎI ĐÂY
-
-# Tên file JAR đã được SHADE 
-ARG UBER_JAR_FILE=target/sagin-network-simulator-1.0.0-SNAPSHOT-uber.jar
+FROM eclipse-temurin:17-jre-jammy
 
 WORKDIR /app
 
-# Sao chép file JAR đã build và đổi tên thành app.jar
+# SỬA LỖI: Cập nhật tên file JAR để khớp với finalName trong pom.xml
+# Tên file thực tế: saginsimulator-1.0.0-SNAPSHOT-uber.jar
+ARG UBER_JAR_FILE=target/saginsimulator-1.0.0-SNAPSHOT-uber.jar 
+
+# Copy JAR từ Build Stage
 COPY --from=build /app/${UBER_JAR_FILE} /app/app.jar
 
-# SỬ DỤNG CMD: Để cho phép command trong compose ghi đè
-CMD ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]

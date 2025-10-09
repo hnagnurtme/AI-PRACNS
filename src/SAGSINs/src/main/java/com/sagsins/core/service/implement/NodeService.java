@@ -1,138 +1,194 @@
 package com.sagsins.core.service.implement;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import com.sagsins.core.DTOs.CreateNodeRequest;
+import com.sagsins.core.DTOs.NodeDTO;
 import com.sagsins.core.DTOs.UpdateNodeRequest;
-import com.sagsins.core.model.Geo3D;
+import com.sagsins.core.exception.DuplicateKeyException;
 import com.sagsins.core.model.NodeInfo;
-import com.sagsins.core.model.Orbit;
-import com.sagsins.core.model.Velocity;
 import com.sagsins.core.repository.INodeRepository;
 import com.sagsins.core.service.INodeService;
 
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+/**
+ * Triển khai interface INodeService, chứa logic nghiệp vụ và giao tiếp với Repository.
+ */
 @Service
-public class NodeService implements INodeService{
-    private static final Logger logger = LoggerFactory.getLogger(NodeService.class);
+public class NodeService implements INodeService {
+
     private final INodeRepository nodeRepository;
-    
-    public NodeService(INodeRepository nodeService) {
-        this.nodeRepository = nodeService;
-    }
 
-    @Override
-    public List<NodeInfo> getAllNodeIds() {
-        List<NodeInfo> nodes = new ArrayList<>();
-        nodes = nodeRepository.getAllNodes();
-        if (nodes.isEmpty()) {
-            logger.warn("No nodes found in the repository.");
-        }
-        return nodes;
+    public NodeService(INodeRepository nodeRepository) {
+        this.nodeRepository = nodeRepository;
     }
-
+// ----------------------------------------------------------------------
+    // --- CREATE ---
     @Override
-    public NodeInfo getNodeById(String nodeId) {
-        return nodeRepository.getNodeById(nodeId);
-    }
+    public NodeDTO createNode(CreateNodeRequest request) {
 
-    @Override
-    public NodeInfo createNode(CreateNodeRequest request) {
-        // Convert DTO to model
-        Geo3D position = new Geo3D(
-            request.getPosition().getLongitude(),
-            request.getPosition().getLatitude(),
-            request.getPosition().getAltitude()
-        );
+        NodeInfo newNode = new NodeInfo();
         
-        Orbit orbit = null;
-        if (request.getOrbit() != null) {
-            orbit = new Orbit(
-                "LEO", // default type
-                request.getOrbit().getInclination(),
-                95.0, // default period
-                request.getOrbit().getAltitude() / 1000.0 // convert to km
-            );
+        boolean exists = nodeRepository.existsById(request.getNodeId());
+        if (exists) {
+            throw new DuplicateKeyException("Node with ID " + request.getNodeId() + " already exists.");
         }
-        
-        Velocity velocity = null;
-        if (request.getVelocity() != null) {
-            velocity = new Velocity(
-                0.0, // x component
-                request.getVelocity().getSpeed(), // y component
-                0.0  // z component
-            );
-        }
-        
-        NodeInfo newNode = new NodeInfo(request.getNodeType(), position, orbit, velocity);
-        nodeRepository.saveNode(newNode);
-        return newNode;
-    }
+        newNode.setNodeId(request.getNodeId());
+        newNode.setNodeType(request.getNodeType());
+        newNode.setOperational(request.isOperational());
 
-    @Override
-    public NodeInfo updateNode(String nodeId, UpdateNodeRequest request) {
-        NodeInfo existingNode = nodeRepository.getNodeById(nodeId);
-        if (existingNode == null) {
-            throw new RuntimeException("Node not found: " + nodeId);
-        }
-        
-        // Update fields if provided
-        if (request.getNodeType() != null) {
-            existingNode.setNodeType(request.getNodeType());
-        }
-        
         if (request.getPosition() != null) {
-            Geo3D newPosition = new Geo3D(
-                request.getPosition().getLongitude(),
-                request.getPosition().getLatitude(),
-                request.getPosition().getAltitude()
-            );
-            existingNode.setPosition(newPosition);
+            newNode.setPosition(request.getPosition());
         }
-        
         if (request.getOrbit() != null) {
-            Orbit newOrbit = new Orbit(
-                "LEO", // default type
-                request.getOrbit().getInclination(),
-                95.0, // default period
-                request.getOrbit().getAltitude() / 1000.0 // convert to km
-            );
-            existingNode.setOrbit(newOrbit);
+                newNode.setOrbit(request.getOrbit());
         }
-        
         if (request.getVelocity() != null) {
-            Velocity newVelocity = new Velocity(
-                0.0, // x component
-                request.getVelocity().getSpeed(), // y component
-                0.0  // z component
-            );
-            existingNode.setVelocity(newVelocity);
+            newNode.setVelocity(request.getVelocity());
         }
         
-        nodeRepository.saveNode(existingNode);
-        return existingNode;
+        // Cài đặt Metrics ban đầu
+        newNode.setCurrentBandwidth(request.getCurrentBandwidth());
+        newNode.setAvgLatencyMs(request.getAvgLatencyMs());
+        newNode.setPacketLossRate(request.getPacketLossRate());
+        newNode.setPacketBufferLoad(0); 
+        newNode.setCurrentThroughput(0); 
+        newNode.setResourceUtilization(0); 
+        newNode.setPowerLevel(100.0); 
+        
+        newNode.setLastUpdated(System.currentTimeMillis());
+
+        // 2. Lưu Entity vào Repository (DB)
+        NodeInfo savedNode = nodeRepository.save(newNode);
+        
+        // 3. Chuyển đổi Entity đã lưu sang DTO để trả về
+        return convertToDTO(savedNode); // Sử dụng hàm convertToDTO đã định nghĩa
     }
 
     @Override
-    public void deleteNode(String nodeId) {
-        NodeInfo node = nodeRepository.getNodeById(nodeId);
-        if (node == null) {
-            throw new RuntimeException("Node not found: " + nodeId);
+    public List<NodeDTO> getAllNodes() {
+        // Lấy List<NodeInfo> từ Repository, sau đó chuyển đổi sang List<NodeDTO>
+        return nodeRepository.findAll().stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public Optional<NodeDTO> getNodeById(String nodeId) {
+        return nodeRepository.findById(nodeId)
+                .map(this::convertToDTO);
+    }
+
+    @Override
+    public Optional<NodeDTO> updateNode(String nodeId, UpdateNodeRequest request) {
+        return nodeRepository.findById(nodeId).map(existingNode -> {
+            
+            // Cập nhật các trường cấu hình
+            if (request.getNodeType() != null) {
+                existingNode.setNodeType(request.getNodeType());
+            }
+            if (request.getIsOperational() != null) {
+                existingNode.setOperational(request.getIsOperational());
+            }
+
+            // Cập nhật Vị trí/Cơ học
+            if (request.getPosition() != null) {
+                existingNode.setPosition(request.getPosition());
+            }
+            if (request.getOrbit() != null) {
+                existingNode.setOrbit(request.getOrbit());
+            }
+            if (request.getVelocity() != null) {
+                existingNode.setVelocity(request.getVelocity());
+            }
+
+            // Cập nhật các Metrics QoS (chỉ cập nhật nếu Request cung cấp)
+            if (request.getCurrentBandwidth() != null) { 
+                existingNode.setCurrentBandwidth(request.getCurrentBandwidth());
+            }
+            if (request.getAvgLatencyMs() != null) {
+                existingNode.setAvgLatencyMs(request.getAvgLatencyMs());
+            }
+            if (request.getPacketLossRate() != null) {
+                existingNode.setPacketLossRate(request.getPacketLossRate());
+            }
+            if (request.getPacketBufferLoad() != null) {
+                existingNode.setPacketBufferLoad(request.getPacketBufferLoad());
+            }
+            if (request.getCurrentThroughput() != null) {
+                existingNode.setCurrentThroughput(request.getCurrentThroughput());
+            }
+            if (request.getResourceUtilization() != null) {
+                existingNode.setResourceUtilization(request.getResourceUtilization());
+            }
+            if (request.getPowerLevel() != null) {
+                existingNode.setPowerLevel(request.getPowerLevel());
+            }
+            
+            existingNode.setLastUpdated(System.currentTimeMillis());
+
+            NodeInfo updatedNode = nodeRepository.save(existingNode);
+            return convertToDTO(updatedNode);
+
+        });
+    }
+    @Override
+    public boolean deleteNode(String nodeId) {
+        if (nodeRepository.existsById(nodeId)) {
+            nodeRepository.deleteById(nodeId);
+            return true;
         }
-        nodeRepository.deleteNode(nodeId);
+        return false;
+    }
+
+    private NodeDTO convertToDTO(NodeInfo nodeInfo) {
+        if (nodeInfo == null) return null;
+
+        NodeDTO dto = new NodeDTO();
+        
+        dto.setNodeId(nodeInfo.getNodeId());
+        dto.setNodeType(nodeInfo.getNodeType());
+        dto.setPosition(nodeInfo.getPosition());
+        dto.setOrbit(nodeInfo.getOrbit());
+        dto.setVelocity(nodeInfo.getVelocity());
+
+        dto.setOperational(nodeInfo.isOperational());
+        // Sử dụng phương thức tính toán từ NodeInfo
+        dto.setIsHealthy(nodeInfo.isHealthy()); 
+
+        dto.setCurrentBandwidth(nodeInfo.getCurrentBandwidth());
+        dto.setAvgLatencyMs(nodeInfo.getAvgLatencyMs());
+        dto.setPacketLossRate(nodeInfo.getPacketLossRate());
+        dto.setCurrentThroughput(nodeInfo.getCurrentThroughput());
+        dto.setResourceUtilization(nodeInfo.getResourceUtilization());
+        dto.setPowerLevel(nodeInfo.getPowerLevel());
+        
+        dto.setLastUpdated(nodeInfo.getLastUpdated());
+
+        return dto;
     }
 
     @Override
-    public NodeInfo addNode() {
-        // Keep existing implementation for backward compatibility
-        // Create a default node for testing
-        Geo3D position = new Geo3D(0.0, 0.0, 1000.0);
-        NodeInfo newNode = new NodeInfo("UE", position);
-        nodeRepository.saveNode(newNode);
-        return newNode;
+    public Optional<NodeDTO> activateNode(String nodeId) {
+        return nodeRepository.findById(nodeId).map(existingNode -> {
+            existingNode.setOperational(true);
+            existingNode.setLastUpdated(System.currentTimeMillis());
+            NodeInfo updatedNode = nodeRepository.save(existingNode);
+            return convertToDTO(updatedNode);
+        });
     }
+
+    @Override
+    public Optional<NodeDTO> deactivateNode(String nodeId) {
+        return nodeRepository.findById(nodeId).map(existingNode -> {
+            existingNode.setOperational(false);
+            existingNode.setLastUpdated(System.currentTimeMillis());
+            NodeInfo updatedNode = nodeRepository.save(existingNode);
+            return convertToDTO(updatedNode);
+        });
+    }
+
 }

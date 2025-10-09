@@ -1,0 +1,48 @@
+import React, { useEffect } from 'react';
+import CesiumViewer from '../map/CesiumViewer'; 
+import Sidebar from '../components/Sidebar'; 
+import NodeDetailCard from '../components/nodes/NodeDetailCard'; 
+import { useNodeStore } from '../state/nodeStore'; 
+import { useNodes } from '../hooks/useNodes'; 
+
+const Dashboard: React.FC = () => {
+    // 1. Lấy trạng thái và actions từ store
+    const { nodes, selectedNode } = useNodeStore();
+    const { refetchNodes } = useNodes();
+
+    // 2. Logic Fetch dữ liệu (Chạy khi component được mount)
+    useEffect(() => {
+        refetchNodes().catch(error => {
+            console.error("Failed to load Nodes data from API:", error);
+            // TODO: Xử lý hiển thị thông báo lỗi trên UI
+        });
+    }, [refetchNodes]);
+
+    return (
+        // Sử dụng Tailwind CSS để chia layout (Map chiếm phần lớn, Sidebar cố định)
+        <div className="flex w-screen h-screen overflow-hidden bg-gray-100">
+            
+            {/* Sidebar (Cố định chiều rộng: w-80) */}
+            {/* Sidebar nhận nodes để hiển thị danh sách */}
+            <Sidebar nodes={nodes} onRefresh={refetchNodes} /> 
+
+            {/* Khu vực Map (flex-grow: chiếm hết không gian còn lại) */}
+            <div className="relative flex-grow">
+                
+                {/* Cesium Viewer */}
+                {/* CesiumViewer nhận nodes để render các entities */}
+                <CesiumViewer nodes={nodes} />
+
+                {/* Card thông tin chi tiết (Hiển thị nổi trên Map) */}
+                {/* Card chỉ hiển thị nếu selectedNode có dữ liệu */}
+                {selectedNode && (
+                    <div className="absolute top-20 right-4 z-10 w-96">
+                        <NodeDetailCard node={selectedNode} onRefresh={refetchNodes} />
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+};
+
+export default Dashboard;
