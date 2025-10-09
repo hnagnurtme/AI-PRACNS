@@ -13,7 +13,7 @@ public class FirebaseConfiguration {
     public static final String SERVICE_ACCOUNT_FILE = "sagin-service-account-key.json"; 
     
     // Tên Collection/Path cơ sở để lưu trữ NodeInfo
-    public static final String NODES_COLLECTION_PATH = "network_nodes"; 
+    public static final String NODES_COLLECTION_PATH = "NETWORK_NODES"; 
 
     /**
      * Lấy InputStream của tệp Service Account Key từ thư mục resources.

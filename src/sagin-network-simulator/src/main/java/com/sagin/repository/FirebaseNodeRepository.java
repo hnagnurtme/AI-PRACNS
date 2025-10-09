@@ -1,6 +1,7 @@
 package com.sagin.repository;
 
 import com.google.cloud.firestore.CollectionReference;
+import com.google.cloud.firestore.DocumentSnapshot;
 import com.google.cloud.firestore.Firestore;
 import com.google.cloud.firestore.QueryDocumentSnapshot;
 import com.google.cloud.firestore.QuerySnapshot;
@@ -88,6 +89,32 @@ public class FirebaseNodeRepository implements INodeRepository {
             logger.debug("Cập nhật trạng thái thành công cho Node {}.", nodeId);
         } catch (InterruptedException | ExecutionException e) {
             logger.error("LỖI GHI DỮ LIỆU FIRESTORE cho Node {}: {}", nodeId, e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public NodeInfo getNodeInfo(String nodeId) {
+        try {
+            logger.info("Đang tải thông tin Node {} từ Firestore...", nodeId);  
+            ApiFuture<DocumentSnapshot> future = nodesCollection.document(nodeId).get();
+            DocumentSnapshot document = future.get();    
+            if (document.exists()) {
+                NodeInfo node = document.toObject(NodeInfo.class);
+                if (node != null) {
+                    node.setNodeId(document.getId());
+                    logger.info("Tải thành công thông tin Node {} từ Database.", nodeId);
+                    return node;
+                } else {
+                    logger.warn("Dữ liệu Node {} không hợp lệ trong Database.", nodeId);
+                    return null;
+                }
+            } else {
+                logger.warn("Node {} không tồn tại trong Database.", nodeId);
+                return null;
+            }
+        } catch (InterruptedException | ExecutionException e) {
+            logger.error("LỖI TRUY VẤN FIRESTORE cho Node {}: {}", nodeId, e.getMessage(), e);
+            return null;
         }
     }
 }

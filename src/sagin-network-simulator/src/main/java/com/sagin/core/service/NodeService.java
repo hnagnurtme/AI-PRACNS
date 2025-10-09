@@ -1,240 +1,330 @@
 package com.sagin.core.service;
 
-import com.sagin.model.LinkMetric;
-import com.sagin.model.NodeInfo;
-import com.sagin.model.Packet;
-import com.sagin.model.RoutingTable;
-import com.sagin.core.ILinkManagerService;
 import com.sagin.core.INetworkManagerService;
-import com.sagin.core.INodeGatewayService;
 import com.sagin.core.INodeService;
-import com.sagin.routing.RoutingEngine;
-import com.sagin.util.HostPort;
-import java.util.Map;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import com.sagin.core.IUserService;
+import com.sagin.model.*;
+import com.sagin.repository.INodeRepository;
 
-// SLF4J Imports
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
-public class NodeService implements INodeService { 
+public class NodeService implements INodeService {
 
     private static final Logger logger = LoggerFactory.getLogger(NodeService.class);
 
-    private final NodeInfo currentNodeInfo;
-    private final Queue<Packet> packetBuffer;
-    
-    private RoutingTable routingTable; 
-    
-    // Services
-    private final RoutingEngine routingEngine;
-    private final ILinkManagerService linkManager; 
-    private final INetworkManagerService networkManager; 
-    private final INodeGatewayService gatewayService ;
-    
-    private final Map<String, NodeInfo> neighborNodes; 
-    private final Map<String, com.sagin.model.LinkMetric> neighborLinkMetrics;
+    private NodeInfo selfInfo;
+    private final Map<String, RouteInfo> routingTable = new ConcurrentHashMap<>();
+    private final Map<String, Packet> packetBuffer = new ConcurrentHashMap<>();
 
-    
-    // THÀNH PHẦN ĐA LUỒNG: Scheduler cho các tác vụ định kỳ của Node
-    private final ScheduledExecutorService scheduler;
-    
-    // Có thể dùng một Executor khác để mô phỏng CPU xử lý gói tin tốc độ cao hơn
-    // private final ExecutorService packetProcessor; 
+    private final INetworkManagerService networkManager;
+    private final IUserService userService;
+    private final INodeRepository nodeRepository;
 
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
-    public NodeService(NodeInfo initialInfo, 
-                    INetworkManagerService networkManager, 
-                    RoutingEngine routingEngine, 
-                    ILinkManagerService linkManager,
-                    INodeGatewayService gatewayService) { 
-        this.currentNodeInfo = initialInfo;
-        this.packetBuffer = new ConcurrentLinkedQueue<>();
-        this.routingTable = new RoutingTable(); 
-
+    public NodeService(NodeInfo initialInfo, INetworkManagerService networkManager, IUserService userService,
+            INodeRepository nodeRepository) {
+        this.selfInfo = initialInfo;
         this.networkManager = networkManager;
-        this.routingEngine = routingEngine;
-        this.linkManager = linkManager;
-        this.gatewayService = gatewayService;
-        
-        this.neighborNodes = new ConcurrentHashMap<>();
-        this.neighborLinkMetrics = new ConcurrentHashMap<>();
-        
-        this.scheduler = Executors.newSingleThreadScheduledExecutor();
-
-        logger.info("Service cho Node {} đã khởi tạo.", initialInfo.getNodeId());
+        this.userService = userService;
+        this.nodeRepository = nodeRepository;
     }
 
+    // --- CÁC HÀM CƠ CHẾ VÀ ĐỒNG BỘ ---
+
+    /** @inheritdoc */
     @Override
     public void startSimulationLoop() {
-        logger.info("Bắt đầu vòng lặp mô phỏng Node {}...", currentNodeInfo.getNodeId());
-        
-        discoverNeighborsAndRunRouting(); 
+        networkManager.registerActiveNode(selfInfo.getNodeId(), this);
 
-        final int EXTERNAL_PORT = HostPort.port; 
-            
-        logger.info("Khởi động Gateway trên cổng {}...", 
-                        currentNodeInfo.getNodeId(), EXTERNAL_PORT);
-        gatewayService.startListening(currentNodeInfo, EXTERNAL_PORT);
-        
-        // Lập lịch cho tác vụ chính (bao gồm cập nhật trạng thái và xử lý buffer)
-        scheduler.scheduleAtFixedRate(() -> {
-            try {
-                if (currentNodeInfo.isOperational()) {
-                    updateNodeState();
-                    processBuffer(); 
-                } else {
-                    scheduler.shutdown();
-                    logger.warn("Node {} bị shutdown.", currentNodeInfo.getNodeId());
-                }
-            } catch (Exception e) {
-                logger.error("Lỗi nghiêm trọng trong vòng lặp mô phỏng của Node {}: {}", 
-                            currentNodeInfo.getNodeId(), e.getMessage(), e);
-            }
-        }, 0, 1000, TimeUnit.MILLISECONDS); 
+        List<String> loopbackPath = Collections.singletonList(selfInfo.getNodeId());
+        RouteInfo loopbackRoute = new RouteInfo(
+                selfInfo.getNodeId(), // nextHopNodeId
+                loopbackPath, // pathNodeIds
+                0.0, // totalCost (Chi phí bằng 0)
+                0.0, // totalLatencyMs (Độ trễ bằng 0)
+                1000.0, // minBandwidthMbps (Mức an toàn, không phải bottleneck)
+                0.0, // avgPacketLossRate (Không mất gói)
+                System.currentTimeMillis() // timestampComputed (Thời điểm hiện tại)
+        );
+        // create loopback route
+        routingTable.put(selfInfo.getNodeId(), loopbackRoute);
+        logger.info("[Node {}] ĐÃ TẠO TUYẾN NỘI BỘ: {}", selfInfo.getNodeId(), loopbackPath.toString());
+        scheduler.scheduleAtFixedRate(this::updateNodeState, 1, 1, TimeUnit.SECONDS);
+        logger.info("[Node {}] Bắt đầu vòng lặp xử lý trạng thái.", selfInfo.getNodeId());
     }
 
-    @Override
-    public void receivePacket(Packet packet) {
-        if (currentNodeInfo.isHealthy()) {
-            packet.addToPath(currentNodeInfo.getNodeId());
-            packet.setCurrentHoldingNodeId(currentNodeInfo.getNodeId());
-
-            packetBuffer.offer(packet);
-            currentNodeInfo.setPacketBufferLoad(packetBuffer.size());
-            
-            logger.info("{} nhận gói {} (Buffer: {})", 
-                        currentNodeInfo.getNodeId(), 
-                        packet.getPacketId(), 
-                        packetBuffer.size());
-        } else {
-            packet.markDropped();
-            logger.warn("WARNING: {} DROP gói {} (Quá tải/Hỏng hóc)", 
-                        currentNodeInfo.getNodeId(), 
-                        packet.getPacketId());
-        }
-    }
-    
-    private void processBuffer() {
-        Packet packetToSend = packetBuffer.poll();
-        if (packetToSend == null) {
-            currentNodeInfo.setPacketBufferLoad(0);
-            return;
-        }
-
-        // 1. Kiểm tra đích cuối
-        if (packetToSend.getDestinationUserId().equals("UserID_Target")) { 
-            logger.info("SUCCESS: {} Gói {} đã đến đích cuối.", 
-                        currentNodeInfo.getNodeId(), 
-                        packetToSend.getPacketId());
-            return;
-        }
-
-        // 2. Quyết định định tuyến
-        String nextHop = decideNextHop(packetToSend);
-        if( nextHop == null ) {
-            // logger.warn("WARNING: {} không tìm thấy Next Hop cho gói {}. Gói bị drop.", 
-            //             currentNodeInfo.getNodeId(), 
-            //             packetToSend.getPacketId());
-            logger.warn("WARNING: {} không tìm thấy Next Hop cho gói {}.", 
-                        currentNodeInfo.getNodeId(), 
-                        packetToSend.getPacketId());
-            nextHop = "localhost:3001"; // Mặc định gửi về một địa chỉ an toàn"
-            logger.warn("Gửi gói {} tới địa chỉ an toàn mặc định {}", 
-                        packetToSend.getPacketId(),
-                        nextHop);
-            // packetToSend.markDropped(); 
-            // return;
-        }
-        
-        if (nextHop != null) {
-            sendPacket(packetToSend, nextHop);
-        } else {
-            logger.warn("WARNING: {} không tìm thấy Next Hop hợp lệ cho gói {}", 
-                        currentNodeInfo.getNodeId(), 
-                        packetToSend.getPacketId());
-            packetToSend.markDropped(); 
-        }
-    }
-
-    @Override
-    public String decideNextHop(Packet packet) {
-        // Đây là nơi logic lập lịch CPU sẽ ảnh hưởng đến độ trễ
-        return routingEngine.getNextHop(packet, routingTable); 
-    }
-
-    @Override
-    public void sendPacket(Packet packet, String nextHopId) {
-        packet.decrementTTL();
-        
-        logger.info("{} đang gửi gói {} -> {}", 
-                    currentNodeInfo.getNodeId(), 
-                    packet.getPacketId(), 
-                    nextHopId);
-        // *Chú ý: Logic chuyển gói tin giữa các container/luồng sẽ do NetworkManager xử lý.*
-        networkManager.transferPacket(packet, nextHopId);
-
-    }
-
+    /** @inheritdoc */
     @Override
     public void updateNodeState() {
-        // Cập nhật LinkMetric động (mô phỏng nhiễu, chuyển động)
-        neighborLinkMetrics.forEach((id, metric) -> 
-            linkManager.updateDynamicMetrics(metric)
-        );
+        // CẬP NHẬT PIN: GS luôn 100%, Vệ tinh giảm chậm
+        if (selfInfo.getNodeType() == NodeType.GROUND_STATION) {
+            selfInfo.setBatteryChargePercent(100.0);
+        }
 
-        // Chạy lại thuật toán định tuyến và gán trực tiếp kết quả
-        this.routingTable = routingEngine.computeRoutes(currentNodeInfo, neighborLinkMetrics); 
+        double currentBattery = selfInfo.getBatteryChargePercent();
+        if (currentBattery > 0) {
+            if (selfInfo.getNodeType() == NodeType.GEO_SATELLITE || selfInfo.getNodeType() == NodeType.LEO_SATELLITE
+                    || selfInfo.getNodeType() == NodeType.MEO_SATELLITE) {
+                selfInfo.setBatteryChargePercent(Math.max(0.0, currentBattery - 0.1));
+            }
+        }
 
-        currentNodeInfo.setLastUpdated(System.currentTimeMillis());
-        currentNodeInfo.setPacketBufferLoad(packetBuffer.size());
+        selfInfo.setLastUpdated(System.currentTimeMillis());
+        nodeRepository.updateNodeInfo(selfInfo.getNodeId(), selfInfo);
     }
 
-    private void discoverNeighborsAndRunRouting() {
-        // ID của node láng giềng (ví dụ) mà Node này dự kiến kết nối
-        final String NEIGHBOR_ID = "GS_001";
-        
-        // 1. TRUY VẤN MẠNG: Lấy thông tin láng giềng từ NetworkManager
-        NodeInfo neighbor = networkManager.getNodeInfo(NEIGHBOR_ID);
-
-        if (neighbor != null) {
-            // Lưu thông tin NodeInfo của láng giềng
-            neighborNodes.put(neighbor.getNodeId(), neighbor);
-            
-            // 2. TÍNH TOÁN LINK BAN ĐẦU
-            LinkMetric initialLink = linkManager.calculateInitialMetric(
-                currentNodeInfo.getPosition(), 
-                neighbor.getPosition()
-            );
-            
-            // Thiết lập ID và tính Score
-            initialLink.setSourceNodeId(currentNodeInfo.getNodeId());
-            initialLink.setDestinationNodeId(neighbor.getNodeId());
-            initialLink.calculateLinkScore();
-            
-            // Lưu Link Metric vào Map của Node hiện tại
-            neighborLinkMetrics.put(NEIGHBOR_ID, initialLink);
-
-            logger.info("Node {} đã khám phá {} láng giềng, kết nối với {}.", 
-                        currentNodeInfo.getNodeId(), 
-                        neighborNodes.size(),
-                        NEIGHBOR_ID);
-
-            // 3. CHẠY ĐỊNH TUYẾN
-            // Gán trực tiếp kết quả tính toán vào bảng định tuyến
-            this.routingTable = routingEngine.computeRoutes(currentNodeInfo, neighborLinkMetrics); 
-            
+    // @inheritdoc
+    @Override
+    public void updateRoute(String destinationId, RouteInfo route) {
+        if (route == null) {
+            this.routingTable.remove(destinationId);
+            logger.warn("[Node {}] Xóa tuyến đường đến {}.", selfInfo.getNodeId(), destinationId);
         } else {
-            logger.warn("Node {} không tìm thấy Node láng giềng {} để khởi tạo định tuyến.", 
-                        currentNodeInfo.getNodeId(), NEIGHBOR_ID);
-            // Khởi tạo bảng định tuyến trống nếu không có láng giềng
-            this.routingTable = new com.sagin.model.RoutingTable();
+            this.routingTable.put(destinationId, route);
+            logger.info("[Node {}] ĐÃ CẬP NHẬT TUYẾN ĐƯỜNG MỚI:", selfInfo.getNodeId());
+            logger.info("  -> Đích {}: {}", destinationId, route.toString());
         }
+        logger.info("[Node {}] Bảng định tuyến hiện tại: {}", selfInfo.getNodeId(), routingTable.toString());
+    }
+
+    /** @inheritdoc */
+    @Override
+    public NodeInfo getNodeInfo() {
+        return selfInfo;
+    }
+
+    // --- XỬ LÝ GÓI TIN CHUNG (HỢP NHẤT TỪ enqueueNewPacket và receivePacket) ---
+
+    // TRONG: com.sagin.core.service.NodeService.java
+
+    // TRONG: com.sagin.core.service.NodeService.java
+
+    /** @inheritdoc */
+    @Override
+    public void receivePacket(Packet packet, LinkMetric incomingLinkMetric) {
+
+        // 0. PHÂN NHÁNH VÀ KHỞI TẠO/CẬP NHẬT GÓI TIN DỰA TRÊN NGUỒN
+        //log packet info
+        logger.info("HUHUUUHUHU"+ packet.toString());
+        
+        if (incomingLinkMetric == null) {
+            // --- GÓI TIN MỚI SINH RA (Từ Gateway/Client) ---
+
+            // a) Khởi tạo QoS/TTL (Đảm bảo gói tin có các ràng buộc QoS và TTL)
+            if (packet.getMaxAcceptableLatencyMs() == 0.0 || packet.getTTL() <= 0) {
+                ServiceQoS initialQoS = userService.getQoSForPacket(packet);
+                packet.setMaxAcceptableLatencyMs(initialQoS.getMaxLatencyMs());
+                packet.setMaxAcceptableLossRate(initialQoS.getMaxLossRate());
+
+                if (packet.getTTL() <= 0) {
+                    packet.setTTL(15);
+                }
+            }
+            // b) Khởi tạo Độ trễ tích lũy ban đầu
+            packet.setAccumulatedDelayMs(selfInfo.getNodeProcessingDelayMs());
+
+            logger.error("[Node {}] NHẬN: Gói mới {} (Type: {}) từ Client/Gateway. Source : {}, Dest: {}",
+                    selfInfo.getNodeId(), packet.getPacketId(), packet.getType(), packet.getSourceUserId(),
+                    packet.getDestinationUserId());
+
+        } else {
+            // --- GÓI TIN CHUYỂN TIẾP (Từ Node khác qua Link) ---
+            logger.info("[Node {}] NHẬN: Gói {} (Type: {}) từ Link. Source : {}, Dest: {} , TTL: {}",
+                    selfInfo.getNodeId(), packet.getPacketId(), packet.getType(), packet.getSourceUserId(),
+                    packet.getDestinationUserId() , packet.getTTL());
+            logger.info("Incoming LinkMetric: {}", incomingLinkMetric.toString());
+            // 1. KIỂM TRA CHẤT LƯỢNG LIÊN KẾT ĐẾN (LinkScore)
+
+            double score = incomingLinkMetric.calculateLinkScore();
+            if (score <= 0.0) {
+                logger.warn(
+                        "[Node {}] DROP: Gói {} bị từ chối. LinkScore đến bằng 0. Link không hoạt động/Không đáng tin cậy.",
+                        selfInfo.getNodeId(), packet.getPacketId());
+                packet.markDropped("Incoming Link Unusable");
+                return; // DROP và THOÁT
+            }
+
+            // 2. Cập nhật Độ trễ tích lũy
+            packet.setAccumulatedDelayMs(packet.getAccumulatedDelayMs() + incomingLinkMetric.getLatencyMs()
+                    + selfInfo.getNodeProcessingDelayMs());
+            // 3. GIẢM TTL VÀ KIỂM TRA (CHO GÓI CHUYỂN TIẾP)
+            logger.info("[Node {}] NHẬN: Gói {} (Type: {}) từ Link. TTL ban đầu: {}.",
+                    selfInfo.getNodeId(), packet.getPacketId(), packet.getType(), packet.getTTL());
+            // LOG TTL TRƯỚC KHI GIẢM ĐỂ KIỂM TRA LỖI LOGIC
+    
+            // GIẢM TTL CHỈ SAU KHI LOG VÀ KIỂM TRA
+            packet.decrementTTL();
+
+            // A. Kiểm tra TTL (Cho gói chuyển tiếp sau khi đã giảm)
+            if (!packet.isAlive()) {
+                packet.markDropped("TTL Expired");
+                logger.warn("[Node {}] DROP: Gói {} - TTL Expired.", selfInfo.getNodeId(), packet.getPacketId());
+                return; // DROP và THOÁT
+            }
+        }
+
+        // --- LOGIC XỬ LÝ CHUNG (Áp dụng cho CẢ HAI) ---
+
+        // B. Kiểm tra Đích cuối cùng
+        if (packet.getDestinationUserId().equals(selfInfo.getNodeId())) {
+            try {
+                handleFinalDestination(packet);
+                logger.info("[Node {}] Gói {} đã đến đích cuối cùng (Dest: {}).",
+                        selfInfo.getNodeId(), packet.getPacketId(), packet.getDestinationUserId());
+            } catch (Exception e) {
+                logger.error("[Node {}] LỖI khi xử lý Gói {} tại Đích Cuối Cùng: {}",
+                        selfInfo.getNodeId(), packet.getPacketId(), e.getMessage());
+            }
+            // Gói tin đã được xử lý xong, thoát luồng.
+            return;
+        }
+
+        // C. Kiểm tra Sức khỏe Node (CHỈ CHO GÓI MỚI - Initial Admission)
+        if (incomingLinkMetric == null && !selfInfo.isHealthy()) {
+            logger.warn("[Node {}] DROP: Gói {} bị từ chối. Node không khỏe (Pin/Tải quá tải).",
+                    selfInfo.getNodeId(), packet.getPacketId());
+            packet.markDropped("Node Unhealthy (Initial Reject)");
+            return;
+        }
+
+        // D. Kiểm tra Buffer (Congestion)
+        if (selfInfo.getCurrentPacketCount() >= selfInfo.getPacketBufferCapacity()) {
+            packet.markDropped("Buffer Overflow");
+            logger.warn("[Node {}] DROP: Gói {} - Buffer Full (Tải: {}/{})",
+                    selfInfo.getNodeId(), packet.getPacketId(), selfInfo.getCurrentPacketCount(),
+                    selfInfo.getPacketBufferCapacity());
+            return;
+        }
+
+        // 3. Đưa gói tin vào Buffer (Tăng tải buffer và cập nhật DB)
+        packetBuffer.put(packet.getPacketId(), packet);
+        selfInfo.setCurrentPacketCount(selfInfo.getCurrentPacketCount() + 1);
+        updateNodeState();
+
+        // 4. Quyết định Định tuyến
+        sendPacket(packet);
+    }
+
+    // --- ĐỊNH TUYẾN/CHUYỂN TIẾP (FORWARDING) ---
+
+    /** @inheritdoc */
+    @Override
+    public void sendPacket(Packet packet) {
+
+        String destinationId = packet.getDestinationUserId();
+        RouteInfo routeInfo = routingTable.get(destinationId);
+
+        logger.info("[Node {}] Định tuyến gói {}: Tra cứu tuyến đến {}. Bảng có {} mục.",
+                selfInfo.getNodeId(), packet.getPacketId(), destinationId, routingTable.size());
+
+        // 2. KIỂM TRA LỖI ROUTING (ROUTE NOT FOUND)
+        if (routeInfo == null ||
+                routeInfo.getNextHopNodeId() == null ||
+                routeInfo.getNextHopNodeId().equals(selfInfo.getNodeId()) ||
+                routeInfo.getTotalCost() == Double.MAX_VALUE) {
+            logger.error("[Node {}] DROP: Gói {} - Route Not Found (Dest: {}). Bảng định tuyến trống hoặc lỗi.",
+                    selfInfo.getNodeId(), packet.getPacketId(), destinationId);
+
+            packet.markDropped("Route Not Found/Stale");
+            packetBuffer.remove(packet.getPacketId());
+            selfInfo.setCurrentPacketCount(selfInfo.getCurrentPacketCount() - 1);
+            updateNodeState();
+            return;
+        }
+
+        // 3. KIỂM TRA QoS (Admission Control)
+        double maxLatency = packet.getMaxAcceptableLatencyMs();
+
+        if (routeInfo.getTotalLatencyMs() > maxLatency) {
+
+            logger.warn("[Node {}] DROP: Gói {} - QoS Failed (Latency: {}ms > {}ms).",
+                    selfInfo.getNodeId(), packet.getPacketId(), (int) routeInfo.getTotalLatencyMs(), (int) maxLatency);
+
+            packet.markDropped("QoS Violation on Route");
+            packetBuffer.remove(packet.getPacketId());
+            selfInfo.setCurrentPacketCount(selfInfo.getCurrentPacketCount() - 1);
+            updateNodeState();
+            return;
+        }
+
+        // 4. Chuẩn bị và Gửi gói tin
+        String nextHopId = routeInfo.getNextHopNodeId();
+
+        // Cập nhật history và next hop
+        packet.addToPath(selfInfo.getNodeId());
+        packet.setNextHopNodeId(nextHopId);
+
+        // 5. Gửi gói tin qua Network Manager (Kích hoạt RPC)
+        networkManager.transferPacket(packet, selfInfo.getNodeId());
+
+        // 6. Cập nhật Trạng thái Buffer (Gói tin đã rời khỏi buffer)
+        packetBuffer.remove(packet.getPacketId());
+        selfInfo.setCurrentPacketCount(selfInfo.getCurrentPacketCount() - 1);
+        updateNodeState();
+        logger.debug("[Node {}] GỬI: Gói {} (Type: {}) tới NextHop: {}. Path Cost: {}",
+                selfInfo.getNodeId(), packet.getPacketId(), packet.getType(), nextHopId, routeInfo.getTotalCost());
+    }
+
+    // --- XỬ LÝ ĐÍCH CUỐI CÙNG ---
+
+    /**
+     * Xử lý khi gói tin đến đích cuối cùng (Trạm Mặt đất Đích).
+     */
+    private void handleFinalDestination(Packet packet) {
+        // Xóa gói tin khỏi buffer an toàn trước khi xử lý
+        if (packetBuffer.containsKey(packet.getPacketId())) {
+            packetBuffer.remove(packet.getPacketId());
+            selfInfo.setCurrentPacketCount(selfInfo.getCurrentPacketCount() - 1);
+            updateNodeState();
+        }
+
+        try {
+            if (packet.getType() == Packet.PacketType.DATA) {
+                logger.info("[Node {}] SUCCESS: Gói DATA {} đã đến đích (Total Delay: {}ms).",
+                        selfInfo.getNodeId(), packet.getPacketId(), (int) packet.getAccumulatedDelayMs());
+
+                Packet ackPacket = createAckPacket(packet);
+                sendPacket(ackPacket);
+
+                logger.debug("[Node {}] Đã gửi gói ACK {} ngược lại cho gói DATA {}.",
+                        selfInfo.getNodeId(), ackPacket.getPacketId(), packet.getPacketId());
+
+            } else if (packet.getType() == Packet.PacketType.ACK) {
+                logger.info("[Node {}] ACK RECEIVED: Gói {} đã được xác nhận. (ACK ID: {}).",
+                        selfInfo.getNodeId(), packet.getAcknowledgedPacketId(), packet.getPacketId());
+            }
+        } catch (Exception e) {
+            logger.error("[Node {}] LỖI FATAL: Xảy ra ngoại lệ khi xử lý tại đích cuối cùng cho gói {}. {}",
+                    selfInfo.getNodeId(), packet.getPacketId(), e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Tạo gói tin ACK đảo ngược.
+     */
+    private Packet createAckPacket(Packet dataPacket) {
+        Packet ack = new Packet();
+        ack.setType(Packet.PacketType.ACK);
+        ack.setPacketId("ACK_" + dataPacket.getPacketId() + "_" + System.currentTimeMillis());
+        ack.setAcknowledgedPacketId(dataPacket.getPacketId());
+        ack.setSourceUserId(dataPacket.getDestinationUserId());
+        ack.setDestinationUserId(dataPacket.getSourceUserId());
+
+        ack.setServiceType(dataPacket.getServiceType());
+        ack.setTTL(15);
+        ack.setTimeSentFromSourceMs(System.currentTimeMillis());
+        ack.setCurrentHoldingNodeId(selfInfo.getNodeId());
+
+        return ack;
     }
 }

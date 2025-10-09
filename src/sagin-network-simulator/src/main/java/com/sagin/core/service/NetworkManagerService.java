@@ -1,141 +1,228 @@
 package com.sagin.core.service;
 
+import com.sagin.core.ILinkManagerService;
 import com.sagin.core.INetworkManagerService;
 import com.sagin.core.INodeService;
-import com.sagin.model.NodeInfo;
-import com.sagin.model.Packet;
+import com.sagin.model.*;
 import com.sagin.repository.INodeRepository;
-import com.sagin.util.PacketSerializerHelper;
+import com.sagin.routing.IRoutingEngine;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.net.Socket;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Lớp triển khai INetworkManagerService.
- * Quản lý và điều phối tất cả NodeService đang chạy.
- * Lớp này hoạt động như một Registry và API Gateway cho mạng mô phỏng.
- */
+import java.util.concurrent.ThreadLocalRandom;
+
 public class NetworkManagerService implements INetworkManagerService {
 
+    // Registry của các Node đang hoạt động (NodeId -> INodeService Instance)
+    private final Map<String, INodeService> activeNodesRegistry = new ConcurrentHashMap<>();
+    // Cache Topology toàn mạng (Được cập nhật bởi các Node qua DB và đẩy vào
+    // Manager)
+    private final Map<String, NodeInfo> networkTopologyCache = new ConcurrentHashMap<>();
+
+    // Dependencies
+    private final ILinkManagerService linkManager;
+    private final INodeRepository nodeRepository;
+    private final IRoutingEngine routingEngine;
+
+    // Lịch trình cho vòng lặp mô phỏng định kỳ
+    private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+    private static final long ROUTING_UPDATE_INTERVAL_SECONDS = 20; // Cập nhật định tuyến 20 giây một lần
+
+    // logger
     private static final Logger logger = LoggerFactory.getLogger(NetworkManagerService.class);
 
-    // Lưu trữ tất cả NodeService đang hoạt động (Node ID -> NodeService Object)
-    private final Map<String, INodeService> activeNodeServices;
-    // Lưu trữ tất cả NodeInfo (Database Vị trí trong bộ nhớ)
-    private final Map<String, NodeInfo> networkNodesInfo;
-
-    // DEPENDENCY: Repository để tải dữ liệu từ DB
-    private final INodeRepository nodeRepository;
-
-    public NetworkManagerService(INodeRepository nodeRepository) { 
-        this.activeNodeServices = new ConcurrentHashMap<>();
-        this.networkNodesInfo = new ConcurrentHashMap<>();
+    public NetworkManagerService(
+            ILinkManagerService linkManager,
+            INodeRepository nodeRepository,
+            IRoutingEngine routingEngine) {
+        this.linkManager = linkManager;
         this.nodeRepository = nodeRepository;
-        logger.info("NetworkManagerService đã khởi tạo.");
+        this.routingEngine = routingEngine;
     }
 
+    // --- Phương thức Quản lý Vòng lặp ---
+
+    /**
+     * Khởi tạo toàn bộ mạng lưới và bắt đầu vòng lặp tính toán định tuyến định kỳ.
+     * 
+     * @param initialNodeConfigs Cấu hình ban đầu tải từ DB.
+     * @param baseQoS            Base QoS để tính toán bảng định tuyến Proactive.
+     */
+    public void startNetworkSimulation(Map<String, NodeInfo> initialNodeConfigs, ServiceQoS baseQoS) {
+        initializeNetwork(initialNodeConfigs);
+        this.networkTopologyCache.putAll(nodeRepository.loadAllNodeConfigs());
+
+        // --- BƯỚC 1: BUỘC TÍNH TOÁN VÀ PHÂN PHỐI ROUTING NGAY LẬP TỨC ---
+        // Giúp các Node có RoutingTable ngay khi khởi động.
+        syncCacheWithDatabase();
+        triggerRoutingComputation(baseQoS);
+        // ------------------------------------------------------------------
+
+        // --- BƯỚC 2: ĐẶT LỊCH CHO CÁC LẦN CẬP NHẬT TIẾP THEO ---
+        scheduler.scheduleAtFixedRate(
+                () -> {
+                    // Đồng bộ hóa Cache và Kích hoạt tính toán định tuyến
+                    syncCacheWithDatabase();
+                    triggerRoutingComputation(baseQoS);
+                },
+                ROUTING_UPDATE_INTERVAL_SECONDS, // initial delay (Chờ 20s sau lần tính toán đầu tiên)
+                ROUTING_UPDATE_INTERVAL_SECONDS,
+                TimeUnit.SECONDS);
+        System.out.printf("[Manager] Vòng lặp tính toán định tuyến (interval %d s) đã khởi động.%n",
+                ROUTING_UPDATE_INTERVAL_SECONDS);
+    }
+
+    /**
+     * Dừng vòng lặp mô phỏng.
+     */
+    public void stopSimulation() {
+        scheduler.shutdownNow();
+    }
+
+    // --- Triển khai INetworkManagerService ---
+
+    /** @inheritdoc */
     @Override
     public void initializeNetwork(Map<String, NodeInfo> initialNodeConfigs) {
-        logger.info("Khởi tạo cấu trúc mạng: Bắt đầu tải dữ liệu Node...");
+        this.networkTopologyCache.putAll(initialNodeConfigs);
+    }
 
-        Map<String, NodeInfo> dbConfigs = nodeRepository.loadAllNodeConfigs();
+    /** @inheritdoc */
+    @Override
+    public void registerActiveNode(String nodeId, INodeService nodeService) {
+        activeNodesRegistry.put(nodeId, nodeService);
+    }
 
-        this.networkNodesInfo.putAll(dbConfigs);
-
-        this.networkNodesInfo.putAll(initialNodeConfigs);
-
-        logger.info("Tải thành công {} Node (Bao gồm cả Node đang chạy) vào Registry.",
-                this.networkNodesInfo.size());
+    /** @inheritdoc */
+    public void updateNodeCache(NodeInfo info) {
+        this.networkTopologyCache.put(info.getNodeId(), info);
     }
 
     @Override
-    public void registerActiveNode(String serviceId, INodeService nodeService) {
-        if (!activeNodeServices.containsKey(serviceId)) {
-            activeNodeServices.put(serviceId, nodeService);
-            logger.info("Node {} đã đăng ký thành công vào NetworkManager.", serviceId);
-        } else {
-            logger.warn("Node {} đã tồn tại trong danh sách Node hoạt động (Đã đăng ký lại).", serviceId);
-        }
-    }
+    public void transferPacket(Packet packet, String sourceNodeId) {
+        String destNodeId = packet.getNextHopNodeId();
 
-    @Override
-    public void transferPacket(Packet packet, String destNodeId) {
-        // 1. LẤY ĐỊA CHỈ IP và PORT CỦA NODE ĐÍCH
-        String destAddress = "UAV_001:4001";
+        NodeInfo sourceInfo = getNodeInfo(sourceNodeId);
+        NodeInfo destInfo = getNodeInfo(destNodeId); 
 
-        // if (destAddress == null) {
-        //     logger.warn("LỖI CHUYỂN GIAO: Không tìm thấy địa chỉ IP/Port cho Node đích {}.", destNodeId);
-        //     packet.markDropped();
-        //     return;
-        // }
-
-        // Phân tích IP và Port
-        String[] parts = destAddress.split(":");
-        if (parts.length != 2) {
-            logger.error("Địa chỉ Node đích không hợp lệ: {}", destAddress);
-            packet.markDropped();
+        // 1. Kiểm tra tính khả dụng của Node Info (Giữ nguyên)
+        if (sourceInfo == null || destInfo == null || !sourceInfo.isOperational() || !destInfo.isOperational()) {
+            logger.error("[Manager] LỖI GIAO TIẾP: Node nguồn hoặc đích không khả dụng. Gói {} bị DROP.", packet.getPacketId());
+            packet.markDropped("Dest Node Info Missing/Offline");
             return;
         }
-        String destIp = parts[0];
-        int destPort = Integer.parseInt(parts[1]);
 
-        // 2. TUẦN TỰ HÓA (SERIALIZE) GÓI TIN SANG JSON
-        String jsonPayload = PacketSerializerHelper.serialize(packet);
-        if (jsonPayload == null) {
-            logger.error("LỖI CHUYỂN GIAO: Không thể tuần tự hóa gói tin {}.", packet.getPacketId());
-            packet.markDropped();
+        // 2. Tính toán Link Metric thực tế
+        LinkMetric linkMetric = linkManager.calculateLinkMetric(sourceInfo, destInfo);
+
+        if (!linkMetric.isLinkActive()) {
+            packet.markDropped("Link Down / Visibility Lost");
             return;
         }
-        logger.info("Packet {} đã được tuần tự hóa thành công.", packet.getPacketId());
-        logger.info(destIp + ":" + destPort);
 
-        // 3. THIẾT LẬP VÀ GỬI QUA TCP SOCKET
-        try (
-                // Mở Socket Client và kết nối đến Node đích
-                Socket socket = new Socket(destIp, destPort);
+        // 3. Mô phỏng Độ trễ và Tỷ lệ mất gói
+        long delayMs = (long) linkMetric.getLatencyMs();
 
-                // Dùng PrintWriter để gửi dữ liệu dạng chuỗi
-                PrintWriter out = new PrintWriter(socket.getOutputStream(), true); // 'true' để autoFlush
-        ) {
-            logger.info("Chuyển giao: Gói {} từ {} -> {} qua TCP {}:{}",
-                    packet.getPacketId(), packet.getCurrentHoldingNodeId(), destNodeId, destIp, destPort);
-
-            // Gửi chuỗi JSON. out.println() sẽ tự động thêm ký tự xuống dòng (\n)
-            // giúp server đích dễ dàng đọc theo từng dòng tin nhắn.
-            out.println(jsonPayload);
-
-            // 4. CẬP NHẬT TRẠNG THÁI NỘI BỘ (nếu cần)
-            // Logic cập nhật lên DB (Firebase) giữ nguyên: cập nhật thông tin Node hiện tại
-            NodeInfo currentNodeInfo = networkNodesInfo.get(packet.getCurrentHoldingNodeId());
-            if (currentNodeInfo != null) {
-                // Cập nhật trạng thái (ví dụ: giảm tải/hàng đợi) trên Node hiện tại sau khi gửi
-                // thành công
-                nodeRepository.updateNodeInfo(packet.getCurrentHoldingNodeId(), currentNodeInfo);
+        scheduler.schedule(() -> {
+            if (ThreadLocalRandom.current().nextDouble() < linkMetric.getPacketLossRate()) {
+                // Gói tin bị mất trên đường truyền
+                logger.warn("[Manager] Gói {} bị MẤT trên đường truyền từ {} đến {}.", packet.getPacketId(), sourceNodeId, destNodeId);
+                return;
             }
 
-            logger.info("Gói tin {} đã được gửi qua TCP thành công.", packet.getPacketId());
+            boolean success = RemotePacketSender.sendPacketViaSocket(packet, destInfo, linkMetric);
 
-        } catch (IOException e) {
-            // Xử lý các lỗi kết nối mạng (Network failure)
-            logger.error("LỖI CHUYỂN GIAO MẠNG (TCP): Không thể kết nối hoặc gửi gói tin đến {}:{}. Lỗi: {}",
-                    destIp, destPort, e.getMessage());
-            packet.markDropped();
+            if (success) {
+                // Ghi nhận thành công
+                logger.info("[Manager] Gói {} đã được chuyển từ {} đến {} (Delay: {} ms).",
+                        packet.getPacketId(), sourceNodeId, destNodeId, delayMs);
+            } else {
+                // Xử lý lỗi khi Node đích không phản hồi Socket (thực sự OFFLINE)
+                logger.error("[Manager] LỖI GIAO TIẾP: Gói {} không thể gửi tới {} (Socket Unreachable).",
+                        packet.getPacketId(), destNodeId);
+                packet.markDropped("NextHop Socket Unreachable");
+            }
+
+        }, delayMs, TimeUnit.MILLISECONDS);
+    }
+
+    /** @inheritdoc */
+    @Override
+    public NodeInfo getNodeInfo(String nodeId) {
+        return networkTopologyCache.get(nodeId);
+    }
+
+    /** @inheritdoc */
+    @Override
+    public Map<String, NodeInfo> getAllNodeInfos() {
+        return new HashMap<>(networkTopologyCache);
+    }
+
+    // --- Logic Tính toán Định tuyến Định kỳ ---
+
+    /**
+     * Kích hoạt việc tính toán RoutingTable toàn mạng cho tất cả các node.
+     * 
+     * @param baseQoS Base QoS để tính toán.
+     */
+    private void triggerRoutingComputation(ServiceQoS baseQoS) {
+        Map<String, NodeInfo> currentTopology = getAllNodeInfos();
+        Map<String, LinkMetric> allLinks = new ConcurrentHashMap<>();
+
+        // 1. TÍNH TOÁN TOÀN BỘ CÁC LINK GIỮA CÁC NODE ĐANG HOẠT ĐỘNG
+        for (NodeInfo source : currentTopology.values()) {
+            for (NodeInfo dest : currentTopology.values()) {
+                if (!source.getNodeId().equals(dest.getNodeId())) {
+                    LinkMetric metric = linkManager.calculateLinkMetric(source, dest);
+                    if (metric.isLinkActive()) {
+                        allLinks.put(source.getNodeId() + "-" + dest.getNodeId(), metric);
+                    }
+                }
+            }
+        }
+
+        // 2. KÍCH HOẠT ROUTING ENGINE CHO MỖI NODE
+        for (NodeInfo sourceNode : currentTopology.values()) {
+            // Chỉ tính toán cho các node đang hoạt động và đăng ký
+            if (sourceNode.isOperational() && activeNodesRegistry.containsKey(sourceNode.getNodeId())) {
+
+                RoutingTable table = routingEngine.computeRoutes(
+                        sourceNode,
+                        allLinks,
+                        currentTopology,
+                        baseQoS);
+
+                // 3. ĐẨY BẢNG ĐỊNH TUYẾN MỚI VỀ CHO INodeService
+                INodeService sourceService = activeNodesRegistry.get(sourceNode.getNodeId());
+                if (sourceService != null) {
+                    for (Map.Entry<String, RouteInfo> entry : table.getRouteInfoMap().entrySet()) {
+                        sourceService.updateRoute(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
         }
     }
 
-    @Override
-    public NodeInfo getNodeInfo(String nodeId) {
-        // Cung cấp thông tin của các node khác trong mạng (cho khám phá láng giềng)
-        return networkNodesInfo.get(nodeId);
-    }
-
-    @Override
-    public void startSimulation() {
-        logger.info("Network Manager đã sẵn sàng.");
+    /**
+     * Tải lại toàn bộ cấu hình Node từ Repository (Firestore) để đồng bộ hóa cache.
+     * Điều này đảm bảo NetworkManager luôn có NodeInfo mới nhất (Buffer/Pin)
+     * mà các INodeService khác đã ghi lên DB.
+     */
+    private void syncCacheWithDatabase() {
+        try {
+            Map<String, NodeInfo> latestConfigs = nodeRepository.loadAllNodeConfigs();
+            this.networkTopologyCache.clear();
+            this.networkTopologyCache.putAll(latestConfigs);
+        } catch (Exception e) {
+            logger.error("[Manager] LỖI ĐỒNG BỘ HÓA CACHE: Không thể tải cấu hình Node từ DB.", e);
+        }
     }
 }

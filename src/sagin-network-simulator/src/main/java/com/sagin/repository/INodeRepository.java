@@ -20,4 +20,12 @@ public interface INodeRepository {
      * @param info Dữ liệu NodeInfo mới.
      */
     void updateNodeInfo(String nodeId, NodeInfo info);
+
+
+    /**
+     * Tải thông tin NodeInfo của một Node cụ thể từ Database.
+     * @param nodeId ID cua Node cần tra cứu.
+     * @return NodeInfo của Node đó, hoặc null nếu không tìm thấy.
+     */
+    NodeInfo getNodeInfo(String nodeId);
 }

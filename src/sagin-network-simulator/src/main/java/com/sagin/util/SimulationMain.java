@@ -1,87 +1,142 @@
 package com.sagin.util;
 
-import com.sagin.core.INetworkManagerService;
-import com.sagin.core.INodeGatewayService;
+import com.sagin.configuration.FireStoreConfiguration;
+import com.sagin.core.ILinkManagerService;
 import com.sagin.core.INodeService;
+import com.sagin.core.IUserService;
+import com.sagin.core.INodeGatewayService;
 import com.sagin.core.service.NodeService;
-import com.sagin.configuration.ServiceConfiguration;
-import com.sagin.model.NodeInfo;
-import com.sagin.core.ILinkManagerService; 
-import com.sagin.routing.RoutingEngine;
-import com.sagin.repository.INodeRepository; 
-import com.sagin.seeding.NodeSeeder;       
+import com.sagin.core.service.TcpGatewayService; 
+import com.sagin.core.service.UserService;
+import com.sagin.core.service.LinkManagerService;
+import com.sagin.core.service.NetworkManagerService; 
+import com.sagin.model.*;
+import com.sagin.repository.FirebaseNodeRepository;
+import com.sagin.repository.INodeRepository;
+import com.sagin.routing.DijkstraRoutingEngine;
+import com.sagin.routing.IRoutingEngine;
+import com.sagin.seeding.NodeSeeder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.net.UnknownHostException;
+
 
 public class SimulationMain {
 
     private static final Logger logger = LoggerFactory.getLogger(SimulationMain.class);
+    private static final int FALLBACK_PORT = 8080; 
 
     public static void main(String[] args) {
-        
-        if (args.length < Initializer.REQUIRED_ARGS_COUNT) {
-            logger.error("Lỗi: Thiếu tham số khởi tạo. Cần ít nhất {} tham số.", Initializer.REQUIRED_ARGS_COUNT);
-            System.exit(1);
+        String nodeId;
+
+        // --- LOGIC MẶC ĐỊNH VÀ XỬ LÝ THAM SỐ ---
+        if (args.length < 1) { // Chỉ kiểm tra 1 tham số
+            nodeId = "GS_LONDON";
+            logger.warn("Thiếu tham số khởi chạy. Sử dụng mặc định: NODE_ID={}", nodeId);
+        } else {
+            nodeId = args[0];
         }
+        // ----------------------------------------
+
+        logger.info("--- KHỞI CHẠY NODE ĐỘC LẬP: {} ---", nodeId);
+        new SimulationMain().runSingleNode(nodeId); // Chỉ truyền NODEID
+    }
+    
+    public void runSingleNode(String nodeId) {
+
+        try {
+            FireStoreConfiguration.init(); 
+            logger.info("Firebase SDK đã được khởi tạo thành công.");
+        } catch (Exception e) {
+            logger.error("LỖI KHỞI TẠO FIREBASE: Không thể tải cấu hình SDK.", e);
+            return;
+        }
+        
+        // --- 1. KHỞI TẠO REPOSITORY VÀ SEEDING DỮ LIỆU ---
+        INodeRepository nodeRepository = new FirebaseNodeRepository();
+        checkAndSeedDatabase(nodeRepository);
+        
+        
+        // Tải cấu hình Node CỤ THỂ
+        NodeInfo initialInfo = nodeRepository.getNodeInfo(nodeId);
+        
+        if (initialInfo == null) {
+            logger.error("LỖI KHỞI CHẠY: Không tìm thấy cấu hình cho Node ID: {}. Dừng.", nodeId);
+            return;
+        }
+
+        // --- 1B. XÁC ĐỊNH CỔNG VÀ CẬP NHẬT ĐỊA CHỈ MẠNG CỤC BỘ ---
+        // Port được lấy từ DB (nếu có) hoặc dùng mặc định.
+        int port = initialInfo.getPort() > 0 ? initialInfo.getPort() : FALLBACK_PORT;
         
         try {
-            // 1. LẤY CẤU HÌNH DỊCH VỤ (SINGLETON)
-            ServiceConfiguration config = ServiceConfiguration.getInstance();
-
-            // 2. LẤY TẤT CẢ DEPENDENCY TỪ CONFIG
-            INetworkManagerService networkManager = config.getNetworkManagerService();
-            RoutingEngine routingEngine = config.getRoutingEngine();
-            ILinkManagerService linkManager = config.getLinkManagerService();
-            INodeRepository nodeRepository = config.getNodeRepository(); 
+            String hostName = getActualHostName(nodeId); 
             
-            // ❗ LỖI SỬA: Lấy Gateway Service từ Configuration ❗
-            INodeGatewayService nodeGateway = config.getNodeGatewayService(); 
-
-            // 3. THỰC HIỆN SEEDING DỮ LIỆU
-            NodeSeeder seeder = new NodeSeeder(nodeRepository);
-            seeder.seedInitialNodes(false); 
-
-            // 4. Khởi tạo Node Info
-            NodeInfo currentNodeInfo = Initializer.initializeNodeFromArgs(args);
+            initialInfo.setHost(hostName);
+            initialInfo.setPort(port); 
             
-            // 5. Khởi tạo Node Service THỰC HIỆN DEPENDENCY INJECTION HOÀN CHỈNH
-            INodeService nodeService = new NodeService( // Phải dùng tên lớp NodeService đã được sửa
-                currentNodeInfo, 
-                networkManager,   
-                routingEngine,    
-                linkManager,
-                nodeGateway      
-            );
+            nodeRepository.updateNodeInfo(nodeId, initialInfo); 
+            logger.info("Địa chỉ mạng Node {} đã được đồng bộ lên DB: {}:{}", nodeId, hostName, port);
             
-            // 6. GIẢI QUYẾT VÒNG LẶP PHỤ THUỘC (Setter Injection)
-            // TcpNodeGateway cần NodeService để đưa gói tin vào buffer
-            nodeGateway.setNodeServiceReference(nodeService);
-
-            logger.info("=================================================");
-            logger.info("Node ID: {} | Type: {}", currentNodeInfo.getNodeId(), currentNodeInfo.getNodeType());
-            logger.info("Vị trí: {}", currentNodeInfo.getPosition().toString());
-            logger.info("BW Max: {} Mbps", currentNodeInfo.getCurrentBandwidth());
-            logger.info("=================================================");
-
-            // 7. Cấu hình ban đầu của Network Manager 
-            Map<String, NodeInfo> currentInstanceConfig = new HashMap<>();
-            currentInstanceConfig.put(currentNodeInfo.getNodeId(), currentNodeInfo);
-            networkManager.initializeNetwork(currentInstanceConfig); 
-            
-            // 8. Đăng ký Node vào Registry và bắt đầu mô phỏng
-            networkManager.registerActiveNode(currentNodeInfo.getNodeId(), nodeService);
-            nodeService.startSimulationLoop(); 
-
-        } catch (IllegalArgumentException e) {
-            logger.error("Lỗi tham số khởi động: {}", e.getMessage());
-            System.exit(1);
         } catch (Exception e) {
-            logger.error("Lỗi nghiêm trọng xảy ra trong quá trình khởi tạo ứng dụng:", e);
-            System.exit(1);
+            logger.error("LỖI CẬP NHẬT ĐỊA CHỈ MẠNG: Không thể xác định Hostname. {}", e.getMessage());
+            return;
         }
+        
+        // --- 2. KHỞI TẠO CÁC SERVICE CỐT LÕI (DI) ---
+        ILinkManagerService linkManager = new LinkManagerService();
+        IUserService userService = new UserService();
+        IRoutingEngine routingEngine = new DijkstraRoutingEngine(); 
+        
+        NetworkManagerService networkManager = new NetworkManagerService(
+            linkManager, 
+            nodeRepository,
+            routingEngine
+        );
+        
+        // --- 3. KHỞI TẠO NODE VÀ GATEWAY (TCP LISTENER) ---
+        
+        INodeService nodeService = new NodeService(initialInfo, networkManager, userService, nodeRepository);
+        INodeGatewayService gatewayService = new TcpGatewayService();
+        gatewayService.setNodeServiceReference(nodeService);
+        
+        // Lắng nghe TCP thực sự trên cổng đã xác định
+        gatewayService.startListening(initialInfo, port);
+        
+        // Bắt đầu vòng lặp xử lý của Node
+        nodeService.startSimulationLoop();
+
+        // --- 4. BẮT ĐẦU VÒNG LẶP ĐỊNH TUYẾN TOÀN MẠNG ---
+        
+        ServiceQoS baseQoS = userService.getQoSForPacket(createDummyDataPacket(nodeId, "DUMMY_DEST", "DATA")); 
+        networkManager.startNetworkSimulation(nodeRepository.loadAllNodeConfigs(), baseQoS);
+        
+        logger.info("Node {} đã khởi động thành công và đang lắng nghe Client trên cổng {}.", nodeId, port);
+    }
+    
+    // Hàm phụ trợ (Không thay đổi)
+    private Packet createDummyDataPacket(String sourceId, String destId, String serviceType) {
+        Packet packet = new Packet();
+        packet.setPacketId("DUMMY_QOS_CHECK");
+        packet.setType(Packet.PacketType.DATA);
+        packet.setSourceUserId(sourceId);
+        packet.setDestinationUserId(destId);
+        packet.setServiceType(serviceType);
+        return packet;
+    }
+
+    private void checkAndSeedDatabase(INodeRepository repository) {
+        NodeSeeder seeder = new NodeSeeder(repository);
+        seeder.seedInitialNodes(false); 
+    }
+    
+    /**
+     * Hàm lấy Hostname thực tế cho môi trường Docker/Local.
+     */
+    private String getActualHostName(String nodeId) throws UnknownHostException {
+        // Sử dụng logic mặc định: Tên Service Docker (viết thường)
+        return nodeId.toLowerCase(); 
     }
 }
