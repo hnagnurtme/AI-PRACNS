@@ -3,6 +3,8 @@ package com.sagin.core.service;
 import com.sagin.model.LinkMetric;
 import com.sagin.model.NodeInfo;
 import com.sagin.model.Packet;
+import com.sagin.model.PacketTransferWrapper;
+import com.sagin.util.NetworkUtils;
 import com.sagin.util.PacketSerializerHelper;
 
 import java.io.PrintWriter;
@@ -14,22 +16,36 @@ import java.net.Socket;
  */
 public class RemotePacketSender {
     
-    // Phương thức tĩnh để gửi gói tin JSON qua Socket
+    private static final int HEALTH_CHECK_TIMEOUT_MS = 500; 
+    /**
+     * Phương thức tĩnh để gửi gói tin JSON qua Socket.
+     * Nó đóng gói Packet và LinkMetric vào một Wrapper trước khi serialize.
+     */
     public static boolean sendPacketViaSocket(Packet packet, NodeInfo destInfo, LinkMetric linkMetric) {
         
         String hostName = destInfo.getHost();
         int port = destInfo.getPort();
         
-        // Cần đảm bảo rằng gói tin có ID node hiện tại để nó được xử lý đúng ở node đích
-        // Vì đây là cuộc gọi cuối cùng trước khi gói tin đến node đích, 
-        // ta giả định packet.setCurrentHoldingNodeId() đã được gọi trước đó.
+        // 1. ĐÓNG GÓI PACKET VÀ LINK METRIC VÀO WRAPPER
+        PacketTransferWrapper wrapper = new PacketTransferWrapper(packet, linkMetric);
+    
+        // 2. TUẦN TỰ HÓA ĐỐI TƯỢNG WRAPPER
+        // Sử dụng phương thức serialize chung để chuyển đổi Wrapper thành JSON String
+        String jsonString = PacketSerializerHelper.serialize(wrapper);
         
-        String jsonString = PacketSerializerHelper.serialize(packet);
         if (jsonString == null) {
-            System.err.printf("[RPC] LỖI: Không thể serialize gói %s.%n", packet.getPacketId());
+            // Lỗi đã được log chi tiết trong PacketSerializerHelper
+            System.err.printf("[RPC] LỖI: Không thể serialize gói %s (Lỗi JSON).%n", packet.getPacketId());
             return false;
         }
 
+        // --- (Tích hợp Health Check nếu cần thiết, như đã thống nhất) ---
+        if (!NetworkUtils.isServiceAvailable(hostName, port, HEALTH_CHECK_TIMEOUT_MS)) {
+            System.err.printf("[RPC] LỖI GIAO TIẾP: Node %s:%d KHÔNG PHẢN HỒI (OFFLINE).%n", hostName, port);
+            return false;
+        }
+        
+        // 3. GỬI JSON QUA SOCKET
         try (
             // Kết nối đến Hostname (tên Service Docker) và Cổng (Port)
             Socket socket = new Socket(hostName, port);

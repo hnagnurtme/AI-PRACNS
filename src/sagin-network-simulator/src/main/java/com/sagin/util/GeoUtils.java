@@ -45,6 +45,6 @@ public class GeoUtils {
         // Giả định đơn giản: Mọi vệ tinh LEO có thể nhìn thấy nhau. 
         // Ground Station chỉ có thể thấy vệ tinh nếu nó không quá xa (giả sử < 5000 km)
         double distance = calculateDistance3D(posA, posB);
-        return distance < 5000.0; // Ngưỡng tầm nhìn đơn giản
+        return distance < 5000000.0; // Ngưỡng tầm nhìn đơn giản
     }
 }

@@ -24,7 +24,7 @@ public class LinkMetric {
     private double linkAttenuationDb; 
     
     private double linkScore;          
-    private boolean isLinkActive;      
+    private boolean isLinkActive = true;      
     private long lastUpdated;          
 
     /** * Tính điểm link tổng hợp dựa trên QoS.
