@@ -92,21 +92,17 @@ public class NetworkManagerService implements INetworkManagerService {
     /** @inheritdoc */
     @Override
     public void initializeNetwork(Map<String, NodeInfo> initialNodeConfigs) {
-        // Tải cấu hình Node ban đầu vào cache Topology
         this.networkTopologyCache.putAll(initialNodeConfigs);
-        System.out.printf("[Manager] Đã tải %d cấu hình Node vào Topology Cache.%n", initialNodeConfigs.size());
     }
 
     /** @inheritdoc */
     @Override
     public void registerActiveNode(String nodeId, INodeService nodeService) {
         activeNodesRegistry.put(nodeId, nodeService);
-        System.out.printf("[Manager] Node %s đã đăng ký và hoạt động.%n", nodeId);
     }
 
     /** @inheritdoc */
     public void updateNodeCache(NodeInfo info) {
-        // Cập nhật trạng thái cục bộ của node vào cache toàn mạng
         this.networkTopologyCache.put(info.getNodeId(), info);
     }
 
@@ -132,11 +128,10 @@ public class NetworkManagerService implements INetworkManagerService {
             return;
         }
 
-        // 3. Mô phỏng Độ trễ (Trì hoãn gói tin)
+        // 3. Mô phỏng Độ trễ và Tỷ lệ mất gói
         long delayMs = (long) linkMetric.getLatencyMs();
 
         scheduler.schedule(() -> {
-            // Kiểm tra Mất gói
             if (ThreadLocalRandom.current().nextDouble() < linkMetric.getPacketLossRate()) {
                 // Gói tin bị mất trên đường truyền
                 logger.warn("[Manager] Gói {} bị MẤT trên đường truyền từ {} đến {}.", packet.getPacketId(), sourceNodeId, destNodeId);
@@ -214,7 +209,6 @@ public class NetworkManagerService implements INetworkManagerService {
                 }
             }
         }
-        System.out.printf("[Manager] Hoàn thành cập nhật định tuyến toàn mạng. %d links.%n", allLinks.size());
     }
 
     /**
@@ -228,7 +222,7 @@ public class NetworkManagerService implements INetworkManagerService {
             this.networkTopologyCache.clear();
             this.networkTopologyCache.putAll(latestConfigs);
         } catch (Exception e) {
-            System.err.println("[Manager] LỖI đồng bộ hóa với Database: " + e.getMessage());
+            logger.error("[Manager] LỖI ĐỒNG BỘ HÓA CACHE: Không thể tải cấu hình Node từ DB.", e);
         }
     }
 }

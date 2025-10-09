@@ -2,8 +2,10 @@ package com.sagin.core.service;
 
 import com.sagin.core.INodeGatewayService;
 import com.sagin.core.INodeService;
+import com.sagin.model.LinkMetric;
 import com.sagin.model.NodeInfo;
 import com.sagin.model.Packet;
+import com.sagin.model.PacketTransferWrapper;
 import com.sagin.util.PacketSerializerHelper;
 
 import org.slf4j.Logger;
@@ -109,8 +111,6 @@ public class TcpGatewayService implements INodeGatewayService, Runnable {
         }
     }
 
-    // --- Lớp Xử lý Client (Handler Thread) ---
-
     private class ClientHandler implements Runnable {
         private final Socket clientSocket;
 
@@ -118,73 +118,89 @@ public class TcpGatewayService implements INodeGatewayService, Runnable {
             this.clientSocket = socket;
         }
 
-        // Trong lớp ClientHandler (của TcpGatewayService)
+        @Override
+        public void run() {
+            String clientAddress = clientSocket.getInetAddress().getHostAddress();
+            logger.info("[Gateway {}] Bắt đầu xử lý kết nối từ Client: {}", selfNodeInfo.getNodeId(), clientAddress);
 
-        // Trong com.sagin.core.service.TcpGatewayService.java, lớp ClientHandler.run()
+            // THAY THẾ ObjectInputStream bằng BufferedReader (để đọc JSON String)
+            try (
+                    InputStreamReader isr = new InputStreamReader(clientSocket.getInputStream(), "UTF-8"); // Đảm bảo mã
+                                                                                                           // hóa
+                    BufferedReader reader = new BufferedReader(isr)) {
 
-@Override
-public void run() {
-    String clientAddress = clientSocket.getInetAddress().getHostAddress();
-    logger.info("[Gateway {}] Bắt đầu xử lý kết nối từ Client: {}", selfNodeInfo.getNodeId(), clientAddress);
+                // --- 1. ĐỌC TOÀN BỘ CHUỖI JSON TỪ LUỒNG ---
+                StringBuilder jsonBuilder = new StringBuilder();
+                String line;
 
-    // THAY THẾ ObjectInputStream bằng BufferedReader (để đọc JSON String)
-    try (
-        InputStreamReader isr = new InputStreamReader(clientSocket.getInputStream(), "UTF-8"); // Đảm bảo mã hóa
-        BufferedReader reader = new BufferedReader(isr)
-    ) {
-        // --- 1. ĐỌC TOÀN BỘ CHUỖI JSON TỪ LUỒNG ---
-        StringBuilder jsonBuilder = new StringBuilder();
-        String line;
-        
-        // Đọc từng dòng cho đến khi luồng kết thúc (hoặc kết nối bị đóng)
-        while ((line = reader.readLine()) != null) {
-            jsonBuilder.append(line);
-        }
-        
-        String jsonString = jsonBuilder.toString().trim(); // Lấy JSON và xóa khoảng trắng thừa
-        
-        if (jsonString.isEmpty()) {
-            logger.warn("[Gateway {}] Client {} đóng kết nối mà không gửi dữ liệu JSON.",
-                    selfNodeInfo.getNodeId(), clientAddress);
-            return;
-        }
+                // Đọc từng dòng cho đến khi luồng kết thúc (hoặc kết nối bị đóng)
+                while ((line = reader.readLine()) != null) {
+                    jsonBuilder.append(line);
+                }
 
-        // 2. Giải tuần tự hóa JSON thành đối tượng Packet
-        Packet newPacket = PacketSerializerHelper.deserialize(jsonString); // <--- SỬ DỤNG HELPER
+                String jsonString = jsonBuilder.toString().trim(); // Lấy JSON và xóa khoảng trắng thừa
 
-        if (newPacket != null) {
+                logger.info("Raw JSON input: {}", jsonString);
 
-            // 3. Cập nhật thông tin node hiện tại
-            newPacket.setCurrentHoldingNodeId(selfNodeInfo.getNodeId());
-            newPacket.setTimeSentFromSourceMs(System.currentTimeMillis());
+                if (jsonString.isEmpty()) {
+                    logger.warn("[Gateway {}] Client {} đóng kết nối mà không gửi dữ liệu JSON.",
+                            selfNodeInfo.getNodeId(), clientAddress);
+                    return;
+                }
 
-            logger.info("[Gateway {}] Nhận được gói DATA {} (Type: {}) từ Client.",
-                    selfNodeInfo.getNodeId(), newPacket.getPacketId(), newPacket.getType());
+                // 2. Giải tuần tự hóa JSON thành đối tượng WRAPPER
+                // Sử dụng PacketTransferWrapper.class vì nó là payload mới qua Socket
+                PacketTransferWrapper wrapper = PacketSerializerHelper.deserialize(jsonString,
+                        PacketTransferWrapper.class);
 
-            // 4. Đưa gói tin vào luồng xử lý của Node Service
-            if (nodeServiceReference != null) {
-                // Gói tin mới sinh ra, chưa qua link nào, nên gọi sendPacket trực tiếp
-                nodeServiceReference.sendPacket(newPacket);
+                // 3. Kiểm tra tính hợp lệ của Wrapper và Packet bên trong
+                if (wrapper != null && wrapper.getPacket() != null) {
+
+                    Packet packet = wrapper.getPacket();
+                    LinkMetric linkMetric = wrapper.getLinkMetric();
+                    if (linkMetric != null) {
+                        linkMetric.calculateLinkScore();
+                    }
+                    logger.info("LinekedMetric after score calculation: {}", (linkMetric != null ? linkMetric.toString() : "null"));
+                    // Log
+                    logger.info("[Gateway {}] Nhận được JSON hợp lệ từ Client {}: Gói {}, Loại {}, LinkMetric: {}",
+                            selfNodeInfo.getNodeId(), clientAddress, packet.getPacketId(), packet.getType(),
+                            (linkMetric != null ? linkMetric.toString() : "null"));
+
+                    // 4. Cập nhật thông tin node hiện tại
+                    packet.setCurrentHoldingNodeId(selfNodeInfo.getNodeId());
+                    // Cập nhật thời gian nhận gói tin tại Gateway
+                    packet.setTimeSentFromSourceMs(System.currentTimeMillis());
+
+                    logger.info("[Gateway {}] Nhận được gói DATA {} (Type: {}) từ Client.",
+                            selfNodeInfo.getNodeId(), packet.getPacketId(), packet.getType());
+
+                    // 5. Đưa gói tin vào luồng xử lý của Node Service
+                    if (nodeServiceReference != null) {
+                        logger.info("[Gateway {}] Chuyển gói {} đến NodeService để xử lý.",
+                                selfNodeInfo.getNodeId(), packet.getPacketId());
+                        nodeServiceReference.receivePacket(packet, linkMetric);
+                    }
+
+                } else {
+                    // Lỗi deserialize đã được log chi tiết trong PacketSerializerHelper
+                    logger.warn(
+                            "[Gateway {}] KHÔNG THỂ PHÂN TÍCH: Client {} đã gửi JSON không hợp lệ. Chuỗi nhận được: [{}]",
+                            selfNodeInfo.getNodeId(), clientAddress, jsonString);
+                }
+
+            } catch (IOException e) {
+                // Lỗi này xảy ra khi kết nối bị ngắt đột ngột
+                logger.error("[Gateway {}] LỖI I/O khi đọc dữ liệu từ client {}: {}",
+                        selfNodeInfo.getNodeId(), clientAddress, e.getMessage());
+            } finally {
+                try {
+                    // Đóng socket Client
+                    clientSocket.close();
+                } catch (IOException e) {
+                    logger.error("Lỗi đóng socket client: {}", e.getMessage());
+                }
             }
-
-        } else {
-            // Lỗi deserialize đã được log chi tiết trong PacketSerializerHelper
-            logger.warn("[Gateway {}] KHÔNG THỂ PHÂN TÍCH: Client {} đã gửi JSON không hợp lệ. Chuỗi nhận được: [{}]",
-                    selfNodeInfo.getNodeId(), clientAddress, jsonString);
         }
-
-    } catch (IOException e) {
-        // Lỗi này xảy ra khi kết nối bị ngắt đột ngột
-        logger.error("[Gateway {}] LỖI I/O khi đọc dữ liệu từ client {}: {}",
-                selfNodeInfo.getNodeId(), clientAddress, e.getMessage());
-    } finally {
-        try {
-            // Đóng socket Client
-            clientSocket.close();
-        } catch (IOException e) {
-            logger.error("Lỗi đóng socket client: {}", e.getMessage());
-        }
-    }
-}
     }
 }

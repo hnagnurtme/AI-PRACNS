@@ -3,6 +3,8 @@ package com.sagin.model;
 import java.io.Serializable;
 import java.util.*;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.*;
 
 @Getter
@@ -35,6 +37,7 @@ public class Packet implements Serializable {
     private String serviceType;         
 
     // --- Định tuyến và Theo dõi ---
+    @JsonProperty("TTL")
     private int TTL;                   
     private String currentHoldingNodeId; 
     private String nextHopNodeId;      

@@ -4,18 +4,17 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.ArrayList;
 
-// BẮT BUỘC: Thư viện Jackson phải được thêm vào Client Project
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import java.lang.Math;
 
 // LỚP CHƯƠNG TRÌNH CLIENT CHÍNH
 public class SimulationClient {
     
-    // ObjectMapper phải được tạo một lần và tái sử dụng
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     
     private static final String SERVER_IP = "127.0.0.1";
@@ -24,16 +23,12 @@ public class SimulationClient {
     private static final String SOURCE_CLIENT_ID = "GS_NY";
     
     public static void main(String[] args) {
-        System.out.println("--- BẮT ĐẦU CHƯƠNG TRÌNH CLIENT (JSON Generator) ---");
+        System.out.println("--- BẮT ĐẦU CHƯƠNG TRÌNH CLIENT (Mô phỏng Gói tin Chuyển tiếp) ---");
         System.out.printf("   Đích: %s:%d | Target Node: %s%n", SERVER_IP, SERVER_PORT, TARGET_NODE);
         
-        // Gửi 10 gói tin với độ trễ 500ms
         for (int i = 0; i < 1; i++) {
-            String service = (i % 3 == 0) ? "VOICE" : (i % 3 == 1) ? "VIDEO" : "DATA";
-            
-            // TẠO JSON DỰA TRÊN MAP
+            String service = "DATA"; 
             String packetId = UUID.randomUUID().toString().substring(0, 8);
-            
             sendJsonPacket(packetId, TARGET_NODE, service, SERVER_IP, SERVER_PORT);
             
             try {
@@ -47,57 +42,79 @@ public class SimulationClient {
     }
 
     /**
-     * Tạo Map chứa dữ liệu gói tin và tuần tự hóa thành JSON String để gửi.
+     * Tạo Map chứa dữ liệu gói tin, bọc trong Wrapper và tuần tự hóa thành JSON String để gửi.
      */
     public static void sendJsonPacket(String packetId, String destinationNodeId, String serviceType, String host, int port) {
         
-        // 1. Dựng cấu trúc dữ liệu (Map) - Ánh xạ trực tiếp tới các fields của lớp Packet Server
+        // --- CÁC THAM SỐ CỦA GÓI TIN VÀ LINK ---
+        final double LATENCY_MS = 15.0;
+        final double LOSS_RATE = 0.01;
+        final double ATTENUATION_DB = 3.0;
+        final double BANDWIDTH = 800.0;
+        
+        // 1. Dựng cấu trúc dữ liệu cho Packet (Giữ nguyên)
         Map<String, Object> packetData = new HashMap<>();
         packetData.put("packetId", packetId);
         packetData.put("sourceUserId", SOURCE_CLIENT_ID);
         packetData.put("destinationUserId", destinationNodeId);
-        
-        // Fields cần thiết cho Server xử lý
+        packetData.put("pathHistory", new ArrayList<String>() {{ add("LEO_001"); }}); 
         packetData.put("type", "DATA"); 
         packetData.put("serviceType", serviceType);
-        packetData.put("TTL", 15); // TTL ban đầu
-        packetData.put("timeSentFromSourceMs", System.currentTimeMillis());
+        packetData.put("TTL", 25); 
+        packetData.put("timeSentFromSourceMs", System.currentTimeMillis() - 50); 
+        packetData.put("accumulatedDelayMs", 25.0); 
+        packetData.put("maxAcceptableLatencyMs", 500.0);
+        packetData.put("maxAcceptableLossRate", 0.02);
         
-        // Fields QoS Cần thiết cho NodeService.sendPacket() kiểm tra
-        if ("VOICE".equals(serviceType)) {
-            packetData.put("maxAcceptableLatencyMs", 150.0);
-            packetData.put("maxAcceptableLossRate", 0.01);
-        } else if ("VIDEO".equals(serviceType)) {
-            packetData.put("maxAcceptableLatencyMs", 500.0);
-            packetData.put("maxAcceptableLossRate", 0.02);
-        } else { // DATA
-            packetData.put("maxAcceptableLatencyMs", 2000.0);
-            packetData.put("maxAcceptableLossRate", 0.05);
-        }
         
-        // Các fields List<String> phải được khởi tạo (hoặc để null nếu Server chấp nhận)
-        packetData.put("pathHistory", new java.util.ArrayList<String>()); 
+        // 2. TÍNH TOÁN LINK SCORE (Tương đồng với Server)
+        double latencyCost = 1.0 + Math.log(1.0 + LATENCY_MS); 
+        double lossFactor = 1.0 - LOSS_RATE;
+        double attenuationFactor = 1.0 / (1.0 + 0.05 * ATTENUATION_DB);
+        double calculatedScore = (BANDWIDTH / latencyCost) * lossFactor * attenuationFactor;
         
+        
+        // 3. DỰNG CẤU TRÚC LINK METRIC GIẢ ĐỊNH (Sửa lỗi ghi đè)
+        Map<String, Object> linkMetricData = new HashMap<>();
+        linkMetricData.put("sourceNodeId", "LEO_001"); 
+        linkMetricData.put("destinationNodeId", "GS_LONDON"); 
+        linkMetricData.put("distanceKm", 500.0);
+        linkMetricData.put("maxBandwidthMbps", 1200.0);
+        linkMetricData.put("currentAvailableBandwidthMbps", BANDWIDTH); 
+        linkMetricData.put("latencyMs", LATENCY_MS); 
+        linkMetricData.put("packetLossRate", LOSS_RATE); 
+        linkMetricData.put("linkAttenuationDb", ATTENUATION_DB); 
+        
+        // BẮT BUỘC SỬA: Đặt là TRUE, đây là điểm cần đảm bảo Server không ghi đè thành false
+        linkMetricData.put("isLinkActive", true); 
+        
+        linkMetricData.put("lastUpdated", System.currentTimeMillis()); 
+        
+        // KHÔNG GỬI linkScore TÍNH TOÁN TỪ CLIENT (để Server tự tính, tránh lỗi mâu thuẫn)
+        // linkMetricData.put("linkScore", calculatedScore); 
+
+        
+        // 4. Dựng cấu trúc PacketTransferWrapper
+        Map<String, Object> wrapperData = new HashMap<>();
+        wrapperData.put("packet", packetData); 
+        wrapperData.put("linkMetric", linkMetricData); 
+
+        // 5. Serialize và Gửi
         String jsonString;
         try {
-            // 2. Tuần tự hóa Map thành JSON String
-            jsonString = OBJECT_MAPPER.writeValueAsString(packetData);
+            jsonString = OBJECT_MAPPER.writeValueAsString(wrapperData);
         } catch (JsonProcessingException e) {
             System.err.printf("[CLIENT] LỖI tuần tự hóa JSON cho gói %s: %s%n", packetId, e.getMessage());
             return;
         }
 
-        // 3. Gửi JSON String qua Socket
         try (
             Socket socket = new Socket(host, port);
             PrintWriter writer = new PrintWriter(socket.getOutputStream(), true) 
         ) {
             System.out.printf("[CLIENT] Gửi gói %s (%s) tới %s:%d... ", 
-                              packetId, serviceType, host, port);
-            
-            // Ghi chuỗi JSON và thêm ký tự xuống dòng (\n)
+                  packetId, serviceType, host, port); 
             writer.println(jsonString); 
-            
             System.out.println("THÀNH CÔNG.");
             
         } catch (IOException e) {
