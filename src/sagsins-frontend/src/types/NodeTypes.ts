@@ -62,7 +62,6 @@ export interface NodeDTO {
     orbit?: Orbit | null;
     velocity?: Velocity | null;
     
-    isHealthy: boolean; 
     operational?: boolean; // Make it optional for backward compatibility
     
     // Core fields that might exist

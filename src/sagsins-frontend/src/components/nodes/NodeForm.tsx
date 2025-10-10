@@ -45,7 +45,10 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode, onSucce
         let finalValue: string | number | boolean = value;
 
         if (type === 'number') {
-            finalValue = parseFloat(value); 
+            // Chuyển đổi thành số thực, cho phép nhập tự do mà không giới hạn độ chính xác
+            // Nếu input rỗng hoặc không hợp lệ, giữ nguyên string để user tiếp tục nhập
+            const numValue = parseFloat(value);
+            finalValue = isNaN(numValue) ? (value === '' ? 0 : value) : numValue;
         } else if (type === 'checkbox') {
             finalValue = (e.target as HTMLInputElement).checked; 
         }
@@ -56,7 +59,7 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode, onSucce
                 ...prev,
                 position: {
                     ...(prev.position as Geo3D),
-                    [name]: finalValue as number,
+                    [name]: typeof finalValue === 'number' ? finalValue : parseFloat(value) || 0,
                 }
             }));
         } else {
@@ -157,18 +160,18 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode, onSucce
                 {/* 2. Position (Geo3D) */}
                 <h3 className="text-lg font-semibold mt-4 mb-2 border-b pb-1">Position (Km)</h3>
                 <div className="grid grid-cols-3 gap-3">
-                    <FormInput label="Latitude" name="latitude" type="number" step="any" value={formData.position?.latitude ?? 0} onChange={handleChange} required />
-                    <FormInput label="Longitude" name="longitude" type="number" step="any" value={formData.position?.longitude ?? 0} onChange={handleChange} required />
-                    <FormInput label="Altitude" name="altitude" type="number" step="any" value={formData.position?.altitude ?? 0} onChange={handleChange} required />
+                    <FormInput label="Latitude" name="latitude" type="number" value={formData.position?.latitude ?? 0} onChange={handleChange} required />
+                    <FormInput label="Longitude" name="longitude" type="number" value={formData.position?.longitude ?? 0} onChange={handleChange} required />
+                    <FormInput label="Altitude" name="altitude" type="number" value={formData.position?.altitude ?? 0} onChange={handleChange} required />
                 </div>
                 
                 {/* 3. Required Fields for Node Creation */}
                 <h3 className="text-lg font-semibold mt-6 mb-2 border-b pb-1">Node Configuration</h3>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-3">
                     <FormInput label="Battery (%)" name="batteryChargePercent" type="number" min="0" max="100" value={formData.batteryChargePercent ?? 100} onChange={handleChange} required />
-                    <FormInput label="Processing Delay (ms)" name="nodeProcessingDelayMs" type="number" min="0" step="any" value={formData.nodeProcessingDelayMs ?? 10} onChange={handleChange} required />
-                    <FormInput label="Packet Loss Rate" name="packetLossRate" type="number" min="0" step="0.0001" value={formData.packetLossRate ?? 0.001} onChange={handleChange} required />
-                    <FormInput label="Resource Utilization (%)" name="resourceUtilization" type="number" min="0" step="any" value={formData.resourceUtilization ?? 50} onChange={handleChange} required />
+                    <FormInput label="Processing Delay (ms)" name="nodeProcessingDelayMs" type="number" min="0" value={formData.nodeProcessingDelayMs ?? 10} onChange={handleChange} required />
+                    <FormInput label="Packet Loss Rate" name="packetLossRate" type="number" min="0" value={formData.packetLossRate ?? 0.001} onChange={handleChange} required />
+                    <FormInput label="Resource Utilization (%)" name="resourceUtilization" type="number" min="0" value={formData.resourceUtilization ?? 50} onChange={handleChange} required />
                     <FormInput label="Buffer Capacity" name="packetBufferCapacity" type="number" min="1" value={formData.packetBufferCapacity ?? 1000} onChange={handleChange} required />
                 </div>
 
@@ -271,12 +274,12 @@ const FormInput: React.FC<FormInputProps> = ({ label, name, type, value, onChang
             name={name}
             value={value}
             onChange={onChange}
-            step={step}
+            step={step || (type === 'number' ? 'any' : undefined)}
             min={min}
             max={max}
             required={required}
             disabled={disabled}
-            className="w-full p-2 border rounded bg-gray-50 **text-gray-900** focus:border-indigo-500 disabled:bg-gray-100"
+            className="w-full p-2 border rounded bg-gray-50 text-gray-900 focus:border-indigo-500 disabled:bg-gray-100"
         />
     </FormGroup>
 );
