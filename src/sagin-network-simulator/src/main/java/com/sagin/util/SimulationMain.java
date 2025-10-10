@@ -14,7 +14,8 @@ import com.sagin.repository.INodeRepository;
 import com.sagin.repository.MongoNodeRepository;
 import com.sagin.routing.DijkstraRoutingEngine;
 import com.sagin.routing.IRoutingEngine;
-import com.sagin.seeding.NodeSeeder;
+import com.sagin.seeding.AsiaNodeSeeder;
+
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,8 +125,8 @@ public class SimulationMain {
     }
 
     private void checkAndSeedDatabase(INodeRepository repository) {
-        NodeSeeder seeder = new NodeSeeder(repository);
-        seeder.seedInitialNodes(false); 
+        AsiaNodeSeeder seeder = new AsiaNodeSeeder(repository);
+        seeder.seedNodes(true); 
     }
     
     // /**

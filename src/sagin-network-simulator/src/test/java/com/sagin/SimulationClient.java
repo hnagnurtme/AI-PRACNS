@@ -21,12 +21,12 @@ public class SimulationClient {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static final String SERVER_IP = "127.0.0.1";
-    private static final int SERVER_PORT = 8081;
-    private static final String TARGET_NODE = "LEO_004";
-    private static final String SOURCE_CLIENT_ID = "GEO_001";
+    private static final int SERVER_PORT = 8083;
+    private static final String TARGET_NODE = "GS_SINGAPORE";
+    private static final String SOURCE_CLIENT_ID = "GS_HUHU";
     // Trong SimulationClient.java
 
-    private static final int ACK_RECEIVE_PORT = 8082; // ĐỊNH NGHĨA PORT LẮNG NGHE
+    private static final int ACK_RECEIVE_PORT = 8090; // ĐỊNH NGHĨA PORT LẮNG NGHE
 
     public static void main(String[] args) {
         System.out.println("--- BẮT ĐẦU CHƯƠNG TRÌNH CLIENT ---");
@@ -114,11 +114,7 @@ public class SimulationClient {
         packetData.put("packetId", packetId);
         packetData.put("sourceUserId", SOURCE_CLIENT_ID);
         packetData.put("destinationUserId", destinationNodeId);
-        packetData.put("pathHistory", new ArrayList<String>() {
-            {
-                add("LEO_001");
-            }
-        });
+        packetData.put("pathHistory", new ArrayList<>());
         packetData.put("type", "DATA");
         packetData.put("serviceType", serviceType);
         packetData.put("TTL", 25);

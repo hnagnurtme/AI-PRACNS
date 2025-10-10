@@ -7,7 +7,9 @@ import com.sagin.model.*;
 import com.sagin.repository.INodeRepository;
 import com.sagin.routing.IRoutingEngine;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -34,7 +36,7 @@ public class NetworkManagerService implements INetworkManagerService {
 
     // Lịch trình cho vòng lặp mô phỏng định kỳ
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private static final long ROUTING_UPDATE_INTERVAL_SECONDS = 1; 
+    private static final long ROUTING_UPDATE_INTERVAL_SECONDS = 1;
 
     // logger
     private static final Logger logger = LoggerFactory.getLogger(NetworkManagerService.class);
@@ -107,52 +109,59 @@ public class NetworkManagerService implements INetworkManagerService {
     }
 
     @Override
-    public void transferPacket(Packet packet, String sourceNodeId) {
-        String destNodeId = packet.getNextHopNodeId();
-
-        NodeInfo sourceInfo = getNodeInfo(sourceNodeId);
-        NodeInfo destInfo = getNodeInfo(destNodeId); 
-
-        // 1. Kiểm tra tính khả dụng của Node Info (Giữ nguyên)
-        if (sourceInfo == null || destInfo == null || !sourceInfo.isOperational() || !destInfo.isOperational()) {
-            logger.error("[Manager] LỖI GIAO TIẾP: Node nguồn hoặc đích không khả dụng. Gói {} bị DROP.", packet.getPacketId());
-            packet.markDropped("Dest Node Info Missing/Offline");
-            return;
-        }
-
-        // 2. Tính toán Link Metric thực tế
-        LinkMetric linkMetric = linkManager.calculateLinkMetric(sourceInfo, destInfo);
-
-        if (!linkMetric.isLinkActive()) {
-            packet.markDropped("Link Down / Visibility Lost");
-            return;
-        }
-
-        // 3. Mô phỏng Độ trễ và Tỷ lệ mất gói
-        long delayMs = (long) linkMetric.getLatencyMs();
-
-        scheduler.schedule(() -> {
-            if (ThreadLocalRandom.current().nextDouble() < linkMetric.getPacketLossRate()) {
-                // Gói tin bị mất trên đường truyền
-                logger.warn("[Manager] Gói {} bị MẤT trên đường truyền từ {} đến {}.", packet.getPacketId(), sourceNodeId, destNodeId);
-                return;
-            }
-
-            boolean success = RemotePacketSender.sendPacketViaSocket(packet, destInfo, linkMetric);
-
-            if (success) {
-                // Ghi nhận thành công
-                logger.info("[Manager] Gói {} đã được chuyển từ {} đến {} (Delay: {} ms).",
-                        packet.getPacketId(), sourceNodeId, destNodeId, delayMs);
-            } else {
-                // Xử lý lỗi khi Node đích không phản hồi Socket (thực sự OFFLINE)
-                logger.error("[Manager] LỖI GIAO TIẾP: Gói {} không thể gửi tới {} (Socket Unreachable).",
-                        packet.getPacketId(), destNodeId);
-                packet.markDropped("NextHop Socket Unreachable");
-            }
-
-        }, delayMs, TimeUnit.MILLISECONDS);
+public void transferPacket(Packet packet, String sourceNodeId) {
+    List<String> path = packet.getPathHistory();
+    if (path == null) {
+        path = new ArrayList<>();
+        packet.setPathHistory(path);
     }
+
+    int currentIndex = path.indexOf(sourceNodeId);
+    if (currentIndex < 0) {
+        path.add(sourceNodeId);
+        currentIndex = path.size() - 1;
+    }
+
+    // Nếu packet đã tới node cuối cùng
+    if (currentIndex >= path.size() - 1 || packet.getDestinationUserId().equals(sourceNodeId)) {
+        logger.info("[Manager] Packet {} đã tới node cuối: {}.", packet.getPacketId(), sourceNodeId);
+        return;
+    }
+
+    String nextHopNodeId = path.get(currentIndex + 1);
+    NodeInfo nextHopInfo = getNodeInfo(nextHopNodeId);
+    NodeInfo sourceInfo = getNodeInfo(sourceNodeId);
+
+    if (sourceInfo == null || nextHopInfo == null || !sourceInfo.isOperational() || !nextHopInfo.isOperational()) {
+        logger.warn("[Manager] Node {} hoặc {} chưa ready, queue packet {}", sourceNodeId, nextHopNodeId, packet.getPacketId());
+        scheduler.schedule(() -> transferPacket(packet, sourceNodeId), 500, TimeUnit.MILLISECONDS);
+        return;
+    }
+
+    LinkMetric linkMetric = linkManager.calculateLinkMetric(sourceInfo, nextHopInfo);
+    if (!linkMetric.isLinkActive()) {
+        logger.warn("[Manager] Link {} → {} inactive, queue packet {}", sourceNodeId, nextHopNodeId, packet.getPacketId());
+        scheduler.schedule(() -> transferPacket(packet, sourceNodeId), 500, TimeUnit.MILLISECONDS);
+        return;
+    }
+
+    long delayMs = (long) linkMetric.getLatencyMs();
+    scheduler.schedule(() -> {
+        if (ThreadLocalRandom.current().nextDouble() < linkMetric.getPacketLossRate()) {
+            logger.warn("[Manager] Packet {} bị mất trên đường truyền {} → {}", packet.getPacketId(), sourceNodeId, nextHopNodeId);
+            return;
+        }
+
+        boolean success = RemotePacketSender.sendPacketViaSocket(packet, nextHopInfo, linkMetric);
+        if (success) {
+            logger.info("[Manager] Packet {} gửi thành công {} → {} (Delay {} ms)", packet.getPacketId(), sourceNodeId, nextHopNodeId, delayMs);
+            transferPacket(packet, nextHopNodeId);
+        } else {
+            logger.warn("[Manager] Gửi packet {} tới {} thất bại, retry...", packet.getPacketId(), nextHopNodeId);
+            scheduler.schedule(() -> transferPacket(packet, sourceNodeId), 500, TimeUnit.MILLISECONDS);
+        }
+    }, delayMs, TimeUnit.MILLISECONDS);
+}
 
     /** @inheritdoc */
     @Override
