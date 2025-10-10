@@ -1,41 +1,57 @@
 package com.sagsins.core.model;
 
 import lombok.*;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(value = {"healthy"}, ignoreUnknown = true)
+@ToString
+@Document(collection = "network_nodes")
 public class NodeInfo {
 
-    private String nodeId; 
-    private String nodeType; 
+    @Id 
+    private String nodeId;
 
-    private Geo3D position; 
-    private Orbit orbit; 
-    private Velocity velocity; 
+    private NodeType nodeType;
+    private Geo3D position;
+    private Orbit orbit;
+    private Velocity velocity;
 
+    private boolean isOperational;
+    private double batteryChargePercent;
+    private double nodeProcessingDelayMs;
+    private double packetLossRate;
+    private double resourceUtilization;
+    private int packetBufferCapacity;
+    private int currentPacketCount;
+    private WeatherCondition weather;
+    private long lastUpdated;
 
-    private boolean isOperational;       
-    private double currentBandwidth;     
-    private double avgLatencyMs;         
-    private double packetLossRate;       
+    private String host;
+    private int port;
 
-    private int packetBufferLoad;        
-    private double currentThroughput;    
-    private double resourceUtilization;  
-    private double powerLevel;           
-
-    private long lastUpdated;            
-
-    /** Kiểm tra Node có sẵn sàng xử lý/gửi/nhận không. */
     @JsonIgnore
+    @JsonProperty(access = Access.READ_ONLY)
     public boolean isHealthy() {
-        // Giả định ngưỡng hoạt động: Pin trên 5% và buffer chưa quá tải (ví dụ: 90/100)
-        return isOperational && powerLevel > 5.0 && packetBufferLoad < 90; 
+        final double MIN_POWER = 10.0;
+        final double MAX_BUFFER_LOAD_RATIO = 0.8;
+        double bufferLoadRatio = (packetBufferCapacity > 0)
+            ? (double) currentPacketCount / packetBufferCapacity
+            : 0.0;
+        return isOperational
+            && batteryChargePercent > MIN_POWER
+            && bufferLoadRatio <= MAX_BUFFER_LOAD_RATIO
+            && weather != WeatherCondition.SEVERE_STORM;
     }
 }

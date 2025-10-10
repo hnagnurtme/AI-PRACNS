@@ -13,7 +13,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ nodes, onRefresh }) => {
-    const { setSelectedNode, selectedNode } = useNodeStore();
+    const { setSelectedNode, selectedNode, runningNodes } = useNodeStore();
     const [isFormOpen, setIsFormOpen] = useState(false); // Quản lý trạng thái mở Form
 
     // Hàm xử lý khi người dùng bấm vào một Node trong danh sách
@@ -50,8 +50,8 @@ const Sidebar: React.FC<SidebarProps> = ({ nodes, onRefresh }) => {
                             <div className="flex justify-between items-center">
                                 <span className="truncate">{node.nodeType}: {node.nodeId.substring(0, 8)}...</span>
                                 <span 
-                                    className={`w-3 h-3 rounded-full ${node.isHealthy ? 'bg-green-400' : 'bg-red-500'}`}
-                                    title={node.isHealthy ? 'Healthy' : 'Unhealthy'}
+                                    className={`w-3 h-3 rounded-full ${runningNodes.has(node.nodeId) ? 'bg-green-400' : 'bg-red-500'}`}
+                                    title={runningNodes.has(node.nodeId) ? 'Running' : 'Stopped'}
                                 ></span>
                             </div>
                         </div>

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 
 import { useNodeStore } from '../../state/nodeStore';
+import { runNodeProcess } from '../../services/nodeService';
 import NodeForm from './NodeForm';
 import type { NodeDTO } from '../../types/NodeTypes';
 
@@ -13,11 +14,33 @@ interface NodeDetailCardProps {
 
 const NodeDetailCard: React.FC<NodeDetailCardProps> = ({ node, onRefresh }) => {
     
-    const { setSelectedNode, cameraFollowMode, setCameraFollowMode } = useNodeStore();
+    const { setSelectedNode, cameraFollowMode, setCameraFollowMode, runningNodes, setNodeRunning } = useNodeStore();
     const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+    const [processMessage, setProcessMessage] = useState<string | null>(null);
+    
+    const isRunning = runningNodes.has(node.nodeId);
 
     const handleCameraToggle = () => {
         setCameraFollowMode(!cameraFollowMode);
+    };
+
+    const handleRunProcess = async () => {
+        setNodeRunning(node.nodeId, true);
+        setProcessMessage(null);
+        try {
+            await runNodeProcess(node.nodeId);
+            setProcessMessage(`✅ Process started successfully for ${node.nodeId}`);
+            
+            // Keep showing RUNNING status for a few seconds after success
+            setTimeout(() => {
+                setNodeRunning(node.nodeId, false);
+                setProcessMessage(null);
+            }, 5000);
+        } catch (error) {
+            setProcessMessage(`❌ Failed to start process: ${(error as Error).message}`);
+            setNodeRunning(node.nodeId, false);
+            setTimeout(() => setProcessMessage(null), 5000);
+        }
     };
     
     return (
@@ -34,9 +57,16 @@ const NodeDetailCard: React.FC<NodeDetailCardProps> = ({ node, onRefresh }) => {
                 </div>
                 
                 <p className="text-sm mb-4">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${node.isHealthy ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                        {node.isHealthy ? 'HEALTHY' : 'UNHEALTHY'}
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${isRunning ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                        {isRunning ? 'RUNNING' : 'STOPPED'}
                     </span>
+                    {(node.operational !== undefined || node.isOperational !== undefined) && (
+                        <span className={`ml-2 px-2 py-0.5 rounded-full text-xs font-semibold ${
+                            (node.operational ?? node.isOperational) ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                        }`}>
+                            {(node.operational ?? node.isOperational) ? 'OPERATIONAL' : 'OFFLINE'}
+                        </span>
+                    )}
                     <span className="ml-2 text-gray-500">({node.nodeType})</span>
                     {cameraFollowMode && (
                         <span className="ml-2 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700 animate-pulse">
@@ -49,10 +79,63 @@ const NodeDetailCard: React.FC<NodeDetailCardProps> = ({ node, onRefresh }) => {
                     <DetailItem label="Latitude" value={node.position.latitude.toFixed(4)} />
                     <DetailItem label="Longitude" value={node.position.longitude.toFixed(4)} />
                     <DetailItem label="Altitude (Km)" value={node.position.altitude.toFixed(2)} />
-                    <DetailItem label="Bandwidth" value={`${node.currentBandwidth.toFixed(2)} Mbps`} />
-                    <DetailItem label="Latency" value={`${node.avgLatencyMs.toFixed(2)} ms`} />
-                    <DetailItem label="Loss Rate" value={(node.packetLossRate * 100).toFixed(2) + '%'} />
+                    
+                    {/* New API Fields */}
+                    {node.batteryChargePercent !== undefined && (
+                        <DetailItem label="Battery" value={`${node.batteryChargePercent.toFixed(1)}%`} />
+                    )}
+                    {node.nodeProcessingDelayMs !== undefined && (
+                        <DetailItem label="Processing Delay" value={`${node.nodeProcessingDelayMs.toFixed(2)} ms`} />
+                    )}
+                    {node.packetLossRate !== undefined && (
+                        <DetailItem label="Loss Rate" value={(node.packetLossRate * 100).toFixed(3) + '%'} />
+                    )}
+                    {node.resourceUtilization !== undefined && (
+                        <DetailItem label="Resource Usage" value={`${node.resourceUtilization.toFixed(1)}%`} />
+                    )}
+                    {node.packetBufferCapacity !== undefined && node.currentPacketCount !== undefined && (
+                        <DetailItem label="Buffer" value={`${node.currentPacketCount}/${node.packetBufferCapacity}`} />
+                    )}
+                    {node.weather && (
+                        <DetailItem label="Weather" value={node.weather.replace(/_/g, ' ')} />
+                    )}
+                    {node.host && node.port && (
+                        <DetailItem label="Host:Port" value={`${node.host}:${node.port}`} />
+                    )}
+                    
+                    {/* Legacy Fields */}
+                    {node.currentBandwidth !== undefined && (
+                        <DetailItem label="Bandwidth" value={`${node.currentBandwidth.toFixed(2)} Mbps`} />
+                    )}
+                    {node.avgLatencyMs !== undefined && (
+                        <DetailItem label="Latency" value={`${node.avgLatencyMs.toFixed(2)} ms`} />
+                    )}
+                    {node.currentThroughput !== undefined && (
+                        <DetailItem label="Throughput" value={`${node.currentThroughput.toFixed(2)} Mbps`} />
+                    )}
+                    {node.powerLevel !== undefined && (
+                        <DetailItem label="Power Level" value={`${node.powerLevel.toFixed(1)}%`} />
+                    )}
                 </div>
+
+                {/* Process Status Message */}
+                {processMessage && (
+                    <div className={`mt-3 p-2 rounded text-sm ${
+                        processMessage.includes('✅') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                        {processMessage}
+                    </div>
+                )}
+
+                {/* Last Updated */}
+                {node.lastUpdated && (
+                    <div className="mt-4 pt-3 border-t border-gray-200">
+                        <h4 className="text-sm font-semibold text-gray-700 mb-2">📊 Status</h4>
+                        <div className="text-xs text-gray-500">
+                            Last Updated: {new Date(node.lastUpdated).toLocaleString()}
+                        </div>
+                    </div>
+                )}
 
                 {/* Orbital Information */}
                 {(node.orbit || node.velocity) && (
@@ -79,7 +162,7 @@ const NodeDetailCard: React.FC<NodeDetailCardProps> = ({ node, onRefresh }) => {
                 )}
 
                 {/* Action Buttons */}
-                <div className="mt-5 flex justify-between space-x-2">
+                <div className="mt-5 flex flex-wrap gap-2">
                     <button 
                         onClick={handleCameraToggle}
                         className={`text-sm font-medium px-3 py-1 rounded border transition-colors ${
@@ -92,10 +175,18 @@ const NodeDetailCard: React.FC<NodeDetailCardProps> = ({ node, onRefresh }) => {
                     </button>
                     
                     <button 
+                        onClick={handleRunProcess}
+                        disabled={isRunning}
+                        className="text-sm text-orange-600 hover:text-orange-800 font-medium px-3 py-1 rounded border border-orange-200 hover:bg-orange-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isRunning ? '⏳ Starting...' : '🚀 Run Process'}
+                    </button>
+                    
+                    <button 
                         onClick={() => setIsEditFormOpen(true)}
                         className="text-sm text-blue-600 hover:text-blue-800 font-medium px-3 py-1 rounded border border-blue-200 hover:bg-blue-50"
                     >
-                        Edit
+                        ✏️ Edit
                     </button>
                 </div>
             </div>

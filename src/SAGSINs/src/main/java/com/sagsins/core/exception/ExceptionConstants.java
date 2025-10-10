@@ -9,6 +9,8 @@ public enum ExceptionConstants {
     NOT_FOUND_EXCEPTION(104, "NOT_FOUND_EXCEPTION"),
     
     DUPLICATE_KEY(105, "DUPLICATE_KEY"),
+
+    DOCKER_EXCEPTION(106, "DOCKER_EXCEPTION")
     ;
 
     private final int code;
