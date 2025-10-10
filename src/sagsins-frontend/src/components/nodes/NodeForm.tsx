@@ -24,13 +24,18 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode, onSucce
     const [formData, setFormData] = useState<Partial<CreateNodeRequest> & Partial<UpdateNodeRequest>>(() => ({
         // THÊM: nodeId là bắt buộc khi tạo, gán giá trị tạm thời khi mode='create'
         nodeId: initialNode?.nodeId || (mode === 'create' ? generateTempId() : undefined),
-        nodeType: initialNode?.nodeType || 'LEO_SATELLITE',
-        isOperational: initialNode?.isOperational ?? true,
+        nodeType: (initialNode?.nodeType as 'GROUND_STATION' | 'LEO_SATELLITE' | 'MEO_SATELLITE' | 'GEO_SATELLITE') || 'LEO_SATELLITE',
+        isOperational: initialNode?.operational ?? initialNode?.isOperational ?? true,
         // Chỉ lấy Geo3D, không cần Orbit/Velocity cho form đơn giản này
         position: initialNode?.position || { latitude: 0, longitude: 0, altitude: 550 },
-        currentBandwidth: initialNode?.currentBandwidth || 500,
-        avgLatencyMs: initialNode?.avgLatencyMs || 10,
-        packetLossRate: initialNode?.packetLossRate || 0.001,
+        batteryChargePercent: initialNode?.batteryChargePercent ?? 100,
+        nodeProcessingDelayMs: initialNode?.nodeProcessingDelayMs ?? 10,
+        packetLossRate: initialNode?.packetLossRate ?? 0.001,
+        resourceUtilization: initialNode?.resourceUtilization ?? 50,
+        packetBufferCapacity: initialNode?.packetBufferCapacity ?? 1000,
+        weather: initialNode?.weather ?? 'CLEAR',
+        host: initialNode?.host ?? 'localhost',
+        port: initialNode?.port ?? 8080,
     }));
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -157,15 +162,42 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode, onSucce
                     <FormInput label="Altitude" name="altitude" type="number" step="any" value={formData.position?.altitude ?? 0} onChange={handleChange} required />
                 </div>
                 
-                {/* 3. Metrics */}
-                <h3 className="text-lg font-semibold mt-6 mb-2 border-b pb-1">Initial Metrics</h3>
+                {/* 3. Required Fields for Node Creation */}
+                <h3 className="text-lg font-semibold mt-6 mb-2 border-b pb-1">Node Configuration</h3>
                 <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                    <FormInput label="Bandwidth (Mbps)" name="currentBandwidth" type="number" step="any" value={formData.currentBandwidth ?? 0} onChange={handleChange} required />
-                    <FormInput label="Latency (ms)" name="avgLatencyMs" type="number" step="any" value={formData.avgLatencyMs ?? 0} onChange={handleChange} required />
-                    <FormInput label="Loss Rate (0-1)" name="packetLossRate" type="number" step="0.0001" value={formData.packetLossRate ?? 0} onChange={handleChange} required />
+                    <FormInput label="Battery (%)" name="batteryChargePercent" type="number" min="0" max="100" value={formData.batteryChargePercent ?? 100} onChange={handleChange} required />
+                    <FormInput label="Processing Delay (ms)" name="nodeProcessingDelayMs" type="number" min="0" step="any" value={formData.nodeProcessingDelayMs ?? 10} onChange={handleChange} required />
+                    <FormInput label="Packet Loss Rate" name="packetLossRate" type="number" min="0" step="0.0001" value={formData.packetLossRate ?? 0.001} onChange={handleChange} required />
+                    <FormInput label="Resource Utilization (%)" name="resourceUtilization" type="number" min="0" step="any" value={formData.resourceUtilization ?? 50} onChange={handleChange} required />
+                    <FormInput label="Buffer Capacity" name="packetBufferCapacity" type="number" min="1" value={formData.packetBufferCapacity ?? 1000} onChange={handleChange} required />
                 </div>
 
-                {/* 4. Operational Status */}
+                {/* 4. Weather Selection */}
+                <FormGroup label="Weather Conditions">
+                    <select 
+                        name="weather" 
+                        value={formData.weather || 'CLEAR'} 
+                        onChange={handleChange}
+                        className="w-full p-2 border rounded bg-gray-50"
+                        required
+                    >
+                        <option value="CLEAR">Clear</option>
+                        <option value="LIGHT_RAIN">Light Rain</option>
+                        <option value="RAIN">Rain</option>
+                        <option value="SNOW">Snow</option>
+                        <option value="STORM">Storm</option>
+                        <option value="SEVERE_STORM">Severe Storm</option>
+                    </select>
+                </FormGroup>
+
+                {/* 5. Network Configuration */}
+                <h3 className="text-lg font-semibold mt-6 mb-2 border-b pb-1">Network Configuration</h3>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                    <FormInput label="Host" name="host" type="text" value={formData.host ?? 'localhost'} onChange={handleChange} required />
+                    <FormInput label="Port" name="port" type="number" min="1024" max="65535" value={formData.port ?? 8080} onChange={handleChange} />
+                </div>
+
+                {/* 6. Operational Status */}
                 <div className="mt-6">
                     <label className="flex items-center space-x-2">
                         <input 
@@ -179,7 +211,7 @@ const NodeForm: React.FC<NodeFormProps> = ({ onClose, mode, initialNode, onSucce
                     </label>
                 </div>
                 
-                {/* 5. Actions */}
+                {/* 7. Actions */}
                 <div className="mt-8 pt-4 border-t flex justify-between space-x-3">
                     {mode === 'update' && (
                         <button 
@@ -226,11 +258,13 @@ interface FormInputProps {
     value: string | number;
     onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
     step?: string;
+    min?: string;
+    max?: string;
     required?: boolean;
     disabled?: boolean;
 }
 
-const FormInput: React.FC<FormInputProps> = ({ label, name, type, value, onChange, step, required, disabled }) => (
+const FormInput: React.FC<FormInputProps> = ({ label, name, type, value, onChange, step, min, max, required, disabled }) => (
     <FormGroup label={label}>
         <input
             type={type}
@@ -238,6 +272,8 @@ const FormInput: React.FC<FormInputProps> = ({ label, name, type, value, onChang
             value={value}
             onChange={onChange}
             step={step}
+            min={min}
+            max={max}
             required={required}
             disabled={disabled}
             className="w-full p-2 border rounded bg-gray-50 **text-gray-900** focus:border-indigo-500 disabled:bg-gray-100"

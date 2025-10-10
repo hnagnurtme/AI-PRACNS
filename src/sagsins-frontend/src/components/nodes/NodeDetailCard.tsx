@@ -49,10 +49,26 @@ const NodeDetailCard: React.FC<NodeDetailCardProps> = ({ node, onRefresh }) => {
                     <DetailItem label="Latitude" value={node.position.latitude.toFixed(4)} />
                     <DetailItem label="Longitude" value={node.position.longitude.toFixed(4)} />
                     <DetailItem label="Altitude (Km)" value={node.position.altitude.toFixed(2)} />
-                    <DetailItem label="Bandwidth" value={`${node.currentBandwidth.toFixed(2)} Mbps`} />
-                    <DetailItem label="Latency" value={`${node.avgLatencyMs.toFixed(2)} ms`} />
-                    <DetailItem label="Loss Rate" value={(node.packetLossRate * 100).toFixed(2) + '%'} />
+                    {node.batteryChargePercent !== undefined && (
+                        <DetailItem label="Battery" value={`${node.batteryChargePercent.toFixed(1)}%`} />
+                    )}
+                    {node.packetLossRate !== undefined && (
+                        <DetailItem label="Loss Rate" value={(node.packetLossRate * 100).toFixed(3) + '%'} />
+                    )}
+                    {node.resourceUtilization !== undefined && (
+                        <DetailItem label="Resource Usage" value={`${node.resourceUtilization.toFixed(1)}%`} />
+                    )}
                 </div>
+
+                {/* Last Updated */}
+                {node.lastUpdated && (
+                    <div className="mt-4 pt-3 border-t border-gray-200">
+                        <h4 className="text-sm font-semibold text-gray-700 mb-2">📊 Status</h4>
+                        <div className="text-xs text-gray-500">
+                            Last Updated: {new Date(node.lastUpdated).toLocaleString()}
+                        </div>
+                    </div>
+                )}
 
                 {/* Orbital Information */}
                 {(node.orbit || node.velocity) && (

@@ -1,15 +1,30 @@
 // src/services/nodeService.ts
 
-import axios, { AxiosError } from 'axios';
-import type { CreateNodeRequest, NodeDTO, UpdateNodeRequest, ApiResponse } from '../types/NodeTypes';
+import { AxiosError } from 'axios';
+import axiosClient from '../api/axiosClient';
+import type { 
+    CreateNodeRequest, 
+    NodeDTO, 
+    UpdateNodeRequest, 
+    HealthResponse, 
+    DockerResponse 
+} from '../types/NodeTypes';
 
+const NODES_ENDPOINT = '/api/v1/nodes'; 
+const HEALTH_ENDPOINT = '/health';
+const DOCKER_ENDPOINT = '/api/v1/docker/allLinks';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1/nodes'; 
+// API Response wrapper (for backward compatibility)
+interface ApiResponse<T> {
+    status: number;
+    error: string | null;
+    message: string;
+    data: T;
+}
 
 // Hàm tiện ích để trích xuất dữ liệu và xử lý lỗi
 const extractData = <T>(response: ApiResponse<T>): T => {
     if (response.status !== 200 || response.error) {
-        // Ném lỗi nếu status không phải 200 hoặc có trường 'error'
         throw new Error(response.message || `API call failed with status ${response.status}`);
     }
     return response.data;
@@ -38,16 +53,19 @@ const handleAxiosError = (error: unknown): Error => {
     return new Error('An unexpected error occurred.');
 };
 
-
 // --- READ ALL ---
 export const getAllNodes = async (): Promise<NodeDTO[]> => {
     try {
-        // 1. Khai báo response sẽ là kiểu ApiResponse<NodeDTO[]>
-        const response = await axios.get<ApiResponse<NodeDTO[]>>(API_BASE_URL);
+        const response = await axiosClient.get<NodeDTO[] | ApiResponse<NodeDTO[]>>(NODES_ENDPOINT);
         console.log('API Response:', response.data);
         
-        // 2. Trích xuất mảng NodeDTO[] từ trường 'data'
-        return extractData(response.data);
+        // Check if response is wrapped in ApiResponse format
+        if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+            return extractData(response.data as ApiResponse<NodeDTO[]>);
+        }
+        
+        // Direct array response
+        return response.data as NodeDTO[];
     } catch (error) {
         throw handleAxiosError(error);
     }
@@ -56,22 +74,30 @@ export const getAllNodes = async (): Promise<NodeDTO[]> => {
 // --- READ BY ID ---
 export const getNodeById = async (nodeId: string): Promise<NodeDTO> => {
     try {
-        // 1. Khai báo response sẽ là kiểu ApiResponse<NodeDTO>
-        const response = await axios.get<ApiResponse<NodeDTO>>(`${API_BASE_URL}/${nodeId}`);
+        const response = await axiosClient.get<NodeDTO | ApiResponse<NodeDTO>>(`${NODES_ENDPOINT}/${nodeId}`);
         
-        // 2. Trích xuất NodeDTO từ trường 'data'
-        return extractData(response.data);
+        // Check if response is wrapped in ApiResponse format
+        if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+            return extractData(response.data as ApiResponse<NodeDTO>);
+        }
+        
+        return response.data as NodeDTO;
     } catch (error) {
         throw handleAxiosError(error);
     }
 };
 
-
 // --- CREATE ---
 export const createNode = async (nodeData: CreateNodeRequest): Promise<NodeDTO> => {
     try {
-        const response = await axios.post<ApiResponse<NodeDTO>>(API_BASE_URL, nodeData);
-        return extractData(response.data);
+        const response = await axiosClient.post<NodeDTO | ApiResponse<NodeDTO>>(NODES_ENDPOINT, nodeData);
+        
+        // Check if response is wrapped in ApiResponse format
+        if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+            return extractData(response.data as ApiResponse<NodeDTO>);
+        }
+        
+        return response.data as NodeDTO;
     } catch (error) {
         throw handleAxiosError(error);
     }
@@ -81,9 +107,15 @@ export const createNode = async (nodeData: CreateNodeRequest): Promise<NodeDTO> 
 export const updateNode = async (nodeId: string, updateData: UpdateNodeRequest): Promise<NodeDTO> => {
     try {
         console.log('Updating node with data:', updateData);
-        const response = await axios.patch<ApiResponse<NodeDTO>>(`${API_BASE_URL}/${nodeId}`, updateData);
+        const response = await axiosClient.patch<NodeDTO | ApiResponse<NodeDTO>>(`${NODES_ENDPOINT}/${nodeId}`, updateData);
         console.log('API Response:', response.data);
-        return extractData(response.data);
+        
+        // Check if response is wrapped in ApiResponse format
+        if (response.data && typeof response.data === 'object' && 'data' in response.data) {
+            return extractData(response.data as ApiResponse<NodeDTO>);
+        }
+        
+        return response.data as NodeDTO;
     } catch (error) {
         console.log('Error during API call:', error);
         throw handleAxiosError(error);
@@ -93,12 +125,38 @@ export const updateNode = async (nodeId: string, updateData: UpdateNodeRequest):
 // --- DELETE ---
 export const deleteNode = async (nodeId: string): Promise<void> => {
     try {
-        // Đối với DELETE, API thường trả về mã 204 No Content, 
-        // nhưng nếu backend vẫn trả về cấu trúc ApiResponse, ta vẫn xử lý để kiểm tra lỗi.
-        const response = await axios.delete<ApiResponse<null>>(`${API_BASE_URL}/${nodeId}`);
-        
-        // Kiểm tra lỗi, nhưng không cần trả về dữ liệu (void)
-        extractData(response.data);
+        await axiosClient.delete(`${NODES_ENDPOINT}/${nodeId}`);
+    } catch (error) {
+        throw handleAxiosError(error);
+    }
+};
+
+// --- RUN NODE PROCESS ---
+export const runNodeProcess = async (nodeId: string): Promise<void> => {
+    try {
+        await axiosClient.post(`${NODES_ENDPOINT}/run/${nodeId}`);
+    } catch (error) {
+        throw handleAxiosError(error);
+    }
+};
+
+// --- HEALTH CHECK ---
+export const checkHealth = async (): Promise<HealthResponse> => {
+    try {
+        const response = await axiosClient.get<HealthResponse>(HEALTH_ENDPOINT);
+        return response.data;
+    } catch (error) {
+        throw handleAxiosError(error);
+    }
+};
+
+// --- GET DOCKER ENTITIES ---
+export const getDockerEntities = async (isRunning: boolean): Promise<DockerResponse[]> => {
+    try {
+        const response = await axiosClient.get<DockerResponse[]>(DOCKER_ENDPOINT, {
+            params: { isRunning }
+        });
+        return response.data;
     } catch (error) {
         throw handleAxiosError(error);
     }
