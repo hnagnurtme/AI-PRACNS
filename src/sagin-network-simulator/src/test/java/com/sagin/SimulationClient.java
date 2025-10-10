@@ -21,7 +21,7 @@ public class SimulationClient {
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private static final String SERVER_IP = "127.0.0.1";
-    private static final int SERVER_PORT = 8081;
+    private static final int SERVER_PORT = 8099;
     private static final String TARGET_NODE = "LEO_004";
     private static final String SOURCE_CLIENT_ID = "GS_LONDON";
     // Trong SimulationClient.java
