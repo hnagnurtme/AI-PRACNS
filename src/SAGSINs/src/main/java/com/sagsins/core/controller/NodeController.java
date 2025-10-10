@@ -18,6 +18,8 @@ import com.sagsins.core.DTOs.CreateNodeRequest;
 import com.sagsins.core.DTOs.NodeDTO;
 import com.sagsins.core.DTOs.UpdateNodeRequest;
 import com.sagsins.core.service.INodeService;
+import org.springframework.web.bind.annotation.RequestParam;
+
 
 
 
@@ -57,19 +59,13 @@ public class NodeController {
         }
     }
 
-    @PatchMapping("/nodes/{nodeId}/activate")
-    public ResponseEntity<NodeDTO> activateNode(@PathVariable String nodeId) {
-        return nodeService.activateNode(nodeId)
-                .map(node -> ResponseEntity.ok(node))
-                .orElse(ResponseEntity.notFound().build());
+    @PostMapping("/nodes/run/{nodeId}")
+    public ResponseEntity<Void> runNodeProcess(@PathVariable String nodeId) {
+        boolean started = nodeService.runNodeProcess(nodeId);
+        if (started) {
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
-
-    @PatchMapping("/nodes/{nodeId}/deactivate")
-    public ResponseEntity<NodeDTO> deactivateNode(@PathVariable String nodeId) {
-        return nodeService.deactivateNode(nodeId)
-                .map(node -> ResponseEntity.ok(node))
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-
 }

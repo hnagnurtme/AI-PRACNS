@@ -23,15 +23,4 @@ public interface IRoutingEngine {
         ServiceQoS targetQoS
     );
 
-    /**
-     * Mô phỏng định tuyến phản ứng (Reactive): Chỉ tìm tuyến đường cho một đích đến cụ thể.
-     * Hữu ích khi tuyến đường hiện có bị hỏng.
-     */
-    RouteInfo findSingleRoute(
-        NodeInfo sourceNode, 
-        String destinationNodeId,
-        Map<String, LinkMetric> allActiveLinks,
-        Map<String, NodeInfo> allNodeInfos,
-        ServiceQoS targetQoS
-    );
 }

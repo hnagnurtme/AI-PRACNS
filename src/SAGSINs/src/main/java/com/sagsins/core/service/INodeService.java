@@ -7,6 +7,7 @@ import java.util.Optional;
 import com.sagsins.core.DTOs.CreateNodeRequest;
 import com.sagsins.core.DTOs.NodeDTO;
 import com.sagsins.core.DTOs.UpdateNodeRequest;
+import com.sagsins.core.DTOs.response.DockerResposne;
 
 /**
  * Interface định nghĩa các nghiệp vụ (Service Operations) cho việc quản lý Node (CRUD).
@@ -52,13 +53,6 @@ public interface INodeService {
      */
     boolean deleteNode(String nodeId);
 
-    /**
-     * Kích hoạt một Node (đặt trạng thái active thành true).
-     * @param nodeId ID của Node cần kích hoạt.
-     * @return Optional chứa NodeInfo đã được kích hoạt nếu thành công, hoặc Optional rỗng nếu không tìm thấy ID.
-     */
-    Optional<NodeDTO> activateNode(String nodeId);
 
-
-    Optional<NodeDTO> deactivateNode(String nodeId);
+    boolean runNodeProcess(String nodeId);
 }

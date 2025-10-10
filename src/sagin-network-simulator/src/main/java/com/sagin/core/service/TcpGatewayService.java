@@ -138,9 +138,8 @@ public class TcpGatewayService implements INodeGatewayService, Runnable {
                     jsonBuilder.append(line);
                 }
 
-                String jsonString = jsonBuilder.toString().trim(); // Lấy JSON và xóa khoảng trắng thừa
+                String jsonString = jsonBuilder.toString().trim(); 
 
-                logger.info("Raw JSON input: {}", jsonString);
 
                 if (jsonString.isEmpty()) {
                     logger.warn("[Gateway {}] Client {} đóng kết nối mà không gửi dữ liệu JSON.",

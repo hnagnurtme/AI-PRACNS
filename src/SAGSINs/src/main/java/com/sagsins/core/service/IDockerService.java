@@ -1,6 +1,9 @@
 package com.sagsins.core.service;
 
+import com.sagsins.core.DTOs.response.DockerResposne;
 import com.sagsins.core.model.NodeInfo;
+
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -32,4 +35,9 @@ public interface IDockerService {
      * @return Container ID.
      */
     Optional<String> getContainerStatus(String nodeId);
+
+
+
+    // get all conatiner 
+    List<DockerResposne> getAllContainers(boolean isRuunning);
 }

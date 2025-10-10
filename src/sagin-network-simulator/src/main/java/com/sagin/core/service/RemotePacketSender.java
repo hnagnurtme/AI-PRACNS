@@ -22,7 +22,7 @@ public class RemotePacketSender {
      * Nó đóng gói Packet và LinkMetric vào một Wrapper trước khi serialize.
      */
     public static boolean sendPacketViaSocket(Packet packet, NodeInfo destInfo, LinkMetric linkMetric) {
-        
+        System.out.println("Preparing to send packet " + destInfo.toString());
         String hostName = destInfo.getHost();
         int port = destInfo.getPort();
         

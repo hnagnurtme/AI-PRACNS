@@ -22,7 +22,7 @@ public class LinkManagerService implements ILinkManagerService {
             return false;
 
         // Kiểm tra tầm nhìn thực tế (phải là Line of Sight)
-        boolean isVisible = GeoUtils.checkVisibility(sourceNode.getPosition(), destNode.getPosition());
+        boolean isVisible = GeoUtils.checkVisibility(sourceNode, destNode);
 
         // Kiểm tra logic bổ sung: Trạm mặt đất có đang bị bão quá lớn không?
         if (destNode.getNodeType() == NodeType.GROUND_STATION &&

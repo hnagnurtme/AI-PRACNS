@@ -19,4 +19,5 @@ public class RouteInfo {
     private double avgPacketLossRate; // Tỷ lệ mất gói trung bình
 
     private long timestampComputed;   // Thời điểm tuyến đường này được tính toán
+
 }
