@@ -55,7 +55,8 @@ It combines **heuristic algorithms (PSO, ACO)** with **Generative AI** to delive
 
 The system consists of four interconnected layers designed for scalability and modularity:
 
-[Diagram Placeholder: System Architecture Diagram : image to be added in docs/architecture/]
+![System Architecture Diagram](docs/screenshot/FLOW_UML.png)
+
 
 ### Component Breakdown
 
@@ -87,6 +88,16 @@ Client Z ──┘
 - Real-time metric aggregation across all clients
 
 **Screenshots:**
+
+
+- API / Swagger UI for Backend Services
+   ![API Swagger](docs/screenshot/CORE_SWAGGER.png)
+- 3D Map / Node Dashboard (Cesium)
+   ![Cesium Map 1](docs/screenshot/REACT_1.png)
+- React UI for SAGSINS Management - ASIA
+   ![Cesium Map 2](docs/screenshot/REACT_VIEW2.png)
+- Streamlit — Performance Analysis Dashboard
+   ![Streamlit Performance](docs/screenshot/STREAMLIST_PYTHON.png)
 
 ---
 
