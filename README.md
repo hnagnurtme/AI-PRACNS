@@ -25,10 +25,9 @@
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 - [License](#license)
-
----
-
-## 🎯 Overview
+## 🚀 Project Overview
+This project focuses on **minimizing communication latency** and **optimizing bandwidth and energy usage** across integrated SAGSIN networks.  
+It combines **heuristic algorithms (PSO, ACO)** with **Generative AI** to deliver intelligent resource allocation and real-time adaptability.
 
 **SAGSINS** is an advanced simulation platform for **Space-Air-Ground-Sea Integrated Networks** that enables research and optimization of AI-powered routing algorithms in multi-layered satellite networks (GEO/MEO/LEO).
 
