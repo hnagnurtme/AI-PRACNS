@@ -1,35 +1,35 @@
-version: '3.8'
+version: "3.8"
 
 services:
   mongodb:
-
     image: mongo:latest
-    
-    # Đặt tên container dễ nhận biết
     container_name: mongodb_sag_sins
-    
-    # Ánh xạ port: port 27017 trên host sẽ kết nối đến port 27017 trong container
+
     ports:
       - "27017:27017"
-    
-    # Biến môi trường để thiết lập tài khoản quản trị (RẤT quan trọng cho môi trường Production)
+
     environment:
-      # Tên người dùng quản trị
       MONGO_INITDB_ROOT_USERNAME: user
-      # Mật khẩu quản trị
-      MONGO_INITDB_ROOT_PASSWORD: password123 
-      # Có thể bỏ qua 2 biến này nếu chỉ dùng cho môi trường Dev đơn giản
-      
-    # Volume: Đảm bảo dữ liệu được lưu trữ bền vững bên ngoài container
+      MONGO_INITDB_ROOT_PASSWORD: password123
+
     volumes:
-      # Lưu trữ dữ liệu cơ sở dữ liệu thực tế
       - mongodb_data:/data/db
-      # (Tùy chọn) Lưu trữ file cấu hình của MongoDB
-    
-    # (Tùy chọn) Khởi động lại container nếu nó bị dừng, trừ khi dừng thủ công
+
     restart: unless-stopped
 
-# Định nghĩa các Volume được sử dụng
+  simulator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: satellite_simulator
+
+    environment:
+      MONGO_URL: "mongodb://user:password123@mongodb:27017/"
+
+    depends_on:
+      - mongodb
+
+    restart: unless-stopped
+
 volumes:
   mongodb_data:
-    # Driver mặc định (local) là đủ cho hầu hết các trường hợp
