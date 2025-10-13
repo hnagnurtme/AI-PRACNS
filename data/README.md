@@ -64,3 +64,15 @@ CREATE MONGODB DATABASE
   }
 }
 ```
+
+### RUN
+
+```bash 
+docker-compose up -d mongodb
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python init_data.py
+python init_db.py
+docker-compose up -d
+```
