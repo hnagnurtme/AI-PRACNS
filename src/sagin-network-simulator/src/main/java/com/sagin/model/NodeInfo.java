@@ -68,4 +68,102 @@ public class NodeInfo {
             && bufferLoadRatio <= MAX_BUFFER_LOAD_RATIO
             && weather != WeatherCondition.SEVERE_STORM;
     }
+
+    // getter và setter
+    public String getNodeId() {
+        return nodeId;
+    }
+    public void setNodeId(String nodeId) {
+        this.nodeId = nodeId;
+    }
+    public NodeType getNodeType() {
+        return nodeType;
+    }
+    public void setNodeType(NodeType nodeType) {
+        this.nodeType = nodeType;
+    }
+    public Geo3D getPosition() {
+        return position;
+    }
+    public void setPosition(Geo3D position) {
+        this.position = position;
+    }
+    public Orbit getOrbit() {
+        return orbit;
+    }
+    public void setOrbit(Orbit orbit) {
+        this.orbit = orbit;
+    }
+    public Velocity getVelocity() {
+        return velocity;
+    }
+    public void setVelocity(Velocity velocity) {
+        this.velocity = velocity;
+    }
+    public boolean isOperational() {
+        return isOperational;
+    }
+    public void setOperational(boolean isOperational) {
+        this.isOperational = isOperational;
+    }
+    public double getBatteryChargePercent() {
+        return batteryChargePercent;
+    }
+    public void setBatteryChargePercent(double batteryChargePercent) {
+        this.batteryChargePercent = batteryChargePercent;
+    }
+    public double getNodeProcessingDelayMs() {
+        return nodeProcessingDelayMs;
+    }
+    public void setNodeProcessingDelayMs(double nodeProcessingDelayMs) {
+        this.nodeProcessingDelayMs = nodeProcessingDelayMs;
+    }
+    public double getPacketLossRate() {
+        return packetLossRate;
+    }
+    public void setPacketLossRate(double packetLossRate) {
+        this.packetLossRate = packetLossRate;
+    }
+    public double getResourceUtilization() {
+        return resourceUtilization;
+    }
+    public void setResourceUtilization(double resourceUtilization) {
+        this.resourceUtilization = resourceUtilization;
+    }
+    public int getPacketBufferCapacity() {
+        return packetBufferCapacity;
+    }
+    public void setPacketBufferCapacity(int packetBufferCapacity) {
+        this.packetBufferCapacity = packetBufferCapacity;   
+    }
+    public int getCurrentPacketCount() {
+        return currentPacketCount;
+    }
+    public void setCurrentPacketCount(int currentPacketCount) {
+        this.currentPacketCount = currentPacketCount;
+    }
+    public WeatherCondition getWeather() {
+        return weather;
+    }
+    public void setWeather(WeatherCondition weather) {
+        this.weather = weather;
+    }
+    public long getLastUpdated() {
+        return lastUpdated;
+    }
+    public void setLastUpdated(long lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
+    public String getHost() {
+        return host;
+    }
+    public void setHost(String host) {
+        this.host = host;
+    }
+    public int getPort() {
+        return port;
+    }
+    public void setPort(int port) {
+        this.port = port;
+    }
 }

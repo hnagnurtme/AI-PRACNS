@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 @Getter
 @Setter
-@AllArgsConstructor
+// @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @ToString
@@ -25,6 +25,12 @@ public class Velocity {
     
     // Vận tốc theo trục Z (Lên/Xuống) - Ví dụ: tính bằng km/s
     private double velocityZ; 
+
+    public Velocity(double vx, double vy, double vz) {
+        this.velocityX = vx;
+        this.velocityY = vy;
+        this.velocityZ = vz;
+    }
 
     /**
      * Tính độ lớn (tốc độ) tổng thể của vector vận tốc.

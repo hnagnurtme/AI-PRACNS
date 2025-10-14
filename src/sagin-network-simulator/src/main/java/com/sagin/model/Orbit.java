@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty.Access;
 
 @Getter
 @Setter
-@AllArgsConstructor
+// @AllArgsConstructor
 @NoArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(value = {"circular"}, ignoreUnknown = true) 
@@ -35,6 +35,15 @@ public class Orbit {
     // True Anomaly (Vị trí thực tế của vệ tinh trên quỹ đạo) - Ví dụ: tính bằng độ
     private double trueAnomalyDeg;  
 
+    public Orbit(double semiMajorAxis, double eccentricity, double inclination, 
+                 double raan, double argOfPerigee, double trueAnomaly) {
+        this.semiMajorAxisKm = semiMajorAxis;
+        this.eccentricity = eccentricity;
+        this.inclinationDeg = inclination;
+        this.raanDeg = raan;
+        this.argumentOfPerigeeDeg = argOfPerigee;
+        this.trueAnomalyDeg = trueAnomaly;
+    }
     /** * Kiểm tra xem quỹ đạo có phải là quỹ đạo tròn hoàn hảo không (e = 0).
      */
     @JsonIgnore
