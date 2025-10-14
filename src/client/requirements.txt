@@ -11,3 +11,5 @@ pandas
 pyvis
 
 streamlit-autorefresh
+
+altair
