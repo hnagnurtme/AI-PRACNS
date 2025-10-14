@@ -1,7 +1,5 @@
-# client/requirements.txt
+# Corrected requirement for the web framework
 streamlit
-pandas
-plotly
-numpy
-scipy
-dataclasses
+
+# Thư viện để xử lý cấu trúc dữ liệu phức tạp
+ipaddress
