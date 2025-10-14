@@ -39,6 +39,7 @@ public class AsiaNodeSeeder {
         int port = BASE_PORT;
 
         // --- GROUND STATIONS ---
+        nodes.put("GS_LONDON", createGroundStation("GS_LONDON", 51.5074, -0.1278, 0.01, WeatherCondition.CLEAR, 1.0, port++));
         nodes.put("GS_TOKYO", createGroundStation("GS_TOKYO", 35.68, 139.69, 0.01, WeatherCondition.CLEAR, 1.0, port++));
         nodes.put("GS_SINGAPORE", createGroundStation("GS_SINGAPORE", 1.35, 103.82, 0.01, WeatherCondition.CLEAR, 1.0, port++));
         nodes.put("GS_BANGKOK", createGroundStation("GS_BANGKOK", 13.75, 100.50, 0.01, WeatherCondition.LIGHT_RAIN, 1.0, port++));

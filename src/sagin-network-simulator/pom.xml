@@ -129,6 +129,16 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Exec Maven Plugin -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>com.sagin.util.SimulationMain</mainClass>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

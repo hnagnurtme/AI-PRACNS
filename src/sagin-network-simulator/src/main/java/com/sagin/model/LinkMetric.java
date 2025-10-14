@@ -53,4 +53,69 @@ public class LinkMetric {
         this.linkScore = Math.max(0, score);
         return this.linkScore;
     }
+
+    // getter and setter
+    public String getSourceNodeId() {
+        return sourceNodeId;
+    }
+    public void setSourceNodeId(String sourceNodeId) {
+        this.sourceNodeId = sourceNodeId;
+    }
+    public String getDestinationNodeId() {
+        return destinationNodeId;
+    }
+    public void setDestinationNodeId(String destinationNodeId) {
+        this.destinationNodeId = destinationNodeId;
+    }
+    public double getDistanceKm() {
+        return distanceKm;
+    }
+    public void setDistanceKm(double distanceKm) {
+        this.distanceKm = distanceKm;
+    }
+    public double getMaxBandwidthMbps() {
+        return maxBandwidthMbps;
+    }   
+    public void setMaxBandwidthMbps(double maxBandwidthMbps) {
+        this.maxBandwidthMbps = maxBandwidthMbps;
+    }
+    public double getCurrentAvailableBandwidthMbps() {
+        return currentAvailableBandwidthMbps;
+    }
+    public void setCurrentAvailableBandwidthMbps(double currentAvailableBandwidthMbps) {
+        this.currentAvailableBandwidthMbps = currentAvailableBandwidthMbps;
+    }
+    public double getLatencyMs() {
+        return latencyMs;
+    }
+    public void setLatencyMs(double latencyMs) {
+        this.latencyMs = latencyMs;
+    }
+    public double getPacketLossRate() {
+        return packetLossRate;
+    }
+    public void setPacketLossRate(double packetLossRate) {
+        this.packetLossRate = packetLossRate;
+    }
+    public double getLinkAttenuationDb() {
+        return linkAttenuationDb;
+    }
+    public void setLinkAttenuationDb(double linkAttenuationDb) {
+        this.linkAttenuationDb = linkAttenuationDb;
+    }
+    public double getLinkScore() {
+        return linkScore;
+    }
+    public void setLinkScore(double linkScore) {
+        this.linkScore = linkScore;
+    }
+    public boolean isLinkActive() {
+        return isLinkActive;
+    }
+    public void setLinkActive(boolean isLinkActive) {
+        this.isLinkActive = isLinkActive;
+    }
+    public long getLastUpdated() {
+        return lastUpdated;
+    }
 }
