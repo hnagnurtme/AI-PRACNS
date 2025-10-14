@@ -5,7 +5,7 @@ import java.util.List;
 
 @Getter
 @Setter
-@AllArgsConstructor
+// @AllArgsConstructor  
 @NoArgsConstructor
 @ToString
 public class RouteInfo {
@@ -20,4 +20,15 @@ public class RouteInfo {
 
     private long timestampComputed;   // Thời điểm tuyến đường này được tính toán
 
+    public RouteInfo(String nextHopNodeId, List<String> pathNodeIds, double totalCost,
+                     double totalLatencyMs, double minBandwidthMbps,
+                     double avgPacketLossRate, long timestampComputed) {
+        this.nextHopNodeId = nextHopNodeId;
+        this.pathNodeIds = pathNodeIds;
+        this.totalCost = totalCost;
+        this.totalLatencyMs = totalLatencyMs;
+        this.minBandwidthMbps = minBandwidthMbps;
+        this.avgPacketLossRate = avgPacketLossRate;
+        this.timestampComputed = timestampComputed;
+    }
 }

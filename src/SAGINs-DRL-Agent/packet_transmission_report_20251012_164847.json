@@ -1,0 +1,64 @@
+{
+  "packet_id": "CMP_77277",
+  "source": "GS_TOKYO",
+  "destination": "GS_LONDON",
+  "drl_report": {
+    "method": "DRL",
+    "packet_id": "CMP_77277_DRL",
+    "source": "GS_TOKYO",
+    "destination": "GS_LONDON",
+    "packet_size_kb": 1024,
+    "success": false,
+    "path": [
+      "GS_TOKYO"
+    ],
+    "hops": 0,
+    "total_transmission_time_ms": 5.679607391357422,
+    "total_latency_ms": 0.0,
+    "total_energy_consumption": 0.0,
+    "packet_loss_probability": 0.0,
+    "average_bandwidth_utilization": 0.0,
+    "computation_time_ms": 5.679607391357422,
+    "hop_details": [],
+    "total_reward": 0.0,
+    "failure_reason": "Error at hop 1: NetworkSimulator.simulation_one_step() takes 3 positional arguments but 4 were given"
+  },
+  "dijkstra_report": {
+    "method": "Simple_Dijkstra",
+    "packet_id": "CMP_77277_DIJ",
+    "source": "GS_TOKYO",
+    "destination": "GS_LONDON",
+    "packet_size_kb": 1024,
+    "success": true,
+    "path": [
+      "GS_TOKYO",
+      "GS_LONDON"
+    ],
+    "hops": 1,
+    "total_transmission_time_ms": 150.37437293472584,
+    "total_latency_ms": 144.7980942482024,
+    "total_energy_consumption": 192.19237699280956,
+    "packet_loss_probability": 8.135771309780715e-05,
+    "average_bandwidth_utilization": 0.0,
+    "computation_time_ms": 3.5762786865234375,
+    "hop_details": [
+      {
+        "hop_number": 1,
+        "from_node": "GS_TOKYO",
+        "to_node": "GS_LONDON",
+        "from_type": "GROUND_STATION",
+        "to_type": "GROUND_STATION",
+        "latency_ms": 144.7980942482024,
+        "bandwidth_mbps": 100.0,
+        "energy_consumption": 192.19237699280956,
+        "packet_loss_rate": 8.135771309784287e-05,
+        "bandwidth_utilization": 0.0,
+        "distance_km": 9559.618849640477,
+        "weather": "HEAVY_RAIN"
+      }
+    ],
+    "total_distance": 9559618.849640477,
+    "failure_reason": null
+  },
+  "timestamp": "2025-10-12T16:48:38.191817"
+}

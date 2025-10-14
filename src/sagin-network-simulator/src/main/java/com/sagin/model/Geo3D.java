@@ -9,7 +9,7 @@ import lombok.*;
 
 @Getter
 @Setter
-@AllArgsConstructor
+// @AllArgsConstructor
 @NoArgsConstructor
 @ToString
 @JsonIgnoreProperties(value = {"distanceTo","directionTo"}, ignoreUnknown = true)
@@ -18,6 +18,12 @@ public class Geo3D {
     private double latitude;   
     private double longitude;  
     private double altitude;   
+
+    public Geo3D(double lat, double lon, double alt) {
+        this.latitude = lat;
+        this.longitude = lon;
+        this.altitude = alt;
+    }
 
     @JsonIgnore
     @JsonProperty(access = Access.READ_ONLY)
