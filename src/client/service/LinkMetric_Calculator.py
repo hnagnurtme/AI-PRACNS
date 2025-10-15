@@ -139,3 +139,27 @@ if __name__ == "__main__":
     print("--- Chạy cập nhật thủ công TOÀN BỘ Link Metrics vào DB ---")
     update_all_link_metrics_in_db()
     print("--- Hoàn thành ---")
+    
+import random
+from math import prod
+
+def _simulate_hop_metric():
+    """Hàm phụ: Mô phỏng LinkMetric cho một chặng duy nhất."""
+    return {"latencyMs": random.uniform(15, 40), "availableBandwidthMbps": random.uniform(200, 1500)}
+
+def simulate_routing_analysis(source: str, destination: str, all_nodes: list):
+    """Tạo dữ liệu giả chi tiết cho từng chặng và dữ liệu tích lũy."""
+    def process_algorithm(path_nodes):
+        hop_metrics = [_simulate_hop_metric() for _ in range(len(path_nodes) - 1)]
+        cumulative_latency = [0.0]
+        current_latency = 0.0
+        for hop in hop_metrics:
+            current_latency += hop['latencyMs']
+            cumulative_latency.append(current_latency)
+        bottleneck_bw_at_hop = [None] + [min(hop['availableBandwidthMbps'] for hop in hop_metrics[:i+1]) for i in range(len(hop_metrics))]
+        return {"path": path_nodes, "cumulative_latency": cumulative_latency, "bottleneck_bandwidth_path": bottleneck_bw_at_hop}
+
+    path_dijkstra = [source] + random.sample([n for n in all_nodes if n not in [source, destination]], k=2) + [destination]
+    path_rl = [source] + random.sample([n for n in all_nodes if n not in [source, destination]], k=3) + [destination]
+    
+    return {"dijkstra": process_algorithm(path_dijkstra), "rl": process_algorithm(path_rl)}

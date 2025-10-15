@@ -1,5 +1,5 @@
 # app_models.py
-from typing import List, Optional, Any
+from typing import List, Optional, Any,Dict
 from dataclasses import dataclass, field
 import base64
 import time
@@ -28,6 +28,8 @@ class Packet:
     TTL: int = 10
     priorityLevel: int = 1
     isUseRL: bool = False 
+    
+    analysisData: Optional[Dict[str, Any]] = None
     
     timeSentFromSourceMs: int = int(time.time() * 1000)
     pathHistory: List[str] = field(default_factory=list)

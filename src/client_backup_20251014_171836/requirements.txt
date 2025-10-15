@@ -1,0 +1,10 @@
+# client/requirements.txt
+streamlit
+pandas
+plotly
+numpy
+scipy
+dataclasses
+
+dnspython
+pymongo

@@ -2,7 +2,8 @@ import json
 from typing import List, Optional, Dict, Any
 from dataclasses import dataclass, field
 import base64
-
+from dataclasses import dataclass, field
+from typing import Optional, Dict, Any
 # --- 1. Class lồng nhau: HopRecord (Chi tiết từng chặng) ---
 @dataclass
 class HopRecord:
@@ -68,8 +69,15 @@ class Packet:
     dropped: bool = False
     dropReason: Optional[str] = None
 
-
-    # --- Phương thức hỗ trợ ---
+    analysisData: Optional[Dict[str, Any]] = None
+    
+    def get_decoded_payload_preview(self) -> str:
+        """Giải mã một phần payload để xem trước."""
+        try:
+            preview_bytes = base64.b64decode(self.payloadDataBase64[:68])
+            return preview_bytes.decode('utf-8', errors='ignore').strip() + "..."
+        except Exception:
+            return "[Binary/Non-Text Data]"
 
     def to_json(self) -> str:
         """Chuyển đối tượng Packet thành chuỗi JSON."""
