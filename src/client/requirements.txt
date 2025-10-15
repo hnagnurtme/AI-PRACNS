@@ -1,7 +1,15 @@
-# client/requirements.txt
+# Corrected requirement for the web framework
 streamlit
+
+# Thư viện để xử lý cấu trúc dữ liệu phức tạp
+ipaddress
+
+pymongo
+
 pandas
-plotly
-numpy
-scipy
-dataclasses
+
+pyvis
+
+streamlit-autorefresh
+
+altair
