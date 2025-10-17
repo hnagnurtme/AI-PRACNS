@@ -1,111 +1,126 @@
 import json
-from typing import List, Optional, Dict, Any
-from dataclasses import dataclass, field
+from typing import List, Optional, Dict, Any, Union
+from dataclasses import dataclass, field, asdict
 import base64
-from dataclasses import dataclass, field
-from typing import Optional, Dict, Any
-# --- 1. Class lồng nhau: HopRecord (Chi tiết từng chặng) ---
+from enum import Enum
+
+@dataclass
+class Position:
+    latitude: float
+    longitude: float
+    altitude: float
+
 @dataclass
 class HopRecord:
     fromNodeId: str
     toNodeId: str
     latencyMs: float
     timestampMs: int
+    fromNodePosition: Position
+    toNodePosition: Position
+    distanceKm: float
+    fromNodeBufferState: Optional[Dict[str, int]] = None
+    routingDecisionInfo: Optional[Dict[str, Any]] = None
 
-# --- 2. Class lồng nhau: ServiceQoS (Chất lượng Dịch vụ Yêu cầu) ---
+class ServiceType(str, Enum):
+    VIDEO_STREAM = "VIDEO_STREAM"
+    AUDIO_CALL = "AUDIO_CALL"
+    IMAGE_TRANSFER = "IMAGE_TRANSFER"
+    TEXT_MESSAGE = "TEXT_MESSAGE"
+    FILE_TRANSFER = "FILE_TRANSFER"
+
 @dataclass
 class ServiceQoS:
-    serviceType: str
+    serviceType: ServiceType
     defaultPriority: int
     maxLatencyMs: float
     maxJitterMs: float
     minBandwidthMbps: float
     maxLossRate: float
 
-# --- 3. Class Chính: Packet ---
 @dataclass
 class Packet:
-    """
-    Biểu diễn cấu trúc gói tin mạng P2P/Mesh dựa trên định dạng JSON.
-    """
-    # --- ID và Địa chỉ ---
     packetId: str
     sourceUserId: str
     destinationUserId: str
-    stationSource: str = field(metadata={'json': 'stationSource'})
-    stationDest: str = field(metadata={'json': 'stationDest'})
-
-    # --- Trạng thái Thời gian và Phân loại ---
-    type: str  # DATA, ACK
+    stationSource: str
+    stationDest: str
+    type: str
     acknowledgedPacketId: Optional[str]
     timeSentFromSourceMs: int
-
-    # --- Dữ liệu Ứng dụng ---
     payloadDataBase64: str
     payloadSizeByte: int
-    serviceType: str
-    
-    # Đối tượng QoS lồng nhau
-    serviceQoS: ServiceQoS = field(metadata={'json': 'serviceQoS'})
-
-    # --- Định tuyến và Theo dõi ---
+    serviceQoS: ServiceQoS
     TTL: int
     currentHoldingNodeId: str
     nextHopNodeId: str
     pathHistory: List[str]
-    
-    # Mảng các bản ghi chặng (tùy chọn)
     hopRecords: List[HopRecord] = field(default_factory=list)
-
     accumulatedDelayMs: float = 0.0
     priorityLevel: int = 1
-    isUseRL: bool = field(default=False, metadata={'json': 'isUseRL'})
-
-    # --- QoS Yêu cầu Tối đa Chấp nhận được ---
+    isUseRL: bool = False
     maxAcceptableLatencyMs: float = 150.0
     maxAcceptableLossRate: float = 0.01
-
-    # --- Trạng thái Drop ---
     dropped: bool = False
     dropReason: Optional[str] = None
-
     analysisData: Optional[Dict[str, Any]] = None
     
-    def get_decoded_payload_preview(self) -> str:
-        """Giải mã một phần payload để xem trước."""
-        try:
-            preview_bytes = base64.b64decode(self.payloadDataBase64[:68])
-            return preview_bytes.decode('utf-8', errors='ignore').strip() + "..."
-        except Exception:
-            return "[Binary/Non-Text Data]"
-
-    def to_json(self) -> str:
-        """Chuyển đối tượng Packet thành chuỗi JSON."""
-        # Dùng thư viện json để serialization
-        return json.dumps(self, default=lambda o: o.__dict__, indent=4)
-
-    @classmethod
-    def from_json(cls, json_data: str) -> 'Packet':
-        """Tạo đối tượng Packet từ chuỗi JSON."""
-        data: Dict[str, Any] = json.loads(json_data)
-        
-        # Tái tạo các đối tượng lồng nhau
-        data['serviceQoS'] = ServiceQoS(**data['serviceQoS'])
-        data['hopRecords'] = [HopRecord(**hr) for hr in data.get('hopRecords', [])]
-        
-        return cls(**data)
-
     def get_decoded_payload(self) -> str:
-        """Giải mã payload từ Base64 sang chuỗi (giả định là UTF-8)."""
         try:
             return base64.b64decode(self.payloadDataBase64).decode('utf-8')
         except Exception:
-            return "[Lỗi giải mã Base64]"
+            return "[Error decoding Base64]"
 
-# --- Ví dụ về cách sử dụng ---
+    def to_json(self) -> str:
+        """Serializes the Packet object to a JSON string."""
+        # asdict correctly handles nested dataclasses and enums (as strings)
+        return json.dumps(asdict(self), indent=4)
+
+    @classmethod
+    def from_json(cls, json_data: Union[str, bytes]) -> 'Packet':
+        """Deserializes a Packet object from a JSON string or bytes."""
+        data: Dict[str, Any] = json.loads(json_data)
+        
+        # <<< CHANGE: Remove the redundant top-level serviceType if it exists
+        if 'serviceType' in data:
+            del data['serviceType']
+            
+        # <<< CHANGE: Make deserialization more robust by explicitly handling the Enum
+        # 1. Convert the serviceType string inside the QoS object back to an Enum member
+        if 'serviceQoS' in data and 'serviceType' in data['serviceQoS']:
+            data['serviceQoS']['serviceType'] = ServiceType(data['serviceQoS']['serviceType'])
+        
+        # 2. Reconstruct the ServiceQoS object
+        data['serviceQoS'] = ServiceQoS(**data['serviceQoS'])
+        
+        # 3. Reconstruct the list of HopRecord objects
+        reconstructed_hops = []
+        for hr_data in data.get('hopRecords', []):
+            hr_data['fromNodePosition'] = Position(**hr_data['fromNodePosition'])
+            hr_data['toNodePosition'] = Position(**hr_data['toNodePosition'])
+            reconstructed_hops.append(HopRecord(**hr_data))
+        data['hopRecords'] = reconstructed_hops
+        
+        return cls(**data)
+
+def get_qos_profile(service_type: ServiceType) -> ServiceQoS:
+    """Returns a pre-configured ServiceQoS object based on the service type."""
+    PROFILES = {
+        ServiceType.VIDEO_STREAM: {"defaultPriority": 1, "maxLatencyMs": 150.0, "maxJitterMs": 30.0, "minBandwidthMbps": 5.0, "maxLossRate": 0.01},
+        ServiceType.AUDIO_CALL: {"defaultPriority": 2, "maxLatencyMs": 80.0, "maxJitterMs": 10.0, "minBandwidthMbps": 0.5, "maxLossRate": 0.005},
+        ServiceType.IMAGE_TRANSFER: {"defaultPriority": 3, "maxLatencyMs": 500.0, "maxJitterMs": 100.0, "minBandwidthMbps": 1.0, "maxLossRate": 0.02},
+        ServiceType.FILE_TRANSFER: {"defaultPriority": 4, "maxLatencyMs": 2000.0, "maxJitterMs": 500.0, "minBandwidthMbps": 2.0, "maxLossRate": 0.05},
+        ServiceType.TEXT_MESSAGE: {"defaultPriority": 5, "maxLatencyMs": 1000.0, "maxJitterMs": 200.0, "minBandwidthMbps": 0.1, "maxLossRate": 0.01}
+    }
+    profile_params = PROFILES.get(service_type)
+    if not profile_params:
+        raise ValueError(f"No QoS profile found for service type: {service_type}")
+    return ServiceQoS(serviceType=service_type, **profile_params)
+
+# --- Example usage block remains the same, but the sample JSON needs a small adjustment ---
 if __name__ == '__main__':
-    # JSON mẫu (sử dụng JSON trong câu hỏi của bạn)
-    sample_json = """
+    # <<< CHANGE: The sample JSON no longer needs the redundant top-level "serviceType"
+    sample_json_updated = """
     {
         "packetId": "PKT-001",
         "sourceUserId": "USER_A",
@@ -115,9 +130,8 @@ if __name__ == '__main__':
         "type": "DATA",
         "acknowledgedPacketId": null,
         "timeSentFromSourceMs": 1739512300000,
-        "payloadDataBase64": "UZ2FtcGxIIGRhdG EgYmFzZTY0", 
+        "payloadDataBase64": "SGVsbG8gU0FHU0lOIENsdWIh",
         "payloadSizeByte": 512,
-        "serviceType": "VIDEO_STREAM",
         "serviceQoS": {
             "serviceType": "VIDEO_STREAM",
             "defaultPriority": 1,
@@ -127,44 +141,45 @@ if __name__ == '__main__':
             "maxLossRate": 0.01
         },
         "TTL": 6,
-        "currentHoldingNodeId": "ME0-002",
-        "nextHopNodeId": "GS-01",
-        "pathHistory": [
-            "USER_A",
-            "LEO-001",
-            "ME0-002",
-            "GS-01",
-            "USER_B"
-        ],
+        "currentHoldingNodeId": "LEO-001",
+        "nextHopNodeId": "MEO-002",
+        "pathHistory": ["GS-01", "LEO-001"],
         "hopRecords": [
-            { "fromNodeId": "USER_A", "toNodeId": "LEO-001", "latencyMs": 4.8, "timestampMs": 1739512304800 },
-            { "fromNodeId": "LEO-001", "toNodeId": "ME0-002", "latencyMs": 7.9, "timestampMs": 1739512312700 },
-            { "fromNodeId": "ME0-002", "toNodeId": "GS-01", "latencyMs": 3.2, "timestampMs": 1739512315900 },
-            { "fromNodeId": "GS-01", "toNodeId": "USER_B", "latencyMs": 4.1, "timestampMs": 1739512320000 }
+            {
+                "fromNodeId": "GS-01",
+                "toNodeId": "LEO-001",
+                "latencyMs": 4.8,
+                "timestampMs": 1739512304800,
+                "fromNodePosition": {"latitude": 21.0285, "longitude": 105.8542, "altitude": 0.0},
+                "toNodePosition": {"latitude": 21.5, "longitude": 106.2, "altitude": 550.0},
+                "distanceKm": 552.4,
+                "fromNodeBufferState": {"used": 128, "total": 4096},
+                "routingDecisionInfo": {"algorithm": "shortest_path"}
+            }
         ],
-        "accumulatedDelayMs": 20.0,
+        "accumulatedDelayMs": 4.8,
         "priorityLevel": 1,
-        "isUseRL": true,
+        "isUseRL": false,
         "maxAcceptableLatencyMs": 150.0,
         "maxAcceptableLossRate": 0.01,
         "dropped": false,
-        "dropReason": null
+        "dropReason": null,
+        "analysisData": null
     }
     """
     
-    # 1. Khởi tạo từ JSON (Deserialization)
-    packet_obj = Packet.from_json(sample_json)
-    
-    print("--- Khởi tạo thành công từ JSON ---")
-    print(f"Packet ID: {packet_obj.packetId}")
-    print(f"Nguồn: {packet_obj.sourceUserId} (Station: {packet_obj.stationSource})")
-    print(f"Đích: {packet_obj.destinationUserId} (Station: {packet_obj.stationDest})")
-    print(f"TTL còn lại: {packet_obj.TTL}")
-    print(f"Total Hops: {len(packet_obj.hopRecords)}")
-    print(f"Jitter QoS: {packet_obj.serviceQoS.maxJitterMs} ms")
-    print(f"Payload giải mã: {packet_obj.get_decoded_payload()}") # UZ2FtcGxIIGRhdG EgYmFzZTY0 -> Ví dụ base64
+    try:
+        packet_obj = Packet.from_json(sample_json_updated)
+        
+        print("--- Deserialization Successful ---")
+        print(f"Packet ID: {packet_obj.packetId}")
+        # Now we access the service type from the single source of truth
+        print(f"Service Type: {packet_obj.serviceQoS.serviceType.name}")
+        print(f"Decoded Payload: {packet_obj.get_decoded_payload()}")
 
-    # 2. Chuyển ngược lại thành JSON (Serialization)
-    print("\n--- Chuyển ngược lại thành JSON ---")
-    json_output = packet_obj.to_json()
-    print(json_output[:400] + "...")
+        json_output = packet_obj.to_json()
+        print("\n--- Serialization Successful ---")
+        print(json_output)
+
+    except Exception as e:
+        print(f"\nAn error occurred: {e}")
