@@ -52,7 +52,7 @@ def update_positions(interval_seconds=5):
                     {"_id": node["_id"]},
                     {"$set": {
                        # ipAddress:localhost
-                        "communication.ipAddress": "127.0.0.1",
+                        "communication.ipAddress": "10.185.211.133",
                         "position.latitude": lat,
                         "position.longitude": lon,
                         "position.altitude": alt,
