@@ -2,146 +2,125 @@ import socket
 import json
 import struct
 import sys
-import time
+from typing import Optional, Any
 import base64
-from typing import Dict, Any, Optional
-from dataclasses import asdict
+import time
 
-# Import data models from the package
-from models.app_models import Packet, ServiceQoS
-    
-# --- HÀM HỖ TRỢ XỬ LÝ DATACLASS CHO JSON ---
-def dataclass_to_dict(obj: Any) -> Any:
-    """Chuyển đổi dataclass hoặc list dataclass thành dict để JSON.dumps có thể xử lý."""
-    if isinstance(obj, list):
-        return [dataclass_to_dict(i) for i in obj]
-    # Dùng isinstance thay vì hasattr để kiểm tra dataclass an toàn hơn (Python >= 3.7)
-    if isinstance(obj, tuple) and hasattr(obj, '__dataclass_fields__'): 
-        return asdict(obj)
-    if hasattr(obj, '__dataclass_fields__'):
-        return asdict(obj)
-    return obj
+sys.path.insert(0, '.')
+try:
+    from models.packet import Packet
+except ImportError:
+    print("Cảnh báo: Không thể import model Packet. Chế độ test sẽ sử dụng dictionary.")
+    Packet = None
 
-# --- Cấu hình Gửi TCP ---
-TIMEOUT_SECONDS = 5.0 
-
-def send_packet_via_tcp(
-    target_host: str, 
-    target_port: int, 
-    packet_object: Packet # Chấp nhận đối tượng Packet (dataclass)
-) -> Optional[str]:
+def send_packet_via_tcp(host: str, port: int, packet: Any) -> Optional[str]:
     """
-    Kết nối đến host:port và gửi đối tượng Packet đã được serialization thành JSON.
-    Sử dụng protocol header 4 byte Big-Endian cho độ dài.
+    Gửi một đối tượng packet đến một địa chỉ TCP sử dụng giao thức header 4-byte.
+
+    Giao thức: [Độ dài Payload (4 bytes, Big-Endian)] + [Payload (JSON bytes)]
+
+    Args:
+        host: Địa chỉ IP của máy chủ nhận.
+        port: Cổng của máy chủ nhận.
+        packet: Đối tượng Packet (hoặc dictionary) để gửi.
+
+    Returns:
+        None nếu gửi thành công.
+        Một chuỗi chứa thông báo lỗi nếu thất bại.
     """
-    
     try:
-        # 1. Serialization: Chuyển đối tượng Packet thành chuỗi JSON
-        json_string = json.dumps(packet_object, default=dataclass_to_dict)
-        
+        # 1. Chuyển đổi đối tượng Packet thành chuỗi JSON
+        # Giả định đối tượng có phương thức to_json() trả về một chuỗi JSON
+        if hasattr(packet, 'to_json') and callable(packet.to_json):
+            json_string = packet.to_json()
+        elif isinstance(packet, dict):
+            json_string = json.dumps(packet)
+        else:
+            return "Lỗi: Dữ liệu đầu vào không phải là Packet object hoặc dictionary."
+
+        # 2. Mã hóa chuỗi JSON thành bytes
+        # Ensure json_string is a string before encoding
+        if not isinstance(json_string, str):
+            json_string = str(json_string)
         json_bytes = json_string.encode('utf-8')
-        message_length = len(json_bytes)
+
+        # 3. Đóng gói header: Tính toán độ dài và tạo header 4-byte
+        #    '>' = Big-Endian (Network Order)
+        #    'I' = Unsigned Integer (4 bytes)
+        header = struct.pack('>I', len(json_bytes))
+
+        # 4. Tạo tin nhắn hoàn chỉnh để gửi
+        message = header + json_bytes
+
+        # 5. Mở kết nối, gửi dữ liệu và đóng kết nối
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect((host, port))
+            sock.sendall(message)
         
-        # 2. Đóng gói Kích thước (Header: 4 bytes Big-Endian)
-        length_header = struct.pack('>I', message_length)
+        return None # Gửi thành công
 
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-            s.settimeout(TIMEOUT_SECONDS)
-            s.connect((target_host, target_port))
-            
-            # 3. Gửi Header và Payload
-            s.sendall(length_header)
-            s.sendall(json_bytes)
-            
-            return None 
-
-    except socket.timeout:
-        return f"Lỗi Timeout: Không nhận được phản hồi từ {target_host}:{target_port} trong {TIMEOUT_SECONDS}s."
     except ConnectionRefusedError:
-        return f"Lỗi Kết nối: Peer {target_host}:{target_port} từ chối kết nối (Listener chưa chạy)."
+        return f"Kết nối bị từ chối. Máy chủ tại {host}:{port} không hoạt động hoặc sai địa chỉ."
+    except socket.error as e:
+        return f"Lỗi socket: {e}"
     except Exception as e:
-        return f"Lỗi Socket chung: {e}"
+        return f"Một lỗi không xác định đã xảy ra: {e}"
 
+# --- KHỐI CHẠY ĐỘC LẬP ĐỂ KIỂM TRA ---
 if __name__ == '__main__':
-    # --- KHỐI CHẠY ĐỘC LẬP (SỬ DỤNG THAM SỐ DÒNG LỆNH) ---
-    
-    # 1. Kiểm tra tham số đầu vào
     if len(sys.argv) != 3:
-        print("Sử dụng: python TCP_Sender.py <IP_đích> <Port_đích>")
-        print("Ví dụ: python TCP_Sender.py 127.0.0.1 50001")
+        print("Sử dụng: python service/TCP_Sender.py <host> <port>")
+        print("Ví dụ: python service/TCP_Sender.py 127.0.0.1 50001")
         sys.exit(1)
 
+    TARGET_HOST = sys.argv[1]
     try:
-        TARGET_IP = sys.argv[1]
         TARGET_PORT = int(sys.argv[2])
-        if not (1024 <= TARGET_PORT <= 65535):
-             raise ValueError("Cổng phải nằm trong khoảng 1024-65535.")
-    except ValueError as e:
-        print(f"Lỗi tham số: {e}")
+    except ValueError:
+        print("Lỗi: Port phải là một con số.")
         sys.exit(1)
-        
-    # If models are not present for standalone run, fall back to minimal definitions.
-    try:
-        # Try using imported models
-        current_time = int(time.time())
-        from datetime import datetime
-        mock_payload = f"Message sent at {datetime.fromtimestamp(current_time)}"
-        mock_packet = Packet(
-            packetId=f"TEST-{current_time}",
-            sourceUserId="CLI_Sender",
-            destinationUserId="Remote_Peer",
+
+    # Tạo một gói tin mẫu để gửi
+    # Nếu import Packet thành công, dùng object. Nếu không, dùng dict.
+    if Packet:
+        from models.packet import ServiceQoS
+        sample_packet = Packet(
+            packetId="PKT-TEST-001",
+            sourceUserId="SENDER_TEST",
+            destinationUserId="LISTENER_TEST",
+            stationSource="GS-TEST-S",
+            stationDest="GS-TEST-D",
             type="DATA",
-            serviceQoS=ServiceQoS(maxLatencyMs=100.0, defaultPriority=2),
-            payloadDataBase64=base64.b64encode(mock_payload.encode()).decode(),
-            payloadSizeByte=len(mock_payload.encode()),
-            isUseRL=True
+            acknowledgedPacketId=None,
+            timeSentFromSourceMs=int(time.time() * 1000),
+            payloadDataBase64=base64.b64encode(b"Hello from TCP_Sender test!").decode('utf-8'),
+            payloadSizeByte=25,
+            serviceType="TEXT_MESSAGE",
+            serviceQoS=ServiceQoS(serviceType="TEXT_MESSAGE", defaultPriority=4, maxLatencyMs=2000, maxJitterMs=500, minBandwidthMbps=0.1, maxLossRate=0.05),
+            TTL=10,
+            currentHoldingNodeId="SENDER_TEST",
+            nextHopNodeId="",
+            pathHistory=["SENDER_TEST"],
+            hopRecords=[],
+            priorityLevel=4,
+            isUseRL=False
         )
-    except Exception:
-        # Minimal fallback dataclasses for direct CLI usage
-        from dataclasses import dataclass, field
-
-        @dataclass
-        class _ServiceQoS:
-            maxLatencyMs: float = 150.0
-            defaultPriority: int = 1
-
-        @dataclass
-        class _Packet:
-            packetId: str
-            sourceUserId: str
-            destinationUserId: str
-            type: str = "DATA"
-            serviceQoS: _ServiceQoS = field(default_factory=_ServiceQoS)
-            payloadDataBase64: str = ""
-            payloadSizeByte: int = 0
-            TTL: int = 10
-            isUseRL: bool = False
-
-        from datetime import datetime
-        current_time = int(time.time())
-        mock_payload = f"Message sent at {datetime.fromtimestamp(current_time)}"
-        mock_packet = _Packet(
-            packetId=f"TEST-{current_time}",
-            sourceUserId="CLI_Sender",
-            destinationUserId="Remote_Peer",
-            type="DATA",
-            serviceQoS=_ServiceQoS(maxLatencyMs=100.0, defaultPriority=2),
-            payloadDataBase64=base64.b64encode(mock_payload.encode()).decode(),
-            payloadSizeByte=len(mock_payload.encode()),
-            isUseRL=True
-        )
-    
-    print("-" * 50)
-    print(f"CHUẨN BỊ GỬI GÓI TIN:")
-    print(f"  Đích: {TARGET_IP}:{TARGET_PORT}")
-    print(f"  ID: {mock_packet.packetId}")
-    print(f"  Payload: '{mock_payload[:30]}...'")
-    print("-" * 50)
-    
-    # Gửi gói tin
-    error = send_packet_via_tcp(TARGET_IP, TARGET_PORT, mock_packet)
-    
-    if error is None:
-        print(f"\n✅ Gửi thành công! Gói tin đã được gửi đến {TARGET_IP}:{TARGET_PORT}.")
     else:
-        print(f"\n❌ Gửi thất bại: {error}")
+        # Dictionary dự phòng nếu không import được model
+        sample_packet = {
+            "packetId": "PKT-DICT-TEST-002",
+            "sourceUserId": "SENDER_TEST_DICT",
+            "type": "DATA",
+            "payloadDataBase64": base64.b64encode(b"Hello from dictionary test!").decode('utf-8')
+        }
+
+    print(f"Đang chuẩn bị gửi gói tin đến {TARGET_HOST}:{TARGET_PORT}...")
+    
+    # Gọi hàm để gửi gói tin
+    error = send_packet_via_tcp(TARGET_HOST, TARGET_PORT, sample_packet)
+    
+    if error:
+        print(f"\n❌ Gửi thất bại!")
+        print(f"   Lý do: {error}")
+    else:
+        print("\n✅ Gói tin đã được gửi thành công!")

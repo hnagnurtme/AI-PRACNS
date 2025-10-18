@@ -1,7 +1,18 @@
 """Models package init."""
 
-from .app_models import *
-from .node import *
-from .packet import *
+from .user import User, UserPosition, UserCommunication, UserStatus
+from .node import Node, Position, Communication, Status, NodeType, Velocity, Orbit, Metadata
+from .packet import Packet, ServiceQoS, HopRecord
 
-__all__ = ["app_models", "node", "packet"]
+# This list controls what is imported when a user does 'from models import *'
+__all__ = [
+    # User related models
+    "User", "UserPosition", "UserCommunication", "UserStatus",
+    
+    # Node related models
+    "Node", "Position", "Communication", "Status", "NodeType", 
+    "Velocity", "Orbit", "Metadata",
+    
+    # Packet related models
+    "Packet", "ServiceQoS", "HopRecord"
+]
