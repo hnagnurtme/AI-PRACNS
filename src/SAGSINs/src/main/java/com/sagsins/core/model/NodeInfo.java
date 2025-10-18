@@ -10,6 +10,7 @@ import org.bson.codecs.pojo.annotations.BsonId;
 import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.codecs.pojo.annotations.BsonRepresentation;
 import org.springframework.data.mongodb.core.mapping.Document;
+import org.springframework.data.mongodb.core.mapping.Field;
 
 import java.time.Instant;
 import java.util.Map;
@@ -39,6 +40,7 @@ public class NodeInfo {
     private Velocity velocity;
     private Communication communication;
 
+    @Field("operational")
     private boolean isOperational;
     private double batteryChargePercent;
     private double nodeProcessingDelayMs;

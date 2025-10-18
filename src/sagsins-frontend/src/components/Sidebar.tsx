@@ -1,7 +1,6 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import { useNodeStore } from '../state/nodeStore';
-import NodeForm from './nodes/NodeForm'; 
 import type { NodeDTO } from '../types/NodeTypes';
 
 /**
@@ -9,12 +8,10 @@ import type { NodeDTO } from '../types/NodeTypes';
  */
 interface SidebarProps {
     nodes: NodeDTO[];
-    onRefresh: () => Promise<NodeDTO[]>;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ nodes, onRefresh }) => {
+const Sidebar: React.FC<SidebarProps> = ({ nodes }) => {
     const { setSelectedNode, selectedNode, runningNodes } = useNodeStore();
-    const [isFormOpen, setIsFormOpen] = useState(false); // Quản lý trạng thái mở Form
 
     // Hàm xử lý khi người dùng bấm vào một Node trong danh sách
     const handleNodeClick = (node: NodeDTO) => {
@@ -27,12 +24,6 @@ const Sidebar: React.FC<SidebarProps> = ({ nodes, onRefresh }) => {
             {/* Header và nút Thêm Node */}
             <div className="p-4 flex justify-between items-center border-b border-gray-700">
                 <h2 className="text-xl font-bold">SAGSINs Nodes ({nodes.length})</h2>
-                <button 
-                    onClick={() => setIsFormOpen(true)}
-                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-1 px-3 rounded-md transition duration-150"
-                >
-                    + Add Node
-                </button>
             </div>
 
             {/* Danh sách Nodes */}
@@ -58,17 +49,6 @@ const Sidebar: React.FC<SidebarProps> = ({ nodes, onRefresh }) => {
                     ))
                 )}
             </div>
-
-            {/* Modal/Drawer cho Form CREATE Node */}
-            {isFormOpen && (
-                <div className="absolute inset-0 bg-gray-900 bg-opacity-95 flex items-center justify-center p-4 z-20">
-                    <NodeForm 
-                        onClose={() => setIsFormOpen(false)} 
-                        mode="create"
-                        onSuccess={onRefresh}
-                    />
-                </div>
-            )}
         </div>
     );
 };

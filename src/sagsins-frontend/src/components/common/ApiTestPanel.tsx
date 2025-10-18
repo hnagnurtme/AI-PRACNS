@@ -1,19 +1,13 @@
 // src/components/common/ApiTestPanel.tsx
 
 import React, { useState } from 'react';
-import { 
-    checkHealth, 
-    getDockerEntities, 
-    runNodeProcess 
-} from '../../services/nodeService';
-import type { HealthResponse, DockerResponse } from '../../types/NodeTypes';
+import { checkHealth } from '../../services/nodeService';
+import type { HealthResponse } from '../../types/NodeTypes';
 
 const ApiTestPanel: React.FC = () => {
     const [healthStatus, setHealthStatus] = useState<HealthResponse | null>(null);
-    const [dockerEntities, setDockerEntities] = useState<DockerResponse[]>([]);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [selectedNodeId, setSelectedNodeId] = useState('');
 
     const handleCheckHealth = async () => {
         setIsLoading(true);
@@ -28,36 +22,7 @@ const ApiTestPanel: React.FC = () => {
         }
     };
 
-    const handleGetDockerEntities = async (isRunning: boolean) => {
-        setIsLoading(true);
-        setError(null);
-        try {
-            const entities = await getDockerEntities(isRunning);
-            setDockerEntities(entities);
-        } catch (err) {
-            setError((err as Error).message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-
-    const handleRunNodeProcess = async () => {
-        if (!selectedNodeId.trim()) {
-            setError('Please enter a Node ID');
-            return;
-        }
-        
-        setIsLoading(true);
-        setError(null);
-        try {
-            await runNodeProcess(selectedNodeId);
-            alert(`Successfully started process for node: ${selectedNodeId}`);
-        } catch (err) {
-            setError((err as Error).message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // Simplified: only health endpoint is available
 
     return (
         <div className="bg-white p-6 rounded-xl shadow-lg">
@@ -88,58 +53,6 @@ const ApiTestPanel: React.FC = () => {
                     )}
                 </div>
 
-                {/* Docker Entities */}
-                <div className="border rounded p-4">
-                    <h4 className="font-semibold mb-2">Docker Entities</h4>
-                    <div className="flex space-x-2 mb-2">
-                        <button 
-                            onClick={() => handleGetDockerEntities(true)}
-                            disabled={isLoading}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded disabled:opacity-50"
-                        >
-                            Get Running
-                        </button>
-                        <button 
-                            onClick={() => handleGetDockerEntities(false)}
-                            disabled={isLoading}
-                            className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded disabled:opacity-50"
-                        >
-                            Get All
-                        </button>
-                    </div>
-                    {dockerEntities.length > 0 && (
-                        <div className="mt-2 space-y-1">
-                            {dockerEntities.map((entity, index) => (
-                                <div key={index} className="p-2 bg-gray-100 rounded text-sm">
-                                    <div>Node ID: {entity.nodeId}</div>
-                                    <div>PID: {entity.pid}</div>
-                                    <div>Status: <span className="font-semibold">{entity.status}</span></div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-
-                {/* Run Node Process */}
-                <div className="border rounded p-4">
-                    <h4 className="font-semibold mb-2">Run Node Process</h4>
-                    <div className="flex space-x-2">
-                        <input
-                            type="text"
-                            placeholder="Enter Node ID"
-                            value={selectedNodeId}
-                            onChange={(e) => setSelectedNodeId(e.target.value)}
-                            className="flex-1 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <button 
-                            onClick={handleRunNodeProcess}
-                            disabled={isLoading || !selectedNodeId.trim()}
-                            className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded disabled:opacity-50"
-                        >
-                            {isLoading ? 'Starting...' : 'Run Process'}
-                        </button>
-                    </div>
-                </div>
             </div>
         </div>
     );

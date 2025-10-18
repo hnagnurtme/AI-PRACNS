@@ -3,16 +3,13 @@
 import { AxiosError } from 'axios';
 import axiosClient from '../api/axiosClient';
 import type { 
-    CreateNodeRequest, 
     NodeDTO, 
-    UpdateNodeRequest, 
-    HealthResponse, 
-    DockerResponse 
+    UpdateStatusRequest, 
+    HealthResponse
 } from '../types/NodeTypes';
 
 const NODES_ENDPOINT = '/api/v1/nodes'; 
 const HEALTH_ENDPOINT = '/health';
-const DOCKER_ENDPOINT = '/api/v1/docker/allLinks';
 
 // API Response wrapper (for backward compatibility)
 interface ApiResponse<T> {
@@ -87,24 +84,8 @@ export const getNodeById = async (nodeId: string): Promise<NodeDTO> => {
     }
 };
 
-// --- CREATE ---
-export const createNode = async (nodeData: CreateNodeRequest): Promise<NodeDTO> => {
-    try {
-        const response = await axiosClient.post<NodeDTO | ApiResponse<NodeDTO>>(NODES_ENDPOINT, nodeData);
-        
-        // Check if response is wrapped in ApiResponse format
-        if (response.data && typeof response.data === 'object' && 'data' in response.data) {
-            return extractData(response.data as ApiResponse<NodeDTO>);
-        }
-        
-        return response.data as NodeDTO;
-    } catch (error) {
-        throw handleAxiosError(error);
-    }
-};
-
-// --- UPDATE ---
-export const updateNode = async (nodeId: string, updateData: UpdateNodeRequest): Promise<NodeDTO> => {
+// --- UPDATE (partial) ---
+export const updateNodeStatus = async (nodeId: string, updateData: UpdateStatusRequest): Promise<NodeDTO> => {
     try {
         console.log('Updating node with data:', updateData);
         const response = await axiosClient.patch<NodeDTO | ApiResponse<NodeDTO>>(`${NODES_ENDPOINT}/${nodeId}`, updateData);
@@ -122,40 +103,10 @@ export const updateNode = async (nodeId: string, updateData: UpdateNodeRequest):
     }
 };
 
-// --- DELETE ---
-export const deleteNode = async (nodeId: string): Promise<void> => {
-    try {
-        await axiosClient.delete(`${NODES_ENDPOINT}/${nodeId}`);
-    } catch (error) {
-        throw handleAxiosError(error);
-    }
-};
-
-// --- RUN NODE PROCESS ---
-export const runNodeProcess = async (nodeId: string): Promise<void> => {
-    try {
-        await axiosClient.post(`${NODES_ENDPOINT}/run/${nodeId}`);
-    } catch (error) {
-        throw handleAxiosError(error);
-    }
-};
-
 // --- HEALTH CHECK ---
 export const checkHealth = async (): Promise<HealthResponse> => {
     try {
         const response = await axiosClient.get<HealthResponse>(HEALTH_ENDPOINT);
-        return response.data;
-    } catch (error) {
-        throw handleAxiosError(error);
-    }
-};
-
-// --- GET DOCKER ENTITIES ---
-export const getDockerEntities = async (isRunning: boolean): Promise<DockerResponse[]> => {
-    try {
-        const response = await axiosClient.get<DockerResponse[]>(DOCKER_ENDPOINT, {
-            params: { isRunning }
-        });
         return response.data;
     } catch (error) {
         throw handleAxiosError(error);
