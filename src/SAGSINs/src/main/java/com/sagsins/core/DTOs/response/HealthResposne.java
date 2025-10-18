@@ -1,5 +1,4 @@
 package com.sagsins.core.DTOs.response;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 

@@ -61,11 +61,6 @@ public class GlobalExceptionHandler {
                             .body(new Message("File quá lớn!"));
     }
 
-    @ExceptionHandler(DockerException.class)
-    public ResponseEntity<RestResponse<Object>> handleDockerException(DockerException e) {
-        return buildResponse(ExceptionConstants.DOCKER_EXCEPTION, e.getMessage());
-    }
-
     private ResponseEntity<RestResponse<Object>> buildResponse(ExceptionConstants error, String message) {
         RestResponse<Object> response = new RestResponse<>();
         response.setStatus(error.getCode());
