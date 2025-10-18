@@ -1,0 +1,64 @@
+version: '3.8'
+
+services:
+  # -----------------------------------------------------------
+  # 1. NODE TRẠM MẶT ĐẤT - SENDER (GS_LONDON)
+  # ID Node: GS_LONDON | Hostname: gs_london | Port: 8081
+  # -----------------------------------------------------------
+  gs_london_node:
+    build: 
+      context: ..
+      dockerfile: docker-config/Dockerfile
+    platform: linux/arm64
+    container_name: GS_LONDON
+    hostname: gs_london
+    # ĐÃ SỬA: Chỉ truyền NODEID làm tham số cho Entrypoint
+    command: ["GS_LONDON"] 
+    ports:
+      - "8081:8081" 
+    restart: on-failure
+    networks:
+      - sagin_network
+
+  # -----------------------------------------------------------
+  # 2. NODE TRẠM MẶT ĐẤT - DESTINATION (GS_TOKYO)
+  # ID Node: GS_TOKYO | Hostname: gs_tokyo | Port: 8080
+  # -----------------------------------------------------------
+  gs_tokyo_node:
+    build: 
+      context: ..
+      dockerfile: docker-config/Dockerfile
+    platform: linux/arm64
+    container_name: GS_TOKYO
+    hostname: gs_tokyo
+    command: ["GS_TOKYO"]
+    ports:
+      - "8080:8080"
+    restart: on-failure
+    networks:
+      - sagin_network
+
+  # -----------------------------------------------------------
+  # 3. NODE VỆ TINH - NEXT HOP (LEO_004)
+  # ID Node: LEO_004 | Hostname: leo_004 | Port: 8087
+  # -----------------------------------------------------------
+  leo_node_004:
+    build: 
+      context: .. 
+      dockerfile: docker-config/Dockerfile 
+    platform: linux/arm64
+    container_name: LEO_004
+    hostname: leo_004
+    command: ["LEO_004"] # Chỉ truyền NODEID
+    ports:
+      - "8087:8087" 
+    restart: on-failure
+    networks:
+      - sagin_network
+
+# -----------------------------------------------------------
+# ĐỊNH NGHĨA MẠNG LƯỚI
+# -----------------------------------------------------------
+networks:
+  sagin_network:
+    driver: bridge
