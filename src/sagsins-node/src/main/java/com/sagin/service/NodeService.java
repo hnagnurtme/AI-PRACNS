@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -179,45 +180,75 @@ public class NodeService implements INodeService {
     /**
      * Xử lý một "tick" mô phỏng (hiện không dùng nhiều).
      */
+    @Override
     public void processTick(Map<String, NodeInfo> nodeMap, List<Packet> packets) {
-    if (packets == null || packets.isEmpty()) return;
-
-    for (Packet packet : packets) {
-        String nodeId = packet.getCurrentHoldingNodeId();
-
-        // Lấy NodeInfo từ nodeMap (nếu có) hoặc từ repository
-        NodeInfo node = null;
-        if (nodeMap != null) {
-            node = nodeMap.get(nodeId);
+        if (packets == null || packets.isEmpty()) {
+            return;
         }
-        if (node == null) {
-            node = nodeRepository.getNodeInfo(nodeId).orElse(null);
+        
+        if (nodeMap != null && !nodeMap.isEmpty()) {
+            logger.warn("[NodeService] processTick bỏ qua tham số nodeMap vì nó dùng cache nội bộ.");
         }
 
-        // Nếu vẫn null thì bỏ qua
-        if (node == null) continue;
-
-        // GỌI updateNodeStatus để xử lý logic
-        updateNodeStatus(nodeId, packet);
+        logger.debug("[NodeService] Bắt đầu xử lý tick với {} packets...", packets.size());
+        for (Packet packet : packets) {
+            if (packet == null || packet.getCurrentHoldingNodeId() == null) {
+                logger.warn("[NodeService] Bỏ qua packet bị null hoặc không có node giữ.");
+                continue;
+            }
+            
+            // Chỉ cần gọi hàm này.
+            // updateNodeStatus sẽ tự động xử lý việc lấy/tải node.
+            updateNodeStatus(packet.getCurrentHoldingNodeId(), packet);
+        }
+        logger.debug("[NodeService] Kết thúc xử lý tick.");
     }
-}
+
 
 
     @Override
     public void flushToDatabase() {
-        if (dirtyNodeIds.isEmpty()) return;
-        
-        List<NodeInfo> dirtyNodes = dirtyNodeIds.stream()
-                .map(nodeStateCache::get)
-                .filter(java.util.Objects::nonNull)
-                .toList();
-
-        if (!dirtyNodes.isEmpty()) {
-            nodeRepository.bulkUpdateNodes(dirtyNodes);
-            logger.info("[NodeService] Đã flush {} nodes vào DB.", dirtyNodes.size());
+        if (dirtyNodeIds.isEmpty()) {
+            logger.info("[NodeService] Không có thay đổi nào để lưu vào CSDL.");
+            return;
         }
 
-        dirtyNodeIds.clear();
+        // Tạo bản sao của các ID để đảm bảo an toàn luồng
+        Set<String> idsToFlush = Set.copyOf(dirtyNodeIds);
+        List<NodeInfo> nodesToUpdate = new ArrayList<>(idsToFlush.size());
+
+        for (String nodeId : idsToFlush) {
+            NodeInfo node = nodeStateCache.get(nodeId);
+            if (node != null) {
+                nodesToUpdate.add(node);
+            } else {
+                logger.warn("[NodeService] Node {} dirty nhưng không có trong cache. Xóa khỏi dirty set.", nodeId);
+                dirtyNodeIds.remove(nodeId); // Xóa ID không hợp lệ
+            }
+        }
+
+        if (nodesToUpdate.isEmpty()) {
+            logger.info("[NodeService] Không có đối tượng NodeInfo hợp lệ nào để lưu.");
+            return;
+        }
+        
+        logger.info("[NodeService] Bắt đầu thực hiện bulk update cho {} node...", nodesToUpdate.size());
+
+        try {
+            // Gọi phương thức bulk update
+            nodeRepository.bulkUpdateNodes(nodesToUpdate);
+            
+            // **QUAN TRỌNG:** Chỉ xóa khỏi dirty set SAU KHI thành công
+            dirtyNodeIds.removeAll(idsToFlush); 
+            
+            logger.info("[NodeService] Bulk update CSDL hoàn tất. Còn lại {} node dirty.", 
+                            dirtyNodeIds.size());
+
+        } catch (Exception e) {
+            logger.error("[NodeService] Lỗi nghiêm trọng khi thực hiện bulk update: {}", e.getMessage(), e);
+            // Nếu lỗi, KHÔNG xóa dirtyNodeIds. Chúng sẽ được thử lại ở lần flush sau.
+            logger.warn("[NodeService] Các thay đổi sẽ được giữ lại để thử lại ở lần flush sau.");
+        }
     }
 
 

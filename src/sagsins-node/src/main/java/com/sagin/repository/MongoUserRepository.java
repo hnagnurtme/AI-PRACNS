@@ -10,14 +10,17 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.model.Filters; 
 import com.sagin.configuration.MongoConfiguration;
 import com.sagin.model.UserInfo;
-import org.bson.conversions.Bson; 
 
+import org.bson.Document;
+import org.bson.conversions.Bson;
+
+import java.util.List;
 import java.util.Optional;
 
 /**
  * Triển khai IUserRepository sử dụng MongoDB.
  */
-public class MongoUserRepository implements IUserRepository {
+public class MongoUserRepository implements IUserRepository, AutoCloseable {
     
     // Sửa tên Logger cho đúng
     private static final Logger logger = LoggerFactory.getLogger(MongoUserRepository.class); 
@@ -65,6 +68,17 @@ public class MongoUserRepository implements IUserRepository {
             return Optional.empty();
         }
     }
+
+    public void bulkUpdateUsers(List<UserInfo> users) {
+        for (UserInfo user : users) {
+            usersCollection.replaceOne(
+                    new Document("userId", user.getUserId()),
+                    user,
+                    new com.mongodb.client.model.ReplaceOptions().upsert(true)
+            );
+        }
+    }
+
 
     /**
      * Đóng kết nối MongoClient.

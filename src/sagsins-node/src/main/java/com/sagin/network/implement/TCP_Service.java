@@ -144,7 +144,7 @@ public class TCP_Service implements ITCP_Service {
             String nextHopNodeId = bestRoute.getNextHopNodeId();
             packet.setNextHopNodeId(nextHopNodeId);
             if (packet.getPathHistory() != null) {
-                 packet.getPathHistory().add(nextHopNodeId);
+                    packet.getPathHistory().add(nextHopNodeId);
             }
             
             // Gọi hàm sendPacket (node-to-node)

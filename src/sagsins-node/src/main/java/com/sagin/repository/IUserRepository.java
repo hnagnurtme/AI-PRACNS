@@ -1,6 +1,8 @@
 package com.sagin.repository;
 
 import com.sagin.model.UserInfo;
+
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -15,6 +17,8 @@ public interface IUserRepository {
      */
     Optional<UserInfo> findByUserId(String userId);
 
+
+    void bulkUpdateUsers(List<UserInfo> users);
     /**
      * Đóng kết nối đến CSDL.
      */

@@ -20,8 +20,8 @@ public final class MongoConfiguration { // Thêm 'final' để ngăn kế thừa
     // --- CẤU HÌNH KẾT NỐI ---
     public static final String CONNECTION_STRING = "mongodb://user:password123@localhost:27017/?authSource=admin";
     public static final String DATABASE_NAME = "sagsin_network";
-    public static final String NODES_COLLECTION = "nodes";
-    public static final String USERS_COLLECTION = "users";
+    public static final String NODES_COLLECTION = "network_nodes";
+    public static final String USERS_COLLECTION = "network_users";
 
     // --- TẠO INSTANCE SINGLETON CHO MONGO CLIENT SETTINGS ---
     // <<< CẢI TIẾN: Tạo một lần duy nhất để tối ưu hiệu suất

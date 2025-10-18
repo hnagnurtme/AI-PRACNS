@@ -14,9 +14,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
@@ -190,51 +192,50 @@ class NodeServiceTest {
     }
     
     @Test
-    @DisplayName("Test processTick xử lý nhiều packet và flush 1 lần")
-    void testProcessTick_MultiplePackets() {
-        // === 1. ARRANGE ===
-        // Tạo Node 2 và Packet 2
-        NodeInfo node2 = new NodeInfo();
-        node2.setNodeId("N2");
-        node2.setNodeType(NodeType.GEO_SATELLITE); // Giả sử
-        node2.setBatteryChargePercent(99.0);
-        node2.setPacketBufferCapacity(100);
-        node2.setCurrentPacketCount(10);
-        node2.setOperational(true); // đảm bảo isHealthy() = true
-        node2.setWeather(WeatherCondition.CLEAR);
-        node2.setCommunication(testNode.getCommunication()); // Dùng chung
+@DisplayName("Test processTick xử lý nhiều packet mà không truyền nodeMap null")
+void testProcessTick_MultiplePackets() {
+    NodeInfo node2 = new NodeInfo();
+    node2.setNodeId("N2");
+    node2.setNodeType(NodeType.GEO_SATELLITE);
+    node2.setBatteryChargePercent(99.0);
+    node2.setPacketBufferCapacity(100);
+    node2.setCurrentPacketCount(10);
+    node2.setOperational(true);
+    node2.setWeather(WeatherCondition.CLEAR);
+    node2.setCommunication(testNode.getCommunication());
 
-        Packet packet2 = new Packet();
-        packet2.setPacketId("P2");
-        packet2.setCurrentHoldingNodeId("N2");
-        packet2.setPayloadSizeByte(512);
-        packet2.setUseRL(true); // Packet này dùng RL
-        packet2.setMaxAcceptableLatencyMs(500.0);
-        packet2.setAccumulatedDelayMs(20.0);
+    Packet packet2 = new Packet();
+    packet2.setPacketId("P2");
+    packet2.setCurrentHoldingNodeId("N2");
+    packet2.setPayloadSizeByte(512);
+    packet2.setUseRL(true);
+    packet2.setMaxAcceptableLatencyMs(500.0);
+    packet2.setAccumulatedDelayMs(20.0);
 
+    List<Packet> packets = List.of(testPacket, packet2);
 
-        List<Packet> packets = List.of(testPacket, packet2);
-        
-        // Mock repo cho cả 2 node
-        when(nodeRepository.getNodeInfo("N1")).thenReturn(Optional.of(testNode));
-        when(nodeRepository.getNodeInfo("N2")).thenReturn(Optional.of(node2));
+    // Mock repo
+    when(nodeRepository.getNodeInfo("N1")).thenReturn(Optional.of(testNode));
+    when(nodeRepository.getNodeInfo("N2")).thenReturn(Optional.of(node2));
 
-        // === 2. ACT ===
-        // nodeMap bị bỏ qua, nên ta truyền null
-        nodeService.processTick(null, packets); 
-        nodeService.flushToDatabase();
+    // Tạo nodeMap từ NodeInfo
+    Map<String, NodeInfo> nodeMap = Map.of(
+        "N1", testNode,
+        "N2", node2
+    );
 
-        // === 3. ASSERT ===
-        // Khẳng định cả 2 node đều bị tiêu hao pin
-        assertTrue(testNode.getBatteryChargePercent() < 50.0);
-        assertTrue(node2.getBatteryChargePercent() < 99.0);
-        
-        // Khẳng định repo.bulkUpdateNodes được gọi 1 lần với 2 node
-        @SuppressWarnings("unchecked")
-        ArgumentCaptor<Collection<NodeInfo>> captor = (ArgumentCaptor<Collection<NodeInfo>>) (Object)
-                ArgumentCaptor.forClass(Collection.class);
-        verify(nodeRepository, times(1)).bulkUpdateNodes(captor.capture());
-        
-        assertEquals(2, captor.getValue().size()); // Phải flush 2 node
-    }
+    nodeService.processTick(nodeMap, packets);
+    nodeService.flushToDatabase();
+
+    assertTrue(testNode.getBatteryChargePercent() < 50.0);
+    assertTrue(node2.getBatteryChargePercent() < 99.0);
+
+    @SuppressWarnings("unchecked")
+    ArgumentCaptor<Collection<NodeInfo>> captor = (ArgumentCaptor<Collection<NodeInfo>>) (Object)
+            ArgumentCaptor.forClass(Collection.class);
+    verify(nodeRepository, times(1)).bulkUpdateNodes(captor.capture());
+
+    assertEquals(2, captor.getValue().size());
+}
+
 }
