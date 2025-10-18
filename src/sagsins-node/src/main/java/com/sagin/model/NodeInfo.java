@@ -11,6 +11,7 @@ import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
 import java.time.Instant;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -69,5 +70,15 @@ public class NodeInfo {
 
     public void setLastUpdated(Instant lastUpdated) {
         this.lastUpdated = lastUpdated;
+    }
+
+    public Map<String, Object> getBufferState() {
+        return Map.of(
+            "packetBufferCapacity", packetBufferCapacity,
+            "currentPacketCount", currentPacketCount,
+            "packetLossRate", packetLossRate,
+            "resourceUtilization", resourceUtilization,
+            "nodeProcessingDelayMs", nodeProcessingDelayMs
+        );
     }
 }

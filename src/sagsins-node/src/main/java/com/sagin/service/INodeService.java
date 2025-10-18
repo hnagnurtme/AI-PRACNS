@@ -36,5 +36,9 @@ public interface INodeService {
     /**
      * Đẩy tất cả các node "dirty" (thay đổi) trong cache lên CSDL.
      */
+
+    List<NodeInfo> getVisibleNodes(NodeInfo node, List<NodeInfo> allNodes);
+
+    
     void flushToDatabase();
 }

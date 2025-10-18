@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * Quản lý logic nghiệp vụ cho Node.
@@ -325,4 +326,86 @@ public class NodeService implements INodeService {
     private double updateNodeMetricEMA(double previousValue, double currentValue, double alpha) {
         return (1 - alpha) * previousValue + alpha * currentValue;
     }
+
+
+    @Override
+    public List<NodeInfo> getVisibleNodes(NodeInfo node, List<NodeInfo> allNodes) {
+        return allNodes.stream()
+                .filter(n -> !n.getNodeId().equals(node.getNodeId()))
+                .filter(NodeInfo::isHealthy)
+                .filter(n -> canSeeEachOther(node, n))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Kiểm tra xem hai node có thể "nhìn thấy" nhau không.
+     * Logic đối xứng dựa trên line-of-sight và khoảng cách.
+     */
+    private boolean canSeeEachOther(NodeInfo node1, NodeInfo node2) {
+        double distance = distance3DKm(node1.getPosition(), node2.getPosition());
+        
+        // Tính visibility range dựa trên node có altitude cao nhất
+        double maxAltitude = Math.max(
+            getEffectiveAltitude(node1),
+            getEffectiveAltitude(node2)
+        );
+        
+        // Vệ tinh có thể nhìn xa hơn nhiều
+        double visibilityRange;
+        if (maxAltitude >= 20000) { // GEO
+            visibilityRange = 50000;
+        } else if (maxAltitude >= 8000) { // MEO
+            visibilityRange = 20000;
+        } else if (maxAltitude >= 300) { // LEO
+            visibilityRange = 5000;
+        } else { // Ground station
+            visibilityRange = 40000; // Ground có thể nhìn thấy vệ tinh nếu trong tầm nhìn trời
+        }
+        
+        return distance <= visibilityRange;
+    }
+    
+    /**
+     * Lấy altitude hiệu quả của node (từ orbit hoặc position)
+     */
+    private double getEffectiveAltitude(NodeInfo node) {
+        if (node.getOrbit() != null) {
+            return OrbitProfileFactory.computeAltitudeKm(node.getOrbit());
+        }
+        return node.getPosition().getAltitude();
+    }
+
+        /**
+     * Tính khoảng cách 3D giữa hai vị trí (latitude, longitude, altitude)
+     * - latitude & longitude đơn vị độ
+     * - altitude đơn vị km
+     */
+    private double distance3DKm(Position p1, Position p2) {
+        // Chuyển latitude/longitude sang radians
+        double lat1 = Math.toRadians(p1.getLatitude());
+        double lon1 = Math.toRadians(p1.getLongitude());
+        double lat2 = Math.toRadians(p2.getLatitude());
+        double lon2 = Math.toRadians(p2.getLongitude());
+
+        // Bán kính Trái Đất + altitude
+        double r1 = 6371.0 + p1.getAltitude();
+        double r2 = 6371.0 + p2.getAltitude();
+
+        // Chuyển sang hệ tọa độ Cartesian
+        double x1 = r1 * Math.cos(lat1) * Math.cos(lon1);
+        double y1 = r1 * Math.cos(lat1) * Math.sin(lon1);
+        double z1 = r1 * Math.sin(lat1);
+
+        double x2 = r2 * Math.cos(lat2) * Math.cos(lon2);
+        double y2 = r2 * Math.cos(lat2) * Math.sin(lon2);
+        double z2 = r2 * Math.sin(lat2);
+
+        // Khoảng cách Euclidean 3D
+        double dx = x2 - x1;
+        double dy = y2 - y1;
+        double dz = z2 - z1;
+
+        return Math.sqrt(dx*dx + dy*dy + dz*dz);
+    }
+
 }

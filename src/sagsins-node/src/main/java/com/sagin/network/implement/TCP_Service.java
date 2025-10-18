@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.sagin.helper.PacketHelper;
 import com.sagin.model.NodeInfo;
 import com.sagin.model.Packet;
 import com.sagin.model.UserInfo;
@@ -13,11 +14,11 @@ import com.sagin.repository.IUserRepository;
 import com.sagin.service.INodeService;
 import com.sagin.routing.IRoutingService;
 import com.sagin.routing.RouteInfo;
-import com.sagin.util.SimulationConstants; 
+import com.sagin.util.SimulationConstants;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.InetSocketAddress; 
+import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
@@ -54,21 +55,21 @@ public class TCP_Service implements ITCP_Service {
      * sau khi gửi thành công.
      */
     private record RetryablePacket(
-        String originalNodeId, 
-        Packet packet, 
-        String host, 
-        int port, 
-        String destinationDesc, 
-        int attemptCount
-    ) {}
+            String originalNodeId,
+            Packet packet,
+            String host,
+            int port,
+            String destinationDesc,
+            int attemptCount) {
+    }
 
     /**
      * Khởi tạo TCP_Service với tất cả các dịch vụ phụ thuộc.
      */
-    public TCP_Service(INodeRepository nodeRepository, 
-                        INodeService nodeService, 
-                        IUserRepository userRepository,
-                        IRoutingService routingService) {
+    public TCP_Service(INodeRepository nodeRepository,
+            INodeService nodeService,
+            IUserRepository userRepository,
+            IRoutingService routingService) {
         this.nodeRepository = nodeRepository;
         this.nodeService = nodeService;
         this.userRepository = userRepository;
@@ -76,20 +77,15 @@ public class TCP_Service implements ITCP_Service {
 
         // Khởi tạo ObjectMapper và đăng ký module JavaTime (cho Instant, v.v.)
         this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
-        
+
         // Khởi tạo hàng đợi và dịch vụ chạy nền
         this.sendQueue = new LinkedBlockingQueue<>();
         this.retryScheduler = Executors.newSingleThreadScheduledExecutor();
-        
+
         // Bắt đầu chạy thread xử lý hàng đợi
         this.startSendScheduler();
     }
 
-    /**
-     * (Hàm "Não bộ")
-     * "Nhập" một packet vừa được nhận từ mạng (ví dụ: từ TCPServerListener).
-     * Hạch toán RX/CPU, sau đó quyết định gửi cho User hay gửi cho Node tiếp theo.
-     */
     @Override
     public void receivePacket(Packet packet) {
         if (packet == null || packet.getCurrentHoldingNodeId() == null) {
@@ -98,64 +94,67 @@ public class TCP_Service implements ITCP_Service {
         }
 
         String currentNodeId = packet.getCurrentHoldingNodeId();
-        logger.info("[TCP_Service] Đã nhận Packet {} tại {}.",
-                packet.getPacketId(), currentNodeId);
+        logger.info("[TCP_Service] Đã nhận Packet {} tại {}.", packet.getPacketId(), currentNodeId);
 
-        // --- BƯỚC 1: HẠCH TOÁN CHI PHÍ NHẬN (RX) VÀ XỬ LÝ (CPU) ---
-        // Hàm này (đã refactor) chỉ trừ pin/tài nguyên cho việc NHẬN và XỬ LÝ.
-        // Nó KHÔNG trừ chi phí gửi (TX).
+        // --- Hạch toán chi phí nhận (RX) ---
         try {
             nodeService.updateNodeStatus(currentNodeId, packet);
         } catch (Exception e) {
-            logger.error("[TCP_Service] Lỗi nghiêm trọng khi hạch toán RX/CPU cho {}: {}", 
-                            currentNodeId, e.getMessage(), e);
-            // (Tùy logic, có thể return ở đây nếu hạch toán là bắt buộc)
+            logger.error("[TCP_Service] Lỗi khi hạch toán RX/CPU cho {}: {}", currentNodeId, e.getMessage(), e);
         }
-        
-        // --- BƯỚC 2: LOGIC ĐỊNH TUYẾN (GATEWAY vs TRANSIT) ---
-        String finalDestinationId = packet.getStationDest();
 
-        // Kiểm tra xem node này có phải là trạm mặt đất cuối cùng không
-        if (currentNodeId.equals(finalDestinationId)) {
-            
-            // --- LOGIC A: ĐÃ ĐẾN TRẠM ĐÍCH (GATEWAY) ---
-            // Nhiệm vụ: Gửi cho người dùng cuối (End User).
-            logger.info("[TCP_Service] Packet {} đã đến trạm đích. Chuyển tiếp đến người dùng...", packet.getPacketId());
-            forwardPacketToUser(packet, currentNodeId); 
-
-        } else {
-            
-            // --- LOGIC B: CHƯA ĐẾN ĐÍCH (TRANSIT NODE) ---
-            // Nhiệm vụ: Tìm node tiếp theo và gửi cho node đó.
-            logger.debug("[TCP_Service] Packet {} đang ở trạm trung gian. Đang tìm đường đi...",
-                    packet.getPacketId());
-            
-            RouteInfo bestRoute = routingService.getBestRoute(currentNodeId, finalDestinationId);
-            
-            if (bestRoute == null) {
-                logger.warn("[TCP_Service] Không tìm thấy đường đi (No Route) cho packet {} từ {} đến {}. Packet bị drop.",
-                        packet.getPacketId(), currentNodeId, finalDestinationId);
-                packet.setDropped(true);
-                packet.setDropReason("NO_ROUTE_TO_HOST");
-                return; // Dừng xử lý
-            }
-
-            // Đã tìm thấy đường: Cập nhật packet
-            String nextHopNodeId = bestRoute.getNextHopNodeId();
-            packet.setNextHopNodeId(nextHopNodeId);
+        // --- Node đích ---
+        if (currentNodeId.equals(packet.getStationDest())) {
             if (packet.getPathHistory() != null) {
-                    packet.getPathHistory().add(nextHopNodeId);
+                packet.getPathHistory().add(currentNodeId);
             }
-            
-            // Gọi hàm sendPacket (node-to-node)
-            this.sendPacket(packet, currentNodeId);
+            logger.info("[TCP_Service] Packet {} đã đến trạm đích. Forward đến user...", packet.getPacketId());
+            forwardPacketToUser(packet, currentNodeId);
+            return;
+        }
+
+        // --- Node transit ---
+        RouteInfo bestRoute = routingService.getBestRoute(currentNodeId, packet.getStationDest());
+        if (bestRoute == null) {
+            packet.setDropped(true);
+            packet.setDropReason("NO_ROUTE_TO_HOST");
+            logger.warn("[TCP_Service] Không tìm thấy đường đi cho packet {} từ {} đến {}.",
+                    packet.getPacketId(), currentNodeId, packet.getStationDest());
+            return;
+        }
+
+        String nextHopNodeId = bestRoute.getNextHopNodeId();
+        packet.setNextHopNodeId(nextHopNodeId);
+
+        Optional<NodeInfo> currentNodeOpt = nodeRepository.getNodeInfo(currentNodeId);
+        Optional<NodeInfo> nextNodeOpt = nodeRepository.getNodeInfo(nextHopNodeId);
+
+        if (currentNodeOpt.isPresent() && nextNodeOpt.isPresent()) {
+            NodeInfo currentNode = currentNodeOpt.get();
+            NodeInfo nextNode = nextNodeOpt.get();
+
+            // --- Cập nhật packet qua helper ---
+            PacketHelper.updatePacketForTransit(packet, currentNode, nextNode, bestRoute);
+
+            // --- Nếu packet còn sống, gửi tiếp ---
+            if (!packet.isDropped()) {
+                packet.setCurrentHoldingNodeId(nextHopNodeId);
+                sendPacket(packet, currentNodeId);
+            } else {
+                logger.warn("[TCP_Service] Packet {} bị drop: {}", packet.getPacketId(), packet.getDropReason());
+            }
+        } else {
+            packet.setDropped(true);
+            packet.setDropReason("NODE_INFO_NOT_FOUND");
+            logger.error("[TCP_Service] Không tìm thấy thông tin node cho {} hoặc {}.", currentNodeId, nextHopNodeId);
         }
     }
 
     /**
      * (Hàm "Gửi đi" - Node-to-Node)
      * Thêm một packet (node-to-node) vào hàng đợi.
-     * @param packet Packet để gửi
+     * 
+     * @param packet       Packet để gửi
      * @param senderNodeId Node HIỆN TẠI đang gửi packet này (để hạch toán TX)
      */
     @Override
@@ -163,7 +162,7 @@ public class TCP_Service implements ITCP_Service {
         String nextHopNodeId = packet.getNextHopNodeId();
         if (nextHopNodeId == null) {
             logger.warn("[TCP_Service] Packet {} từ {} bị drop: nextHopNodeId bị null (Lỗi định tuyến).",
-                            packet.getPacketId(), senderNodeId);
+                    packet.getPacketId(), senderNodeId);
             packet.setDropped(true);
             packet.setDropReason("ROUTING_BLACK_HOLE");
             return;
@@ -172,7 +171,7 @@ public class TCP_Service implements ITCP_Service {
         Optional<NodeInfo> nextHopOpt = nodeRepository.getNodeInfo(nextHopNodeId);
         if (nextHopOpt.isEmpty()) {
             logger.warn("[TCP_Service] Packet {} từ {} bị drop: Không tìm thấy node {} trong DB (Lỗi định tuyến).",
-                            packet.getPacketId(), senderNodeId, nextHopNodeId);
+                    packet.getPacketId(), senderNodeId, nextHopNodeId);
             packet.setDropped(true);
             packet.setDropReason("ROUTING_NODE_NOT_FOUND");
             return;
@@ -183,30 +182,33 @@ public class TCP_Service implements ITCP_Service {
         int port = nextHop.getPort();
         if (host == null || port <= 0) {
             logger.warn("[TCP_Service] Packet {} từ {} bị drop: Node {} có host/port không hợp lệ.",
-                            packet.getPacketId(), senderNodeId, nextHopNodeId);
+                    packet.getPacketId(), senderNodeId, nextHopNodeId);
             return;
         }
 
         // Thêm vào hàng đợi, mang theo senderNodeId
         addToSendQueue(senderNodeId, packet, host, port, "NODE:" + nextHopNodeId);
     }
-    
+
     /**
      * (Hàm "Gửi đi" - Node-to-User)
      * Hàm riêng: Gửi packet (node-to-user) vào hàng đợi.
-     * @param packet Packet để gửi
+     * 
+     * @param packet       Packet để gửi
      * @param senderNodeId Node HIỆN TẠI đang gửi packet này (để hạch toán TX)
      */
     private void forwardPacketToUser(Packet packet, String senderNodeId) {
         String userId = packet.getDestinationUserId();
         if (userId == null || userId.isBlank()) {
-            logger.warn("[TCP_Service] (forwardUser) Không thể chuyển tiếp {}: destinationUserId bị null.", packet.getPacketId());
+            logger.warn("[TCP_Service] (forwardUser) Không thể chuyển tiếp {}: destinationUserId bị null.",
+                    packet.getPacketId());
             return;
         }
 
         Optional<UserInfo> userOpt = userRepository.findByUserId(userId);
         if (userOpt.isEmpty()) {
-            logger.error("[TCP_Service] (forwardUser) Không tìm thấy người dùng {}. Không thể giao packet {}.", userId, packet.getPacketId());
+            logger.error("[TCP_Service] (forwardUser) Không tìm thấy người dùng {}. Không thể giao packet {}.", userId,
+                    packet.getPacketId());
             return;
         }
 
@@ -221,7 +223,7 @@ public class TCP_Service implements ITCP_Service {
         // Thêm vào hàng đợi, mang theo senderNodeId
         addToSendQueue(senderNodeId, packet, host, port, "USER:" + userId);
     }
-    
+
     // ===================================================================
     // HÀM QUẢN LÝ HÀNG ĐỢI VÀ GỬI LẠI (Async Producer/Consumer)
     // ===================================================================
@@ -236,13 +238,13 @@ public class TCP_Service implements ITCP_Service {
         try {
             sendQueue.put(job);
             logger.debug("[TCP_Service] ✈️ Đã thêm Packet {} (từ {}) vào hàng đợi gửi.",
-                        packet.getPacketId(), originalNodeId);
+                    packet.getPacketId(), originalNodeId);
         } catch (InterruptedException e) {
             logger.error("[TCP_Service] Bị gián đoạn khi thêm packet {} vào hàng đợi.", packet.getPacketId(), e);
             Thread.currentThread().interrupt();
         }
     }
-    
+
     /**
      * (Consumer Setup)
      * Bắt đầu một thread nền (background thread) để xử lý `sendQueue`.
@@ -262,7 +264,8 @@ public class TCP_Service implements ITCP_Service {
      */
     private void processSendQueue() {
         RetryablePacket job = sendQueue.poll(); // Lấy 1 item (không block)
-        if (job == null) return; // Hàng đợi trống, nghỉ
+        if (job == null)
+            return; // Hàng đợi trống, nghỉ
 
         // Cố gắng gửi qua socket
         boolean success = attemptSendInternal(job);
@@ -272,8 +275,8 @@ public class TCP_Service implements ITCP_Service {
             // === GỬI THÀNH CÔNG (LOGIC QUAN TRỌNG NHẤT) ===
             // HẠCH TOÁN CHI PHÍ GỬI (TX)
             // ====================================================
-            logger.debug("[TCP_Service] Gửi {} thành công. Hạch toán TX cho node {}.", 
-                            job.packet().getPacketId(), job.originalNodeId());
+            logger.debug("[TCP_Service] Gửi {} thành công. Hạch toán TX cho node {}.",
+                    job.packet().getPacketId(), job.originalNodeId());
             // Gọi NodeService để hạch toán chi phí TX (pin, util,...)
             nodeService.processSuccessfulSend(job.originalNodeId(), job.packet());
 
@@ -282,24 +285,24 @@ public class TCP_Service implements ITCP_Service {
             if (job.attemptCount() < MAX_RETRIES) {
                 // Vẫn còn lượt thử
                 logger.warn("[TCP_Service] Gửi packet {} (lần {}) thất bại. Sẽ thử lại...",
-                            job.packet().getPacketId(), job.attemptCount());
-                
+                        job.packet().getPacketId(), job.attemptCount());
+
                 // Tạo job mới với số lần thử tăng lên
                 RetryablePacket nextAttempt = new RetryablePacket(
                         job.originalNodeId(), // Giữ nguyên
-                        job.packet(), 
-                        job.host(), 
-                        job.port(), 
+                        job.packet(),
+                        job.host(),
+                        job.port(),
                         job.destinationDesc(),
                         job.attemptCount() + 1 // Tăng số lần thử
                 );
                 sendQueue.add(nextAttempt); // Thêm lại vào cuối hàng đợi
-                
+
             } else {
                 // Đã hết lượt thử
                 logger.error("[TCP_Service] HỦY BỎ packet {} đến {}: Đã vượt quá {} lần thử.",
-                            job.packet().getPacketId(), job.destinationDesc(), MAX_RETRIES);
-                
+                        job.packet().getPacketId(), job.destinationDesc(), MAX_RETRIES);
+
                 if (job.destinationDesc().startsWith("NODE:")) {
                     job.packet().setDropped(true);
                     job.packet().setDropReason("TCP_SEND_FAILED_MAX_RETRIES");
@@ -311,6 +314,7 @@ public class TCP_Service implements ITCP_Service {
     /**
      * (Consumer I/O)
      * Hàm I/O thực tế: Cố gắng serialize và gửi packet qua Socket.
+     * 
      * @return true nếu thành công, false nếu thất bại (IOException).
      */
     private boolean attemptSendInternal(RetryablePacket job) {
@@ -331,12 +335,12 @@ public class TCP_Service implements ITCP_Service {
         // 2. Mở Socket và Gửi
         // (Sử dụng try-with-resources để đảm bảo socket và stream luôn được đóng)
         try (Socket socket = new Socket()) {
-             // Thêm timeout để tránh bị treo nếu host không phản hồi
+            // Thêm timeout để tránh bị treo nếu host không phản hồi
             socket.connect(
-                new InetSocketAddress(job.host(), job.port()), 
-                SimulationConstants.TCP_CONNECT_TIMEOUT_MS // (ví dụ: 1000ms)
-            ); 
-            
+                    new InetSocketAddress(job.host(), job.port()),
+                    SimulationConstants.TCP_CONNECT_TIMEOUT_MS // (ví dụ: 1000ms)
+            );
+
             try (OutputStream out = socket.getOutputStream()) {
                 out.write(packetData);
                 out.flush();
@@ -351,7 +355,7 @@ public class TCP_Service implements ITCP_Service {
             return false; // Gửi thất bại, cần thử lại
         }
     }
-    
+
     /**
      * Dừng lịch trình gửi lại (retry scheduler) khi đóng ứng dụng.
      * (Nên được gọi trong hook shutdown của ứng dụng)
