@@ -161,10 +161,4 @@ class NodeGatewayTest {
         }
     }
 
-    @Test
-    @DisplayName("Test handleClient có thể đóng socket đúng cách")
-    @Disabled("Skipping real I/O error simulation - complex to test reliably")
-    void testHandleClient_InputStreamError() throws Exception {
-        // This test is complex with real sockets - disabled for now
-    }
 }

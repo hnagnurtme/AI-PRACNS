@@ -130,6 +130,7 @@ public class NodeService implements INodeService {
         node.setLastUpdated(Instant.now());
         dirtyNodeIds.add(nodeId);
 
+        flushToDatabase();
         logger.info("[NodeService] Processed (RX/CPU) Packet {} on Node: {}", 
                     packet.getPacketId(), nodeId);
     }
@@ -179,7 +180,7 @@ public class NodeService implements INodeService {
     }
 
     /**
-     * Xử lý một "tick" mô phỏng (hiện không dùng nhiều).
+     * Xử lý một "tick" mô phỏng
      */
     @Override
     public void processTick(Map<String, NodeInfo> nodeMap, List<Packet> packets) {
@@ -198,10 +199,10 @@ public class NodeService implements INodeService {
                 continue;
             }
             
-            // Chỉ cần gọi hàm này.
-            // updateNodeStatus sẽ tự động xử lý việc lấy/tải node.
             updateNodeStatus(packet.getCurrentHoldingNodeId(), packet);
         }
+
+        flushToDatabase();
         logger.debug("[NodeService] Kết thúc xử lý tick.");
     }
 
@@ -244,6 +245,7 @@ public class NodeService implements INodeService {
             
             logger.info("[NodeService] Bulk update CSDL hoàn tất. Còn lại {} node dirty.", 
                             dirtyNodeIds.size());
+
 
         } catch (Exception e) {
             logger.error("[NodeService] Lỗi nghiêm trọng khi thực hiện bulk update: {}", e.getMessage(), e);

@@ -86,6 +86,9 @@ public class MongoNodeRepository implements INodeRepository, AutoCloseable {
             ReplaceOneModel<NodeInfo> replaceModel =
                 new ReplaceOneModel<>(filter, info, new ReplaceOptions().upsert(true));
             operations.add(replaceModel);
+
+
+            logger.info("Trang thai "+ info.toString());
         }
 
         try {
@@ -95,6 +98,7 @@ public class MongoNodeRepository implements INodeRepository, AutoCloseable {
                 result.getUpserts().size(),
                 result.getMatchedCount()
             );
+
         } catch (Exception e) {
             logger.error("Lỗi bulk update Node batch: {}", e.getMessage(), e);
         }

@@ -48,6 +48,7 @@ public class TCP_Service implements ITCP_Service {
     private final ScheduledExecutorService retryScheduler;
     private static final int MAX_RETRIES = 5; // Số lần thử lại tối đa
     private static final long RETRY_POLL_INTERVAL_MS = 500; // Nửa giây quét hàng đợi 1 lần
+    
 
     /**
      * Đối tượng nội bộ để đóng gói packet và số lần thử.
