@@ -1,7 +1,8 @@
 spring:
   data:
     mongodb:
-      uri: mongodb://user:password123@localhost:27017/SAGSINS?authSource=admin
+      uri: mongodb://user:password123@localhost:27017/sagsin_network?authSource=admin
+      database: sagsin_network
 server:
     port: 8080
 logging:

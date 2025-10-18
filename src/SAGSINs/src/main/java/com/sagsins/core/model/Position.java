@@ -1,5 +1,4 @@
 package com.sagsins.core.model;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -9,20 +8,25 @@ import lombok.*;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
 @ToString
 @JsonIgnoreProperties(value = {"distanceTo","directionTo"}, ignoreUnknown = true)
-public class Geo3D {
+public class Position {
 
     private double latitude;   
     private double longitude;  
     private double altitude;   
 
+    public Position(double lat, double lon, double alt) {
+        this.latitude = lat;
+        this.longitude = lon;
+        this.altitude = alt;
+    }
+
     @JsonIgnore
     @JsonProperty(access = Access.READ_ONLY)
     /** Khoảng cách Euclidean 3D giữa 2 điểm (xấp xỉ). */
-    public double distanceTo(Geo3D other) {
+    public double distanceTo(Position other) {
         if (other == null) return Double.MAX_VALUE;
         double dx = this.latitude - other.latitude;
         double dy = this.longitude - other.longitude;
@@ -32,8 +36,7 @@ public class Geo3D {
 
     @JsonIgnore
     @JsonProperty(access = Access.READ_ONLY)
-    /** Vector hướng từ điểm này tới điểm khác (trả về {dx, dy, dz}). */
-    public double[] directionTo(Geo3D other) {
+    public double[] directionTo(Position other) {
         if (other == null) return new double[]{0, 0, 0};
         return new double[]{
                 other.latitude - this.latitude,

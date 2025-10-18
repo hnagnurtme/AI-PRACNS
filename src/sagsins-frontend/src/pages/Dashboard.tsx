@@ -59,7 +59,7 @@ const Dashboard: React.FC = () => {
             
             {/* Sidebar (Cố định chiều rộng: w-80) */}
             {/* Sidebar nhận nodes để hiển thị danh sách */}
-            <Sidebar nodes={nodes} onRefresh={refetchNodes} /> 
+            <Sidebar nodes={nodes} /> 
 
             {/* Khu vực Map (flex-grow: chiếm hết không gian còn lại) */}
             <div className="relative flex-grow">
@@ -110,7 +110,7 @@ const Dashboard: React.FC = () => {
                 {/* Card chỉ hiển thị nếu selectedNode có dữ liệu */}
                 {selectedNode && (
                     <div className="absolute top-20 right-4 z-10 w-96">
-                        <NodeDetailCard node={selectedNode} onRefresh={refetchNodes} />
+                        <NodeDetailCard node={selectedNode} />
                     </div>
                 )}
             </div>
