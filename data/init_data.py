@@ -1,5 +1,7 @@
 from db_config import get_collection
 from datetime import datetime
+from datetime import timezone
+import random
 
 def generate_Node():
     return [
@@ -144,6 +146,78 @@ def init_Node():
         node["status"]["lastUpdated"] = datetime.utcnow().isoformat() + "Z"
         nodes.update_one({"nodeId": node["nodeId"]}, {"$set": node}, upsert=True)
     print(f"Initialized {len(list_node)} nodes.")
+    
+    
+def generate_User():
+    """Tạo danh sách dữ liệu thô cho người dùng."""
+    return [
+        {
+            "userId": "USER-01",
+            "userName": "MobileUser-DaNang",
+            "position": { "latitude": 16.0545, "longitude": 108.2022, "altitude": 0.01 },
+            "communication": {
+                "ipAddress": "192.168.1.101", 
+                "port": 9001
+            },
+            "status": {
+                "active": True,
+                "lastSeen": "2025-10-17T09:00:00Z"
+            }
+        },
+        {
+            "userId": "USER-02",
+            "userName": "HomeUser-CanTho",
+            "position": { "latitude": 10.0452, "longitude": 105.7469, "altitude": 0.02 },
+            "communication": {
+                "ipAddress": "192.168.1.102",
+                "port": 9002
+            },
+            "status": {
+                "active": True,
+                "lastSeen": "2025-10-17T09:00:00Z"
+            }
+        },
+        {
+            "userId": "USER-03",
+            "userName": "IoTDevice-Singapore",
+            "position": { "latitude": 1.3521, "longitude": 103.8198, "altitude": 0.05 },
+            "communication": {
+                "ipAddress": "172.16.0.10",
+                "port": 9003
+            },
+            "status": {
+                "active": False, # Giả lập 1 user offline
+                "lastSeen": "2025-10-16T09:00:00Z"
+            }
+        },
+    ]
+
+def init_User():
+    """Khởi tạo hoặc cập nhật các documents trong collection 'users'."""
+    list_user = generate_User()
+    users_collection = get_collection("users")
+    for user in list_user:
+        # Cập nhật thời gian lastSeen cho các user đang active
+        if user["status"]["active"]:
+            user["status"]["lastSeen"] = datetime.now(timezone.utc).isoformat()
+        
+        users_collection.update_one(
+            {"userId": user["userId"]},
+            {"$set": user},
+            upsert=True
+        )
+    print(f"Initialized or updated {len(list_user)} users.")
+
+
+# ==============================================================================
+# PHẦN 3: THỰC THI
+# ==============================================================================
+
+if __name__ == "__main__":
+    print("Starting database initialization...")
+    init_Node()
+    init_User()
+    print("Database initialization complete.")
 
 if __name__ == "__main__":
     init_Node()

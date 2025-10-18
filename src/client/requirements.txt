@@ -13,3 +13,11 @@ pyvis
 streamlit-autorefresh
 
 altair
+
+graphviz
+
+matplotlib
+
+plotly
+
+networkx
