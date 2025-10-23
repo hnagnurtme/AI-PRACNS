@@ -1,91 +1,56 @@
-# data/mongo_manager.py
-import time
-import copy
-import random
-from typing import Dict, List, Any
 from pymongo import MongoClient
+from typing import List, Dict
+import math
+import logging
 
-class MongoDataManager:
-    def __init__(self, host: str = "localhost", port: int = 27017, db_name: str = "sagins-network", username: str = "user", password: str = "password123", auth_source: str = "admin"):
-        connection_string = f"mongodb://{username}:{password}@{host}:{port}/?authSource={auth_source}"
-        self.client = MongoClient(connection_string)
+logger = logging.getLogger(__name__)
+
+class MongoManager:
+    def __init__(self, uri: str = "mongodb://user:password123@localhost:27017/?authSource=admin"):
+        self.client = MongoClient(uri)
+        self.db = self.client['sagsin_network']
+        self.nodes = self.db['nodes']
+        logger.info("Connected to MongoDB at %s", uri)
         
-        # Test connection
+    def get_all_nodes(self) -> List[Dict]:
+        return list(self.nodes.find({}))
+    
+    def update_node(self, node_id: str, updates: Dict):
+        self.nodes.update_one({"nodeId": node_id}, {"$set": updates })
+        
+    def get_closest_gs(self, client_position: Dict) -> str:
+        gs_nodes = list(self.nodes.find({"type": "GROUND_STATION"}))
+        if not gs_nodes:
+            logger.error("No ground stations found in DB")
+            raise ValueError("No ground stations available")
+        min_dist = float('inf')
+        closest = None
+        for gs in gs_nodes:
+            dist = self.calculate_distance(client_position, gs['position'])
+            logger.debug(f"GS {gs['nodeId']} distance: {dist}km")
+            if dist < min_dist:
+                min_dist = dist
+                closest = gs['nodeId']
+        return closest
+    
+    @staticmethod
+    def calculate_distance(pos1: Dict, pos2: Dict) -> float:
         try:
-            self.client.admin.command('ping')
-            print("✅ Connected with authentication")
-        except Exception as e:
-            print(f"❌ Connection failed: {e}")
-            raise
-        
-        self.db = self.client['SAGSINS']
-        self.node_info = self.db['network_nodes']
-        
-        self._node_cache = {}
-        self.last_update_time = 0
-        
-    def get_training_snapshot(self, cache_duration: int = 300) -> Dict[str, Any]:
-        """Lấy snapshot dữ liệu training với cache strategy"""
-        current_time = time.time()
-
-        if (current_time - self.last_update_time > cache_duration or not self._node_cache):
-            print("🔄 Loading fresh node data from MongoDB...")
-            
-            # Chỉ lấy nodes từ MongoDB
-            nodes = self._fetch_all_nodes()
-            
-            # Tạo link variants từ nodes
-            link_variants = self._create_link_variants_from_nodes(nodes, num_variants=200)
-            
-            self._node_cache = nodes
-            self.last_update_time = current_time
-            
-            print(f"✅ Loaded {len(nodes)} nodes, created {len(link_variants)} link variants")
-            
-        return {
-            "nodes": self._node_cache,
-            "link_variants": []
-        }
+            lat1, lon1 = math.radians(pos1['latitude']), math.radians(pos1['longitude'])
+            lat2, lon2 = math.radians(pos2['latitude']), math.radians(pos2['longitude'])
+            dlat, dlon = lat2 - lat1, lon2 - lon1
+            a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            dist = 6371 * c
+            alt_diff = abs(pos1.get('altitude', 0) - pos2.get('altitude', 0))
+            return math.sqrt(dist**2 + alt_diff**2)
+        except KeyError as e:
+            logger.error(f"Missing position key: {e}")
+            return float('inf')
     
-    def _fetch_all_nodes(self) -> Dict[str, Dict]: 
-        """Lấy tất cả các nodes từ MongoDB"""
-        nodes = {}
-        
-        # Add debug info
-        count = self.node_info.count_documents({})
-        print(f"📊 Found {count} documents in collection")
-        
-        for node_doc in self.node_info.find({}):
-            node_id = node_doc.get('_id')
-            print(f"🔍 Processing node: {node_id}")  # Debug log
-            
-            node_data = {
-                'nodeId': node_id,
-                'batteryChargePercent': node_doc.get('batteryChargePercent'),
-                'currentPacketCount': node_doc.get('currentPacketCount'),
-                'healthy': node_doc.get('healthy'),
-                'lastUpdated': node_doc.get('lastUpdated'),
-                'nodeProcessingDelayMs': node_doc.get('nodeProcessingDelayMs'),
-                'nodeType': node_doc.get('nodeType'),
-                'isOperational': node_doc.get('operational'),
-                'orbit': node_doc.get('orbit', {}),
-                'packetBufferCapacity': node_doc.get('packetBufferCapacity'),
-                'packetLossRate': node_doc.get('packetLossRate'),
-                'port': node_doc.get('port'),
-                'position': node_doc.get('position', {}),
-                'resourceUtilization': node_doc.get('resourceUtilization'),
-                'velocity': node_doc.get('velocity', {}),
-                'weather': node_doc.get('weather'),
-            }
-            nodes[node_id] = node_data
-            
-        print(f"✅ Successfully loaded {len(nodes)} nodes")
-        return nodes
-
-    def _create_link_variants_from_nodes(self, nodes: Dict[str, Dict], num_variants: int = 200) -> List[Dict]:
-        """Tạo link variants từ nodes"""
-        return []
-    
-    def get_all_node_ids(self) -> List[str]:
-        snapshot = self.get_training_snapshot()
-        return list(snapshot['nodes'].keys())
+    def get_node(self, node_id: str) -> Dict:
+        """Get a single node by nodeId"""
+        node = self.nodes.find_one({"nodeId": node_id})
+        if not node:
+            logger.warning(f"Node {node_id} not found in database")
+        return node
