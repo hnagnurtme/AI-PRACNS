@@ -133,7 +133,7 @@ def load_from_db(collection_name: str, model_class: Any) -> List[Any]:
     logger.info(f"Đang tải dữ liệu từ collection: '{collection_name}'...")
     collection = get_collection(collection_name)
     query = {}
-    if collection_name == "nodes":
+    if collection_name == "network_nodes":
         query = {"status.active": True, "type": NodeType.GROUND_STATION.value}
     
     items = []
@@ -211,6 +211,8 @@ def handle_send_button_click():
     # 4. Tạo và gửi gói tin
     new_packet = _create_packet_from_ui(source_user, dest_user, source_station, dest_station)
     if not new_packet: return
+    
+    print(new_packet.to_json())
 
     with st.spinner(f"Đang gửi gói tin đến trạm nguồn {source_station.nodeName}..."):
         error_message = send_packet_via_tcp(source_station.communication.ipAddress, source_station.communication.port, new_packet)

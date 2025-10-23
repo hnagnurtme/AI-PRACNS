@@ -15,17 +15,15 @@ public class SimulationClient {
     public static void main(String[] args) {
         String host = "localhost";
         int port = 5001;
-
-        // --- 1. Tạo packet mẫu ---
         Packet packet = new Packet();
         packet.setPacketId("P-TEST-001");
         packet.setType("TEST");
         packet.setPayloadDataBase64("SGVsbG8gV29ybGQ="); // "Hello World" base64
         packet.setPayloadSizeByte(11);
-        packet.setSourceUserId("user-01");
-        packet.setDestinationUserId("user-02");
-        packet.setStationSource("N-BANGKOK");
-        packet.setStationDest("N-SINGAPORE");
+        packet.setSourceUserId("user-tokyo");
+        packet.setDestinationUserId("user-paris");
+        packet.setStationSource("N-HANOI");
+        packet.setStationDest("N-NEWYORK");
         packet.setTTL(10);
         packet.setPriorityLevel(1);
         packet.setMaxAcceptableLatencyMs(500);
@@ -47,10 +45,10 @@ public class SimulationClient {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
-        try (Socket socket = new Socket(host, port);
-             OutputStream os = socket.getOutputStream()) {
 
-            // Chuyển packet thành JSON UTF-8
+        try (Socket socket = new Socket(host, port);
+            OutputStream os = socket.getOutputStream()) {
+
             String jsonPacket = objectMapper.writeValueAsString(packet);
             System.out.println("Đang gửi packet: " + jsonPacket);
 

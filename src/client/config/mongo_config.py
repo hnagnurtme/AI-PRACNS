@@ -7,6 +7,6 @@ def get_db():
     client = MongoClient(MONGO_URI)
     return client[DB_NAME]
 
-def get_collection(name="nodes"):
+def get_collection(name="network_nodes"):
     db = get_db()
     return db[name]

@@ -34,4 +34,14 @@ public enum NodeType {
     public double getBaseLatencyMs() {
         return baseLatencyMs;
     }
+
+     /** Parse type từ chuỗi (ví dụ: "LEO_SATELLITE") */
+    public static NodeType fromString(String name) {
+        for (NodeType type : values()) {
+            if (type.name().equalsIgnoreCase(name)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Unknown NodeType: " + name);
+    }
 }

@@ -3,6 +3,7 @@ package com.sagin.repository;
 import com.sagin.model.NodeInfo;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -31,6 +32,9 @@ public interface INodeRepository {
      * @return NodeInfo của Node đó, hoặc null nếu không tìm thấy.
      */
     Optional<NodeInfo> getNodeInfo(String nodeId);
+
+
+    public List<NodeInfo> getAllNodes();
 
 
     void bulkUpdateNodes(Collection<NodeInfo> nodes);

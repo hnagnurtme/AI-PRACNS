@@ -83,7 +83,7 @@ if __name__ == '__main__':
     # Tạo một gói tin mẫu để gửi
     # Nếu import Packet thành công, dùng object. Nếu không, dùng dict.
     if Packet:
-        from models.packet import ServiceQoS
+        from models.packet import ServiceQoS, ServiceType
         sample_packet = Packet(
             packetId="PKT-TEST-001",
             sourceUserId="SENDER_TEST",
@@ -96,7 +96,7 @@ if __name__ == '__main__':
             payloadDataBase64=base64.b64encode(b"Hello from TCP_Sender test!").decode('utf-8'),
             payloadSizeByte=25,
             serviceType="TEXT_MESSAGE",
-            serviceQoS=ServiceQoS(serviceType="TEXT_MESSAGE", defaultPriority=4, maxLatencyMs=2000, maxJitterMs=500, minBandwidthMbps=0.1, maxLossRate=0.05),
+            serviceQoS=ServiceQoS(serviceType=ServiceType.TEXT_MESSAGE, defaultPriority=4, maxLatencyMs=2000, maxJitterMs=500, minBandwidthMbps=0.1, maxLossRate=0.05),
             TTL=10,
             currentHoldingNodeId="SENDER_TEST",
             nextHopNodeId="",

@@ -49,9 +49,9 @@ def simulate_routing_analysis(source: str, destination: str, all_nodes: list):
         hop_metrics = [_simulate_hop_metric() for _ in range(len(path_nodes) - 1)]
         
         # Tính toán các chỉ số tích lũy
-        cumulative_latency = [0]
+        cumulative_latency = [0.0]
         cumulative_loss = [0.0]
-        current_latency = 0
+        current_latency = 0.0
         
         for i, hop in enumerate(hop_metrics):
             current_latency += hop['latencyMs']

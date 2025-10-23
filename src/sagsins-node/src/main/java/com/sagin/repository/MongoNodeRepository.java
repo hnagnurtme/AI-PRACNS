@@ -71,6 +71,22 @@ public class MongoNodeRepository implements INodeRepository, AutoCloseable {
         }
     }
 
+    @Override
+    public List<NodeInfo> getAllNodes() {
+        logger.info("📡 Đang tải toàn bộ danh sách Node từ MongoDB...");
+        try (var cursor = nodesCollection.find().iterator()) {
+            List<NodeInfo> result = new ArrayList<>();
+            while (cursor.hasNext()) {
+                result.add(cursor.next());
+            }
+            logger.info("✅ Tải thành công {} node từ MongoDB.", result.size());
+            return result;
+        } catch (Exception e) {
+            logger.error("❌ Lỗi khi tải danh sách node: {}", e.getMessage(), e);
+            return Collections.emptyList();
+        }
+    }
+
     /**
      * 🚀 Cập nhật đồng loạt danh sách Node (Batch Update)
      * Tối ưu cho mô phỏng tick-based, giảm I/O tới MongoDB ~10x
