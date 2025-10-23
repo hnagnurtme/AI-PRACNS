@@ -1,5 +1,5 @@
 from pymongo import MongoClient
-from typing import List, Dict
+from typing import List, Dict, Optional
 import math
 import logging
 
@@ -9,7 +9,7 @@ class MongoManager:
     def __init__(self, uri: str = "mongodb://user:password123@localhost:27017/?authSource=admin"):
         self.client = MongoClient(uri)
         self.db = self.client['sagsin_network']
-        self.nodes = self.db['nodes']
+        self.nodes = self.db['network_nodes']
         logger.info("Connected to MongoDB at %s", uri)
         
     def get_all_nodes(self) -> List[Dict]:
@@ -19,7 +19,7 @@ class MongoManager:
         self.nodes.update_one({"nodeId": node_id}, {"$set": updates })
         
     def get_closest_gs(self, client_position: Dict) -> str:
-        gs_nodes = list(self.nodes.find({"type": "GROUND_STATION"}))
+        gs_nodes = list(self.nodes.find({"nodeType": "GROUND_STATION"}))
         if not gs_nodes:
             logger.error("No ground stations found in DB")
             raise ValueError("No ground stations available")
@@ -31,6 +31,9 @@ class MongoManager:
             if dist < min_dist:
                 min_dist = dist
                 closest = gs['nodeId']
+        if closest is None:
+            logger.error("Could not determine the closest ground station")
+            raise ValueError("Could not determine the closest ground station")
         return closest
     
     @staticmethod
@@ -48,7 +51,7 @@ class MongoManager:
             logger.error(f"Missing position key: {e}")
             return float('inf')
     
-    def get_node(self, node_id: str) -> Dict:
+    def get_node(self, node_id: str) -> Optional[Dict]:
         """Get a single node by nodeId"""
         node = self.nodes.find_one({"nodeId": node_id})
         if not node:

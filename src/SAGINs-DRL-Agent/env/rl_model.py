@@ -100,7 +100,47 @@ class RLAgent:
     def load_checkpoint(self):
         if os.path.exists(self.checkpoint_path):
             checkpoint = torch.load(self.checkpoint_path)
-            self.model.load_state_dict(checkpoint['model_state_dict'])
-            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-            self.epsilon = checkpoint['epsilon']
-            print("Loaded RL checkpoint")
+            # Support multiple checkpoint formats: either a dict with keys or a raw state_dict
+            loaded_any = False
+            def try_load_model_state(saved_state):
+                nonlocal loaded_any
+                if not isinstance(saved_state, dict):
+                    return
+                model_state = self.model.state_dict()
+                # pick keys that both exist and match shape
+                to_load = {}
+                skipped = []
+                for k, v in saved_state.items():
+                    if k in model_state and hasattr(v, 'size') and v.size() == model_state[k].size():
+                        to_load[k] = v
+                    else:
+                        skipped.append(k)
+                if to_load:
+                    try:
+                        self.model.load_state_dict(to_load, strict=False)
+                        loaded_any = True
+                        if skipped:
+                            print(f"Loaded subset of checkpoint keys; skipped {len(skipped)} keys (examples): {skipped[:5]}")
+                    except Exception as ex:
+                        print(f"Warning: failed to load model_state_dict subset: {ex}")
+
+            if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
+                try_load_model_state(checkpoint['model_state_dict'])
+                try:
+                    if 'optimizer_state_dict' in checkpoint:
+                        try:
+                            self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+                        except Exception:
+                            print("Warning: could not load optimizer state (shape mismatch or optimizer differs)")
+                    self.epsilon = checkpoint.get('epsilon', self.epsilon)
+                except Exception:
+                    pass
+            elif isinstance(checkpoint, dict):
+                # Maybe the file is a plain state_dict
+                try_load_model_state(checkpoint)
+            else:
+                print("Warning: checkpoint is not a dict, skipping load")
+            if loaded_any:
+                print("Loaded RL checkpoint (partial or full)")
+            else:
+                print("No compatible parameters found in checkpoint; continuing with random init")

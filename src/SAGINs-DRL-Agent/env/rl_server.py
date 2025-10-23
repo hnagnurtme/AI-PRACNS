@@ -4,31 +4,52 @@ import threading
 import time
 import os
 import pickle
-from pymongo import MongoClient
-from pymongo.errors import ConnectionFailure
-from sagins_env import SAGINsEnv
-from rl_model import RLAgent
+import sys
+# Ensure repo root is on sys.path so top-level imports (utils, env) resolve when running this file directly
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+try:
+    from pymongo import MongoClient
+    from pymongo.errors import ConnectionFailure, ServerSelectionTimeoutError
+except Exception:
+    raise ImportError("pymongo is required for RLServer to fetch live nodes from MongoDB. Install with: pip install pymongo")
+try:
+    # When ran as package
+    from env.sagins_env import SAGINsEnv
+    from env.rl_model import RLAgent
+except Exception:
+    # When ran as a script from the env/ directory
+    from sagins_env import SAGINsEnv
+    from rl_model import RLAgent
 import numpy as np
 import uuid
 
 class RLServer:
-    def __init__(self, host='0.0.0.0', port=5000, mongo_uri='mongodb://user:password123@localhost:27017/?authSource=admin', db_name='sagsin_network', collection_name='nodes', checkpoint_path='rl_checkpoint.pth', cache_file='path_cache.pkl'):
+    def __init__(self, host='0.0.0.0', port=5050, mongo_uri='mongodb://user:password123@localhost:27017/?authSource=admin', db_name='sagsin_network', collection_name='network_nodes', checkpoint_path='rl_checkpoint.pth', cache_file='path_cache.pkl'):
         self.host = host
         self.port = port
-        self.mongo_client = MongoClient(mongo_uri)
-        self.db = self.mongo_client[db_name]
-        self.collection = self.db[collection_name]
+        # Connect to MongoDB (required for live node data)
+        try:
+            self.mongo_client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+            # force a server selection to verify connection
+            self.mongo_client.server_info()
+            self.db = self.mongo_client[db_name]
+            self.collection = self.db[collection_name]
+        except ServerSelectionTimeoutError as e:
+            raise ConnectionFailure(f"Cannot connect to MongoDB at '{mongo_uri}': {e}\nPlease ensure MongoDB is running and MONGO_URI is correct.")
+        except Exception as e:
+            raise ConnectionFailure(f"MongoDB connection error: {e}")
         self.cache = {}  # key: (stationSource, stationDest, serviceType), value: {'id': str, 'path': list}
         self.cache_file = cache_file
         self.load_cache()
         
         self.nodes = self.get_nodes()
         if not self.nodes:
-            raise ValueError("No nodes found in MongoDB. Please ensure the database is populated with at least one Ground Station.")
+            raise ValueError("No nodes found in MongoDB collection. Please populate the collection with node documents (see docs/NODE.md for example).")
         
-        sample_source = next((node_id for node_id, node in self.nodes.items() if node.get('type') == 'GROUND_STATION'), list(self.nodes.keys())[0])
+        # Support both 'type' and 'nodeType' keys in node documents
+        sample_source = next((node_id for node_id, node in self.nodes.items() if (node.get('type') == 'GROUND_STATION' or node.get('nodeType') == 'GROUND_STATION')), list(self.nodes.keys())[0])
         sample_dest = next((node_id for node_id in self.nodes.keys() if node_id != sample_source), list(self.nodes.keys())[-1])
-        
+
         dummy_packet = {
             'stationSource': sample_source,
             'stationDest': sample_dest,
@@ -47,16 +68,28 @@ class RLServer:
         self.agent = RLAgent(state_size, action_size, checkpoint_path)
         
         self.server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # allow quick reuse of address during dev/testing
+        try:
+            self.server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        except Exception:
+            pass
         self.server_socket.bind((self.host, self.port))
         self.server_socket.listen(5)
         print(f"RL Server listening on {self.host}:{self.port}")
     
     def get_nodes(self):
         nodes = {}
-        for doc in self.collection.find():
-            node_id = doc.get('nodeId')
-            if node_id:
-                nodes[node_id] = doc
+        # Require a Mongo collection (we expect live data)
+        if self.collection is None:
+            raise ConnectionFailure("MongoDB collection not initialized; cannot fetch nodes.")
+        try:
+            for doc in self.collection.find():
+                node_id = doc.get('nodeId')
+                if node_id:
+                    nodes[node_id] = doc
+        except Exception:
+            # any error reading Mongo -> raise so caller knows
+            raise
         return nodes
     
     def load_cache(self):
@@ -192,11 +225,11 @@ class RLServer:
                     print(f"{'='*60}\n")
                     
                     # Add metrics to response
-                    response['totalLatencyMs'] = total_latency
-                    response['totalBandwidthMbps'] = total_bandwidth    # ← THÊM
-                    response['avgBandwidthMbps'] = avg_bandwidth        # ← THÊM
-                    response['minBandwidthMbps'] = min_bandwidth
-                    response['lossRate'] = total_loss
+                    response['totalLatencyMs'] = str(total_latency)
+                    response['totalBandwidthMbps'] = str(total_bandwidth)    # ← THÊM
+                    response['avgBandwidthMbps'] = str(avg_bandwidth)        # ← THÊM
+                    response['minBandwidthMbps'] = str(min_bandwidth)
+                    response['lossRate'] = str(total_loss)
             
             client_socket.send(json.dumps(response).encode('utf-8'))
             

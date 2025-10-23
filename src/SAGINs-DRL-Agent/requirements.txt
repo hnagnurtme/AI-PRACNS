@@ -7,3 +7,5 @@ pymongo>=4.0.0          # Driver chính thức để kết nối và tương tá
 
 # Tiện ích
 python-dotenv           # (Tùy chọn) Quản lý biến môi trường local (.env file).
+
+scipy
