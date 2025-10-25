@@ -340,8 +340,6 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ nodes }) => {
                     isSatellite ? 800000 : 100000 
                 ),
             }).then((finished) => {
-    // [SỬA] Callback .then() sẽ chạy khi bay xong
-    // 'finished' là true nếu camera bay đến nơi
     if (finished) {
         setCameraFollowMode(true);
     }
@@ -349,7 +347,7 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ nodes }) => {
         }
     }, [flyToTrigger, selectedNode, cameraFollowMode,setCameraFollowMode ]); 
 
-    return <div ref={cesiumContainer} className="w-full h-screen" />;
+    return <div ref={cesiumContainer} className="w-full h-full" />;
 };
 
 export default CesiumViewer;
