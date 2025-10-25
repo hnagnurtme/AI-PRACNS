@@ -13,7 +13,6 @@ const SATELLITE_ICON = '/icons/SATELLITE.svg';
 const GROUND_STATION_ICON = '/icons/STATION.svg';
 
 
-
 const createStaticPosition = (node: NodeDTO): Cesium.Cartesian3 => {
     return Cesium.Cartesian3.fromDegrees(
         node.position.longitude,
@@ -116,7 +115,9 @@ export const syncNodeEntities = (viewer: Cesium.Viewer, nodes: NodeDTO[]): void 
                 height: isSatellite ? 32 : 40,
                 verticalOrigin: Cesium.VerticalOrigin.CENTER,
                 horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
-                heightReference: Cesium.HeightReference.NONE,
+                heightReference: isSatellite
+                            ? Cesium.HeightReference.NONE
+                            : Cesium.HeightReference.CLAMP_TO_GROUND,
                 disableDepthTestDistance: Number.POSITIVE_INFINITY,
                 // Tự động scale theo khoảng cách camera
                 scaleByDistance: new Cesium.NearFarScalar(
