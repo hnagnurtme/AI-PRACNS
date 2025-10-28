@@ -1,20 +1,20 @@
 import { create } from 'zustand';
 import type { NodeDTO } from '../types/NodeTypes';
 
-
 interface NodeState {
     nodes: NodeDTO[];
     selectedNode: NodeDTO | null;
     cameraFollowMode: boolean;
-    runningNodes: Set<string>; // Track which nodes are currently running
+    runningNodes: Set<string>;
+    flyToTrigger: number; 
     
-    // Actions
     setNodes: (nodes: NodeDTO[]) => void;
     setSelectedNode: (node: NodeDTO | null) => void;
+    selectAndFly: (node: NodeDTO) => void; 
     setCameraFollowMode: (follow: boolean) => void;
     setNodeRunning: (nodeId: string, isRunning: boolean) => void;
     
-    // Action helper để cập nhật một node cụ thể trong danh sách
+    // Action helper
     updateNodeInStore: (updatedNode: NodeDTO) => void;
     removeNodeFromStore: (nodeId: string) => void;
 }
@@ -24,12 +24,22 @@ export const useNodeStore = create<NodeState>((set) => ({
     selectedNode: null,
     cameraFollowMode: false,
     runningNodes: new Set<string>(),
+    flyToTrigger: 0, // <-- 3. Thêm giá trị ban đầu
     
     setNodes: (nodes) => set({ nodes }),
     
+    // [SỬA] Action này CHỈ CHỌN (dùng cho click map)
     setSelectedNode: (node) => set({ 
-        selectedNode: node 
+        selectedNode: node,
+        cameraFollowMode: false // Tự động tắt follow khi chọn node mới
     }),
+
+    // [MỚI] Action này CHỌN VÀ KÍCH HOẠT BAY (dùng cho sidebar)
+    selectAndFly: (node) => set((state) => ({
+        selectedNode: node,
+        cameraFollowMode: false, // Tắt follow
+        flyToTrigger: state.flyToTrigger + 1 // <-- 4. Tăng cò súng
+    })),
 
     setCameraFollowMode: (follow) => set({ cameraFollowMode: follow }),
 
@@ -49,7 +59,6 @@ export const useNodeStore = create<NodeState>((set) => ({
             nodes: state.nodes.map(node => 
                 node.nodeId === updatedNode.nodeId ? updatedNode : node
             ),
-            // Cập nhật selectedNode nếu nó là Node đang được chọn
             selectedNode: state.selectedNode && state.selectedNode.nodeId === updatedNode.nodeId 
                 ? updatedNode : state.selectedNode
         })),
@@ -57,12 +66,11 @@ export const useNodeStore = create<NodeState>((set) => ({
     removeNodeFromStore: (nodeId) => 
         set((state) => {
             const newRunningNodes = new Set(state.runningNodes);
-            newRunningNodes.delete(nodeId); // Remove from running nodes too
+            newRunningNodes.delete(nodeId); 
             
             return {
                 nodes: state.nodes.filter(node => node.nodeId !== nodeId),
                 runningNodes: newRunningNodes,
-                // Đặt selectedNode về null nếu Node bị xóa là Node đang được chọn
                 selectedNode: state.selectedNode && state.selectedNode.nodeId === nodeId 
                     ? null : state.selectedNode
             };

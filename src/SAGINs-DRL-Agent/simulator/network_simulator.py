@@ -8,26 +8,8 @@ from agents.dqn_agent import DqnAgent
 from agents.replay_buffer import ReplayBuffer  # Assume this exists; if not, add a simple one below
 from env.packet import Packet
 from typing import Dict, List
-import random
 import logging
 logger = logging.getLogger(__name__)
-
-# If ReplayBuffer not defined, add a simple one
-class ReplayBuffer:
-    def __init__(self, capacity: int = 100000):
-        self.capacity = capacity
-        self.buffer = []
-    
-    def add(self, experience):
-        if len(self.buffer) >= self.capacity:
-            self.buffer.pop(0)
-        self.buffer.append(experience)
-    
-    def sample(self, batch_size: int):
-        return random.sample(self.buffer, min(len(self.buffer), batch_size))
-    
-    def size(self):
-        return len(self.buffer)
 
 class Simulator:
     def __init__(self, mongo_uri: str):
@@ -146,12 +128,12 @@ class Simulator:
             if is_active and los and elevation_ok:
                 valid_next.append(nid)
         
-        logger.info(f"Valid next hops for {current_node['nodeId']} ({current_node['type']}): {valid_next}")
+        logger.info(f"Valid next hops for {current_node['nodeId']} ({current_node['nodeType']}): {valid_next}")
         
         if not valid_next:
             logger.warning(
                 f"⚠️ No valid next hops from {current_node['nodeId']} "
-                f"(type: {current_node['type']}, pos: {current_node['position']}). "
+                f"(type: {current_node['nodeType']}, pos: {current_node['position']}). "
                 f"Available nodes: {list(nodes.keys())}"
             )
         
@@ -166,7 +148,7 @@ class Simulator:
     def check_elevation(self, from_node: Dict, to_node: Dict) -> bool:
         """Check if elevation angle meets minimum requirement"""
         # For ground stations communicating with satellites
-        if from_node.get('type') == 'GROUND_STATION' and to_node.get('type') in ['LEO_SATELLITE', 'MEO_SATELLITE', 'GEO_SATELLITE']:
+        if from_node.get('nodeType') == 'GROUND_STATION' and to_node.get('nodeType') in ['LEO_SATELLITE', 'MEO_SATELLITE', 'GEO_SATELLITE']:
             from_pos = from_node['position']
             to_pos = to_node['position']
             

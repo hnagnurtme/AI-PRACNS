@@ -5,7 +5,7 @@ import NodeDetailCard from '../components/nodes/NodeDetailCard';
 import { useNodeStore } from '../state/nodeStore';
 import { useNodes } from '../hooks/useNodes';
 
-const Dashboard: React.FC = () => {
+const Monitor: React.FC = () => {
     const { nodes, selectedNode } = useNodeStore();
     const { refetchNodes } = useNodes();
 
@@ -16,7 +16,7 @@ const Dashboard: React.FC = () => {
     }, [ refetchNodes ] );
 
     return (
-        <div className="flex h-full w-full bg-gray-100">
+        <div className="flex h-full w-full overflow-hidden bg-gray-100">
             {/* Sidebar danh sách node */ }
             <Sidebar nodes={ nodes } />
 
@@ -32,4 +32,4 @@ const Dashboard: React.FC = () => {
     );
 };
 
-export default Dashboard;
+export default Monitor;
