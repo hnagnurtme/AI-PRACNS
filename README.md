@@ -1,4 +1,5 @@
 # 🌐 AI-Powered Resource Allocation in Cloud and Network Systems
+
 ![Java](https://img.shields.io/badge/Java-ED8B00?style=flat-square&logo=java&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring_Boot-6DB33F?style=flat-square&logo=spring&logoColor=white)
 ![React](https://img.shields.io/badge/React-61DAFB?style=flat-square&logo=react&logoColor=white)
@@ -8,57 +9,82 @@
 [![PyTorch](https://img.shields.io/badge/PyTorch-EE4C2C?style=flat-square&logo=pytorch&logoColor=white)](https://pytorch.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=flat-square&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)](https://www.docker.com/)
-[![REST API](https://img.shields.io/badge/REST-API-blue?style=flat-square)]()
-[![MIT License](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](LICENSE)
 
 > A **Generative AI-based simulation** for optimizing resource allocation in **Space–Air–Ground–Sea Integrated Networks (SAGSINs)** using **heuristic algorithms** and **reinforcement learning**.
-## 📋 Table of Contents
-
-- [Overview](#overview)
-- [System Architecture](#system-architecture)
-- [Technology Stack](#technology-stack)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [API Documentation](#api-documentation)
-- [Performance Metrics](#performance-metrics)
-- [System Requirements](#system-requirements)
-- [Troubleshooting](#troubleshooting)
-- [Contributing](#contributing)
-- [License](#license)
-## 🚀 Project Overview
-This project focuses on **minimizing communication latency** and **optimizing bandwidth and energy usage** across integrated SAGSIN networks.  
-It combines **heuristic algorithms (PSO, ACO)** with **Generative AI** to deliver intelligent resource allocation and real-time adaptability.
-
-**SAGSINS** is an advanced simulation platform for **Space-Air-Ground-Sea Integrated Networks** that enables research and optimization of AI-powered routing algorithms in multi-layered satellite networks (GEO/MEO/LEO).
-
-### Key Features
-
-- **Multi-client simulation** supporting concurrent connections and parallel data flows
-- **AI-powered routing** using Reinforcement Learning (RL) algorithms
-- **Real-time resource allocation** optimization across satellite networks
-- **Comparative analysis** between RL-based and traditional routing (Dijkstra)
-- **Dynamic network topology** with support for link disruptions and congestion
-- **Comprehensive metrics** for latency, throughput, packet loss, and fairness evaluation
-
-### Primary Applications
-
-- Research on adaptive routing algorithms in satellite networks
-- Performance benchmarking of AI vs classical routing methods
-- Network resilience testing under various failure scenarios
-- Educational demonstrations for distributed systems and space communications
 
 ---
 
-## 🏗️ System Architecture
+## 📋 Table of Contents
 
-### Overview
+### 1. [Overview](#1-overview)
+- 1.1 [Project Description](#11-project-description)
+- 1.2 [Key Features](#12-key-features)
+- 1.3 [Applications](#13-applications)
 
-The system consists of four interconnected layers designed for scalability and modularity:
+### 2. [Architecture](#2-architecture)
+- 2.1 [System Design](#21-system-design)
+- 2.2 [Components](#22-components-breakdown)
+- 2.3 [Data Flow](#23-multi-client-data-flow)
+
+### 3. [Technology Stack](#3-technology-stack)
+
+### 4. [Getting Started](#4-getting-started)
+- 4.1 [Prerequisites](#41-prerequisites)
+- 4.2 [Installation](#42-installation)
+- 4.3 [Configuration](#43-configuration)
+
+### 5. [Project Structure](#5-project-structure)
+
+### 6. [Usage](#6-usage)
+- 6.1 [Running Simulations](#61-running-simulations)
+- 6.2 [API Endpoints](#62-api-endpoints)
+
+### 7. [Performance Metrics](#7-performance-metrics)
+
+### 8. [System Requirements](#8-system-requirements)
+
+### 9. [Troubleshooting](#9-troubleshooting)
+
+### 10. [Contributing](#10-contributing)
+
+### 11. [Roadmap](#11-roadmap)
+
+### 12. [License](#12-license)
+
+---
+
+## 1. Overview
+
+### 1.1 Project Description
+
+**SAGSINS** is an advanced simulation platform for **Space-Air-Ground-Sea Integrated Networks** that enables research and optimization of AI-powered routing algorithms in multi-layered satellite networks (GEO/MEO/LEO).
+
+### 1.2 Key Features
+
+- Multi-client simulation with concurrent connections
+- AI-powered routing using Reinforcement Learning
+- Real-time resource allocation optimization
+- Comparative analysis (RL vs Dijkstra)
+- Dynamic network topology with fault tolerance
+- Comprehensive performance metrics
+
+### 1.3 Applications
+
+- Research on adaptive routing algorithms
+- Performance benchmarking of AI vs classical methods
+- Network resilience testing
+- Educational demonstrations for distributed systems
+
+---
+
+## 2. Architecture
+
+### 2.1 System Design
 
 ![System Architecture Diagram](docs/screenshot/FLOW_UML.png)
 
 
-### Component Breakdown
+### 2.2 Components Breakdown
 
 | Layer | Components | Responsibilities |
 |-------|-----------|------------------|
@@ -67,7 +93,7 @@ The system consists of four interconnected layers designed for scalability and m
 | **AI Routing** | • RL Server<br>• Dijkstra Module | • Deep learning-based route calculation<br>• Traditional routing baseline<br>• Performance comparison<br>• Model training and inference |
 | **Management** | • SAGSINS Backend<br>• MongoDB<br>• React UI | • Centralized configuration<br>• Persistent storage<br>• Network monitoring<br>• Administrative interface |
 
-### Multi-Client Data Flow
+### 2.3 Multi-Client Data Flow
 
 ```
 Client A ──┐
@@ -81,538 +107,223 @@ Client Z ──┘
            └──> WebSocket ACK & Statistics
 ```
 
-**Key Features:**
-- Supports unlimited concurrent clients
-- Thread-safe packet handling
-- Asynchronous acknowledgment system
-- Real-time metric aggregation across all clients
 
-**Screenshots:**
+### Screenshots:
+**a. Satellite Network Topology Visualization :**
+![Satellite Network](docs/screenshot/image-satellite.png)
+  **b. React UI for SAGSINS Management — Asia Region Overview :**
+![Ground Station](docs/screenshot/image-newyork.png)
 
-
-- API / Swagger UI for Backend Services
-   ![API Swagger](docs/screenshot/CORE_SWAGGER.png)
-- 3D Map / Node Dashboard (Cesium)
-   ![Cesium Map 1](docs/screenshot/REACT_1.png)
-- React UI for SAGSINS Management - ASIA
-   ![Cesium Map 2](docs/screenshot/REACT_VIEW2.png)
-- Streamlit — Performance Analysis Dashboard
-   ![Streamlit Performance](docs/screenshot/STREAMLIST_PYTHON.png)
+**c. Model Performance and Network Efficiency**
+![RL Monitor](docs/screenshot/image-monitor.png)
 
 ---
 
-## 🛠️ Technology Stack
+## 3. Technology Stack
 
-### Backend Services
-
-| Component | Technology | Version | Purpose |
-|-----------|-----------|---------|---------|
-| **SAGSINS Backend** | Spring Boot | 2.7+ | Core orchestration service, RESTful APIs |
-| **Database** | MongoDB | 4.4+ | Network state, metrics, configuration storage |
-| **Message Queue** | RabbitMQ (optional) | 3.9+ | Async communication between services |
-| **API Gateway** | Spring Cloud Gateway | 3.1+ | Request routing and load balancing |
-
-### AI & Simulation
-
-| Component | Technology | Version | Purpose |
-|-----------|-----------|---------|---------|
-| **RL Server** | Python, PyTorch | 3.8+, 2.0+ | Reinforcement learning model training |
-| **Simulation Client** | Streamlit | 1.25+ | Multi-threaded client simulation |
-| **Network Simulator** | Java | 11+ | Satellite network behavior modeling |
-
-### Frontend & Monitoring
-
-| Component | Technology | Version | Purpose |
-|-----------|-----------|---------|---------|
-| **Admin UI** | React.js | 18+ | Configuration management interface |
-| **Visualization** | D3.js, Recharts | Latest | Real-time metrics visualization |
-| **Monitoring** | Prometheus, Grafana | Latest | System performance monitoring |
-
-### Communication Protocols
-
-- **TCP/UDP**: Inter-satellite and client-server communication
-- **WebSocket**: Real-time updates and acknowledgments
-- **REST**: Management API endpoints
-- **gRPC** (optional): High-performance service communication
+| Category | Technologies |
+|----------|-------------|
+| **Backend** | Java 11+, Spring Boot 3.1+ |
+| **AI/ML** | Python 3.8+, PyTorch 2.0+, TensorFlow 2.13+ |
+| **Frontend** | React 18+, Streamlit 1.25+ |
+| **Database** | MongoDB 4.4+ |
+| **DevOps** | Docker, Docker Compose |
+| **Protocols** | TCP/UDP, WebSocket, REST API |
 
 ---
 
-## 🚀 Getting Started
+## 4. Getting Started
 
-### Prerequisites
+### 4.1 Prerequisites
 
 ```bash
-# Check versions
-java -version    # Should be 11+
-python3 --version # Should be 3.8+
-node -version    # Should be 16+
-docker --version # Should be 20.10+
+java -version    # 11+
+python3 --version # 3.8+
+node -version    # 16+
+docker --version # 20.10+
 ```
 
-### 1. Clone Repository
+### 4.2 Installation
 
+**Quick Start (Docker):**
 ```bash
 git clone <repository-url>
 cd PBL4
+docker-compose up --build
 ```
 
-### 2. Environment Setup
+**Manual Setup:**
 
 ```bash
-# Copy environment template
-cp .env.example .env
+# 1. Clone repository
+git clone <repository-url>
+cd PBL4
 
-# Edit configuration
-nano .env
+# 2. Start MongoDB
+docker run -d -p 27017:27017 --name mongodb mongo:4.4
+
+# 3. Start Backend
+cd src/sagsins-backend
+./mvnw spring-boot:run
+
+# 4. Start RL Server
+cd src/SAGINs-DRL-Agent
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python main.py
+
+# 5. Start Client
+cd src/client
+streamlit run streamlit_app.py --server.port 8501
+
+# 6. Start Frontend
+cd src/sagsins-frontend
+npm install && npm start
 ```
 
-**Required Environment Variables:**
+### 4.3 Configuration
+
+**Environment Variables (.env):**
 ```properties
 MONGODB_URI=mongodb://localhost:27017/sagsins
-SPRING_PROFILES_ACTIVE=dev
+SERVER_PORT=8080
 RL_SERVER_HOST=localhost
 RL_SERVER_PORT=5000
 ```
 
-### 3. Quick Start with Docker Compose
-
+**Verify Installation:**
 ```bash
-# Build and start all services
-docker-compose up --build
-
-# Start in detached mode
-docker-compose up -d
-
-# View logs
-docker-compose logs -f sagsins-backend
-```
-
-### 4. Manual Service Startup
-
-#### Start SAGSINS Backend (Spring Boot)
-
-```bash
-cd src/sagsins-backend
-./mvnw clean install
-./mvnw spring-boot:run
-
-# Or using JAR
-java -jar target/sagsins-backend-1.0.0.jar
-```
-
-**Backend will start on:** `http://localhost:8080`
-
-#### Start RL Server
-
-```bash
-cd src/SAGINs-DRL-Agent
-python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-python main.py
-```
-
-**RL Server will start on:** `http://localhost:5000`
-
-#### Start Simulation Clients (Multiple Instances)
-
-```bash
-# Terminal 1 - Client A
-cd src/client
-python3 -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-streamlit run streamlit_app.py --server.port 8501
-
-# Terminal 2 - Client B
-streamlit run streamlit_app.py --server.port 8502
-
-# Terminal 3 - Client C
-streamlit run streamlit_app.py --server.port 8503
-```
-
-#### Start React Admin UI
-
-```bash
-cd src/sagsins-frontend
-npm install
-npm start
-
-# Production build
-npm run build
-```
-
-**Frontend will start on:** `http://localhost:3000`
-
-### 5. Verify Installation
-
-```bash
-# Check backend health
 curl http://localhost:8080/actuator/health
-
-# Check RL server status
 curl http://localhost:5000/health
-
-# Check MongoDB connection
-mongosh --eval "db.adminCommand('ping')"
 ```
 
 ---
 
-## 📁 Project Structure
+## 5. Project Structure
 
 ```
 PBL4/
 ├── src/
-│   ├── sagsins-backend/              # Spring Boot backend service
-│   │   ├── src/main/java/
-│   │   │   └── com/sagsins/
-│   │   │       ├── controller/       # REST API controllers
-│   │   │       ├── service/          # Business logic
-│   │   │       ├── model/            # Data models
-│   │   │       ├── repository/       # MongoDB repositories
-│   │   │       └── config/           # Configuration classes
-│   │   ├── src/main/resources/
-│   │   │   ├── application.yml       # Spring configuration
-│   │   │   └── application-prod.yml
-│   │   └── pom.xml
-│   │
-│   ├── client/                       # Streamlit simulation clients
-│   │   ├── streamlit_app.py          # Main client application
-│   │   ├── components/               # UI components
-│   │   ├── utils/                    # Helper functions
-│   │   └── requirements.txt
-│   │
-│   ├── sagin-network-simulator/      # Java network simulator
-│   │   ├── src/main/java/
-│   │   │   └── com/simulator/
-│   │   │       ├── satellite/        # Satellite models
-│   │   │       ├── routing/          # Routing algorithms
-│   │   │       └── metrics/          # Performance metrics
-│   │   └── pom.xml
-│   │
-│   ├── SAGINs-DRL-Agent/             # RL agent implementation
-│   │   ├── main.py                   # RL server entry point
-│   │   ├── agent/                    # RL agent classes
-│   │   ├── environment/              # Gym environment
-│   │   ├── models/                   # Neural network models
-│   │   ├── training/                 # Training scripts
-│   │   └── requirements.txt
-│   │
-│   └── sagsins-frontend/             # React admin UI
-│       ├── src/
-│       │   ├── components/           # React components
-│       │   ├── pages/                # Page components
-│       │   ├── services/             # API services
-│       │   └── utils/                # Utilities
-│       └── package.json
-│
-├── docs/
-│   ├── api/                          # API documentation
-│   ├── architecture/                 # Architecture diagrams
-│   ├── screenshots/                  # System screenshots
-│   └── user-guide/                   # User documentation
-│
-├── deployment/
-│   ├── docker/                       # Dockerfile configurations
-│   ├── kubernetes/                   # K8s manifests
-│   └── terraform/                    # Infrastructure as code
-│
-├── scripts/
-│   ├── setup.sh                      # Setup script
-│   ├── deploy.sh                     # Deployment script
-│   └── test.sh                       # Test runner
-│
-├── docker-compose.yml                # Docker Compose configuration
-├── .env.example                      # Environment template
+│   ├── sagsins-backend/           # Spring Boot API
+│   ├── client/                    # Streamlit simulation clients
+│   ├── sagin-network-simulator/   # Network simulator
+│   ├── SAGINs-DRL-Agent/          # RL agent
+│   └── sagsins-frontend/          # React admin UI
+├── docs/                          # Documentation & screenshots
+├── deployment/                    # Docker, K8s configs
+├── scripts/                       # Automation scripts
+├── docker-compose.yml
 └── README.md
 ```
----
-
-## 📊 Performance Metrics
-
-The system tracks comprehensive performance indicators:
-
-### Network Metrics
-- **Latency**: End-to-end packet delay (ms)
-- **Throughput**: Data transmission rate (Mbps)
-- **Packet Loss**: Percentage of dropped packets
-- **Jitter**: Latency variation (ms)
-
-### Routing Metrics
-- **Route Optimality**: Comparison with theoretical optimal
-- **Convergence Time**: Time to find stable routes (s)
-- **Load Distribution**: Traffic balance across nodes
-- **Failover Time**: Recovery time after link failure (s)
-
-### AI Model Metrics
-- **Training Accuracy**: Model learning performance
-- **Inference Time**: Route calculation speed (ms)
-- **Reward Function**: RL agent cumulative reward
-- **Exploration Rate**: ε-greedy exploration parameter
-
-### System Metrics
-- **CPU Usage**: Per-service resource utilization
-- **Memory Usage**: RAM consumption (MB)
-- **Active Connections**: Concurrent client count
-- **API Response Time**: Backend latency (ms)
 
 ---
 
-## 💻 System Requirements
+## 6. Usage
 
-### Minimum Requirements
+### 6.1 Running Simulations
 
-| Resource | Specification |
-|----------|--------------|
-| **OS** | Linux (Ubuntu 20.04+), macOS 11+, Windows 10+ |
-| **CPU** | 4 cores @ 2.5 GHz |
-| **RAM** | 8 GB |
-| **Storage** | 20 GB SSD |
-| **Network** | 100 Mbps |
+1. Access Streamlit client: `http://localhost:8501`
+2. Configure parameters (routing algorithm, packet size, rate)
+3. Select source and destination
+4. Click "Start Simulation"
+5. Monitor real-time metrics
 
-### Recommended Requirements
+### 6.2 API Endpoints
 
-| Resource | Specification |
-|----------|--------------|
-| **OS** | Linux (Ubuntu 22.04) |
-| **CPU** | 8 cores @ 3.0 GHz |
-| **RAM** | 16 GB |
-| **Storage** | 50 GB NVMe SSD |
-| **Network** | 1 Gbps |
-| **GPU** | NVIDIA GPU with CUDA 11+ (for RL training) |
-
-### Software Dependencies
-
-```bash
-# Core
-Java JDK 11+
-Python 3.8+
-Node.js 16+
-Maven 3.6+
-npm 8+
-
-# Databases
-MongoDB 4.4+
-
-# Containerization
-Docker 20.10+
-Docker Compose 2.0+
-
-# Optional
-RabbitMQ 3.9+
-Redis 6.0+
-Nginx 1.20+
+API documentation for AI-PRANCS application
 ```
+http://localhost:8080/swagger-ui/index.html
+```
+***Swagger UI :***
+![Core](docs/screenshot/image-core.png)
 
 ---
 
-## 🔧 Troubleshooting
+## 7. Performance Metrics
 
-### Backend Issues
-
-#### Port Already in Use
-```bash
-# Find process using port 8080
-lsof -i :8080
-# or
-netstat -ano | findstr :8080
-
-# Kill process
-kill -9 <PID>  # Linux/macOS
-taskkill /PID <PID> /F  # Windows
-```
-
-#### MongoDB Connection Failed
-```bash
-# Check MongoDB is running
-docker ps | grep mongo
-
-# Start MongoDB
-docker-compose up -d mongodb
-
-# Check connection in application.yml
-spring.data.mongodb.uri=mongodb://localhost:27017/sagsins
-```
-
-#### Out of Memory Error
-```bash
-# Increase JVM heap size
-export JAVA_OPTS="-Xms512m -Xmx2048m"
-./mvnw spring-boot:run
-```
-
-### RL Server Issues
-
-#### CUDA Not Available
-```bash
-# Install PyTorch with CUDA support
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-
-# Verify CUDA
-python -c "import torch; print(torch.cuda.is_available())"
-```
-
-#### Training Convergence Issues
-```python
-# Adjust hyperparameters in config.yml
-learning_rate: 0.0001  # Reduce if unstable
-batch_size: 64         # Increase for stability
-gamma: 0.99            # Discount factor
-epsilon_decay: 0.995   # Exploration decay rate
-```
-
-### Client Issues
-
-#### Streamlit Port Conflict
-```bash
-# Start on different port
-streamlit run streamlit_app.py --server.port 8502
-```
-
-#### WebSocket Connection Failed
-```bash
-# Check backend WebSocket endpoint
-curl -i -N -H "Connection: Upgrade" \
-  -H "Upgrade: websocket" \
-  http://localhost:8080/ws/simulation
-```
-
-### Docker Issues
-
-#### Container Keeps Restarting
-```bash
-# Check logs
-docker-compose logs sagsins-backend
-
-# Restart specific service
-docker-compose restart sagsins-backend
-
-# Rebuild without cache
-docker-compose build --no-cache
-```
-
-#### Volume Permission Denied
-```bash
-# Fix permissions
-sudo chown -R $USER:$USER ./data
-
-# Or run with proper user
-docker-compose run --user $(id -u):$(id -g) sagsins-backend
-```
+| Category | Metrics | Target |
+|----------|---------|--------|
+| **Network** | Latency, Throughput, Packet Loss, Jitter | < 100ms, > 50 Mbps, < 1%, < 20ms |
+| **Routing** | Optimality, Convergence Time, Load Balance | > 95%, < 5s, σ < 0.2 |
+| **AI Model** | Accuracy, Inference Time, Reward | > 90%, < 50ms, Increasing |
+| **System** | CPU, Memory, Connections, API Latency | < 70%, < 2GB, > 0, < 100ms |
 
 ---
 
-## 🤝 Contributing
+## 8. System Requirements
 
-We welcome contributions from the community!
+**Minimum:**
+- OS: Ubuntu 20.04+ / macOS 11+ / Windows 10+
+- CPU: 4 cores @ 2.5 GHz
+- RAM: 8 GB
+- Storage: 20 GB SSD
 
-### Development Workflow
-
-1. **Fork** the repository
-2. **Create** a feature branch
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Make** your changes
-4. **Test** thoroughly
-   ```bash
-   # Run backend tests
-   cd src/sagsins-backend
-   ./mvnw test
-   
-   # Run Python tests
-   cd src/SAGINs-DRL-Agent
-   pytest
-   ```
-5. **Commit** with conventional commits
-   ```bash
-   git commit -m "feat: add amazing feature"
-   ```
-6. **Push** to your fork
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-7. **Create** a Pull Request
-
-### Coding Standards
-
-**Java (Backend)**
-- Follow Google Java Style Guide
-- Use Lombok for boilerplate reduction
-- Write Javadoc for public APIs
-- Maintain 80%+ test coverage
-
-**Python (RL/Client)**
-- Follow PEP 8 style guide
-- Use type hints
-- Write docstrings (Google style)
-- Format with Black
-
-**JavaScript (Frontend)**
-- Follow Airbnb JavaScript Style Guide
-- Use ESLint and Prettier
-- Write PropTypes for components
-- Maintain component documentation
-
-### Commit Message Convention
-
-```
-<type>(<scope>): <subject>
-
-<body>
-
-<footer>
-```
-
-**Types:**
-- `feat`: New feature
-- `fix`: Bug fix
-- `docs`: Documentation changes
-- `style`: Code style changes
-- `refactor`: Code refactoring
-- `test`: Test additions/changes
-- `chore`: Build process or auxiliary tool changes
+**Recommended:**
+- OS: Ubuntu 22.04 LTS
+- CPU: 8 cores @ 3.0 GHz
+- RAM: 16 GB
+- Storage: 50 GB NVMe SSD
+- GPU: NVIDIA with CUDA 11.8+ (optional)
 
 ---
 
-## 📝 License
+## 9. Troubleshooting
 
-This project is currently **unlicensed**. 
-
-For licensing inquiries, please open an issue to discuss adding:
-- MIT License
-- Apache License 2.0
-- GNU GPLv3
-- Or custom licensing terms
+| Issue | Solution |
+|-------|----------|
+| **Port in use** | `lsof -i :8080` → `kill -9 <PID>` |
+| **MongoDB connection failed** | Check `docker ps \| grep mongo` and restart |
+| **CUDA not available** | Install PyTorch with CUDA: `pip install torch --index-url https://download.pytorch.org/whl/cu118` |
+| **Out of memory** | Increase JVM heap: `export JAVA_OPTS="-Xmx2048m"` |
 
 ---
 
-## 🎯 Roadmap
+## 10. Contributing
 
-### Phase 1: Core Features 
-- [x] Multi-client simulation support
-- [x] Basic RL routing implementation
-- [x] Spring Boot backend API
-- [x] MongoDB integration
-- [x] Streamlit multi-threaded clients
-- [x] Real-time metrics collection
-- [x] WebSocket communication
-- [x] Basic Dijkstra routing baseline
-- [x] React UI for management
-- [x] Core SAGSINs simulation engine
-- [ ] Comprehensive unit test suite
-- [ ] CI/CD pipeline setup
+1. Fork the repository
+2. Create feature branch: `git checkout -b feature/name`
+3. Commit changes: `git commit -m "feat: description"`
+4. Push to branch: `git push origin feature/name`
+5. Open Pull Request
 
-### Phase 2: Advanced Features
+**Coding Standards:**
+- Java: Google Java Style Guide
+- Python: PEP 8
+- JavaScript: Airbnb Style Guide
+
+---
+
+## 11. Roadmap
+
+### ✅ Phase 1: Core Features (Completed)
+- Multi-client simulation
+- Basic RL routing
+- Spring Boot backend
+- MongoDB integration
+- Real-time metrics
+- React UI
+
+### 🚧 Phase 2: Advanced Features (In Progress)
 - [ ] Advanced RL algorithms (A3C, PPO)
-- [ ] Real-time network visualization
-- [ ] Distributed training support
+- [ ] Real-time visualization
+- [ ] Comprehensive test suite
+- [ ] CI/CD pipeline
 - [ ] Performance optimization
+
+### 📋 Phase 3: Enterprise Features (Planned)
+- [ ] Distributed training
+- [ ] Multi-region support
+- [ ] Advanced monitoring (Grafana)
 - [ ] Load testing framework
 
 ---
 
-**Project Status**: Active Development  
-**Last Updated**: October 2025  
-**Version**: 1.0.0-beta
+## 12. License
+
+This project is currently under **MIT License**
+---
+
+**Project Status:** Active Development  
+**Version:** 1.0.0-beta  
+**Last Updated:** October 20
