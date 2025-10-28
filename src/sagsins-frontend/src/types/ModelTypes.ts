@@ -1,11 +1,3 @@
-/** Định nghĩa vị trí 3D cơ bản cho Node */
-export interface Geo3D {
-    latitude: number;
-    longitude: number;
-    altitude: number; // Km
-}
-
-/** Định nghĩa thông số quỹ đạo (chủ yếu cho vệ tinh) */
 export interface Orbit {
     semiMajorAxisKm: number;
     eccentricity: number;
@@ -14,10 +6,27 @@ export interface Orbit {
     argumentOfPerigeeDeg: number;
     trueAnomalyDeg: number;
 }
+export interface Position {
+    latitude: number;
+    longitude: number;
+    altitude: number;
+}
 
-/** Định nghĩa vector vận tốc 3D */
 export interface Velocity {
-    velocityX: number; // Km/s
+    velocityX: number;
     velocityY: number;
     velocityZ: number;
+}
+
+export interface Communication {
+    frequencyGHz: number;
+    bandwidthMHz: number;
+    transmitPowerDbW: number;
+    antennaGainDb: number;
+    beamWidthDeg: number;
+    maxRangeKm: number;
+    minElevationDeg: number;
+    ipAddress: string;
+    port: number;
+    protocol: string;
 }

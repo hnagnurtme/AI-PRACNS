@@ -48,7 +48,7 @@ async def generate_packets(packet_queue: queue.Queue):
     }
     
     # Get all ground stations
-    all_gs = [node for node in mongo.get_all_nodes() if node['type'] == 'GROUND_STATION']
+    all_gs = [node for node in mongo.get_all_nodes() if node['nodeType'] == 'GROUND_STATION']
     if len(all_gs) < 2:
         logger.error("Need at least 2 ground stations for meaningful routing")
         return

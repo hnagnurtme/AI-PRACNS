@@ -1,16 +1,28 @@
 import React from 'react';
-import Dashboard from './pages/Dashboard'; 
+import MainLayout from './layouts/MainLayout';
+import Dashboard from './pages/Dashboard';
+import Monitor from './pages/Monitor';
+import { useState } from 'react';
+import type { PageName } from './layouts/HeaderLayout';
 
-/**
- * Thành phần chính của ứng dụng.
- * Nếu ứng dụng có nhiều trang, đây sẽ là nơi cấu hình React Router.
- */
 const App: React.FC = () => {
+    const [activePage, setActivePage] = useState<PageName>('dashboard'); 
+    const renderPage = () => {
+        switch (activePage) {
+            case 'dashboard':
+                return <Dashboard />;
+            case 'monitor':
+                return <Monitor />;
+            default:
+                return <Dashboard />; 
+        }
+    };
+
     return (
-        <div>
-            {/* Dashboard chứa tất cả UI và Map logic */}
-            <Dashboard />
-        </div>
+        <MainLayout activePage={activePage} setActivePage={setActivePage}>
+            {/* Render trang con tương ứng */}
+            {renderPage()} 
+        </MainLayout>
     );
 };
 
