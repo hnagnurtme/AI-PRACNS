@@ -1,12 +1,8 @@
 import React, { useEffect } from 'react';
-import CesiumViewer from '../map/CesiumViewer';
-import Sidebar from '../components/Sidebar';
-import NodeDetailCard from '../components/nodes/NodeDetailCard';
-import { useNodeStore } from '../state/nodeStore';
+import TestChart from '../components/packet/TestChart';
 import { useNodes } from '../hooks/useNodes';
 
 const Monitor: React.FC = () => {
-    const { nodes, selectedNode } = useNodeStore();
     const { refetchNodes } = useNodes();
 
     useEffect( () => {
@@ -17,17 +13,7 @@ const Monitor: React.FC = () => {
 
     return (
         <div className="flex h-full w-full overflow-hidden bg-gray-100">
-            {/* Sidebar danh sách node */ }
-            <Sidebar nodes={ nodes } />
-
-            {/* Khu vực bản đồ (relative là đúng rồi) */ }
-            <div className="relative flex-grow">
-                <CesiumViewer nodes={ nodes } />
-
-                { selectedNode && (
-                    <NodeDetailCard node={ selectedNode } />
-                ) }
-            </div>
+            <TestChart />
         </div>
     );
 };
