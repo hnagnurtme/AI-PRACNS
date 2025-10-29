@@ -1,9 +1,9 @@
 import React from 'react';
 import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
-import Monitor from './pages/Monitor';
 import { useState } from 'react';
 import type { PageName } from './layouts/HeaderLayout';
+import { ComparisonDashboard } from './pages/Monitor';
 
 const App: React.FC = () => {
     const [activePage, setActivePage] = useState<PageName>('dashboard'); 
@@ -12,7 +12,7 @@ const App: React.FC = () => {
             case 'dashboard':
                 return <Dashboard />;
             case 'monitor':
-                return <Monitor />;
+                return <ComparisonDashboard />;
             default:
                 return <Dashboard />; 
         }

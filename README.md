@@ -117,6 +117,13 @@ Client Z ──┘
 **c. Model Performance and Network Efficiency**
 ![RL Monitor](docs/screenshot/image-monitor.png)
 
+**d. Graphical Representation of Packet Routing Paths**
+![Routing Paths](docs/screenshot/image-1.png)
+
+**e. Comparative Analysis of Routing Algorithms**
+![Comparison Chart](docs/screenshot/image-2.png)
+![Comparison Chart](docs/screenshot/image-3.png)
+
 ---
 
 ## 3. Technology Stack

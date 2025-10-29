@@ -19,19 +19,29 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfiguration {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            // 1. Vô hiệu hóa CSRF (Cần thiết cho API RESTful, tránh xung đột với POST/PUT/DELETE)
-            .csrf(AbstractHttpConfigurer::disable)
-            
-            // 2. Định nghĩa ủy quyền (Authorization)
-            .authorizeHttpRequests(authorize -> authorize
-                // Cho phép truy cập công khai tới tất cả các endpoints (bao gồm /api/nodes và Swagger)
-                .anyRequest().permitAll() 
-            )
-            // 3. Sử dụng cấu hình mặc định khác
-            .httpBasic(withDefaults());
+public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    http
+        .csrf(AbstractHttpConfigurer::disable)
+        .authorizeHttpRequests(auth -> auth
+            // Swagger & API docs
+            .requestMatchers(
+                "/v3/api-docs/**",
+                "/swagger-ui/**",
+                "/swagger-ui.html"
+            ).permitAll()
 
-        return http.build();
-    }
+            // WebSocket endpoint
+            .requestMatchers("/ws/**").permitAll()
+
+            // REST API
+            .requestMatchers("/api/**").permitAll()
+
+            // Tất cả còn lại
+            .anyRequest().permitAll()
+        )
+        .httpBasic(withDefaults());
+
+    return http.build();
+}
+
 }
