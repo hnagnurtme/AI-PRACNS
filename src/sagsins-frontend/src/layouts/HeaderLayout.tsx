@@ -1,6 +1,6 @@
 import React from 'react';
 
-export type PageName = 'dashboard' | 'monitor';
+export type PageName = 'dashboard' | 'monitor' | 'batch'; 
 
 interface HeaderProps {
     activePage: PageName;
@@ -35,7 +35,6 @@ const Header: React.FC<HeaderProps> = ({ activePage, setActivePage }) => {
                 </h1>
             </div>
 
-            {/* --- [SỬA] Xóa <nav> khỏi đây --- */}
 
             {/* --- [SỬA] Đẩy toàn bộ phần bên phải qua ml-auto --- */}
             <div className="ml-auto flex items-center space-x-4">
@@ -53,6 +52,12 @@ const Header: React.FC<HeaderProps> = ({ activePage, setActivePage }) => {
                         onClick={() => setActivePage('monitor')}
                     >
                         Monitor
+                    </button>
+                    <button 
+                        className={getTabClassName('batch')}
+                        onClick={() => setActivePage('batch')}
+                    >
+                        Batch Monitor
                     </button>
                 </nav>
 

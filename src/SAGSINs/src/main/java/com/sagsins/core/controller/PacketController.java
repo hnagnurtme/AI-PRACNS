@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sagsins.core.DTOs.request.BatchPacket;
 import com.sagsins.core.DTOs.request.TwoPacket;
 import com.sagsins.core.model.Packet;
 
@@ -36,5 +37,13 @@ public class PacketController {
         messagingTemplate.convertAndSend("/topic/packets", packet);
         logger.info("Sent packet twice: {}", packet);
         return ResponseEntity.ok(packet);   
+    }
+
+
+    @PostMapping("/packets/batch")
+    public ResponseEntity<BatchPacket> sendBatchPackets(@RequestBody BatchPacket packets) {
+        messagingTemplate.convertAndSend("/topic/batchpacket", packets);
+        logger.info("Sent batch packets: {}", packets);
+        return ResponseEntity.ok(packets);
     }
 }

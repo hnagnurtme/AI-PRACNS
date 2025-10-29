@@ -5,7 +5,6 @@ import Header, {type PageName } from './HeaderLayout';
 
 interface MainLayoutProps {
     children: React.ReactNode;
-    // [SỬA] Thêm props để nhận từ App
     activePage: PageName;
     setActivePage: (page: PageName) => void;
 }
