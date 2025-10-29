@@ -4,6 +4,7 @@ import Dashboard from './pages/Dashboard';
 import { useState } from 'react';
 import type { PageName } from './layouts/HeaderLayout';
 import { ComparisonDashboard } from './pages/Monitor';
+import BatchDashboard from './pages/BatchMonitor';
 
 const App: React.FC = () => {
     const [activePage, setActivePage] = useState<PageName>('dashboard'); 
@@ -13,6 +14,8 @@ const App: React.FC = () => {
                 return <Dashboard />;
             case 'monitor':
                 return <ComparisonDashboard />;
+            case 'batch':
+                return <BatchDashboard />;
             default:
                 return <Dashboard />; 
         }

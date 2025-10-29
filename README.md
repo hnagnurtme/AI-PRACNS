@@ -124,6 +124,9 @@ Client Z ──┘
 ![Comparison Chart](docs/screenshot/image-2.png)
 ![Comparison Chart](docs/screenshot/image-3.png)
 
+**f. Batch Simulation Results Dashboard**
+![Batch Results](docs/screenshot/image-batch.png)
+
 ---
 
 ## 3. Technology Stack

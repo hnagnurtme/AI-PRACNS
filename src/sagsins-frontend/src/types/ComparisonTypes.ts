@@ -75,3 +75,46 @@ export interface ComparisonData {
     dijkstraPacket: Packet;
     rlpacket: Packet;
 }
+
+export interface NetworkBatch {
+    batchId: string;
+    totalPairPackets: number;
+    packets: ComparisonData[];
+}
+
+
+
+export interface BufferState {
+    queueSize: number;
+    bandwidthUtilization: number;
+}
+
+export interface RoutingDecisionInfo {
+    algorithm: "Dijkstra" | "ReinforcementLearning";
+    metric?: string;
+    reward?: number;
+}
+
+
+
+
+export interface ComparisonData {
+    dijkstraPacket: Packet;
+    rlpacket: Packet;
+}
+
+export interface NetworkBatch {
+    batchId: string;
+    totalPairPackets: number;
+    packets: ComparisonData[];
+}
+
+export interface NodeCongestion {
+    nodeId: string;
+    packetsThrough: string[];
+    totalPackets: number;
+    avgQueueSize: number;
+    avgBandwidthUtil: number;
+    avgLatency: number;
+    algorithms: { dijkstra: number; rl: number };
+}
