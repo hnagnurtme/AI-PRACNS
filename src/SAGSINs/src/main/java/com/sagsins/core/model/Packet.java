@@ -12,10 +12,13 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.data.mongodb.core.mapping.Document;
+
 @Data 
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL) 
+@Document(collection = "network_packets")
 public class Packet {
 
     private String packetId;

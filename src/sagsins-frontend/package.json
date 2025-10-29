@@ -15,6 +15,7 @@
     "postinstall": "npm run copy-cesium"
   },
   "dependencies": {
+    "@stomp/stompjs": "^7.2.1",
     "axios": "^1.12.2",
     "cesium": "^1.134.0",
     "react": "^19.1.1",
@@ -22,6 +23,7 @@
     "react-draggable": "^4.5.0",
     "react-toastify": "^11.0.5",
     "recharts": "^3.3.0",
+    "sockjs-client": "^1.6.1",
     "zustand": "^5.0.8"
   },
   "devDependencies": {
@@ -30,6 +32,7 @@
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@types/recharts": "^1.8.29",
+    "@types/sockjs-client": "^1.5.4",
     "@vitejs/plugin-react": "^5.0.4",
     "autoprefixer": "^10.4.21",
     "eslint": "^9.36.0",
