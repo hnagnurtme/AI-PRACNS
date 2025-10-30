@@ -12,10 +12,10 @@ from ..utils.db_connector import MongoConnector
 from ..utils.state_builder import StateBuilder
 from ..rl_agent.dqn_model import DQN, INPUT_SIZE, OUTPUT_SIZE
 
-# --- CẤU HÌNH DỊCH VỤ ---
+# ===================== CẤU HÌNH DỊCH VỤ =====================
 HOST = '0.0.0.0'
-PORT = 65000       
-MODEL_PATH = "models/checkpoints/dqn_checkpoint_final.pth"
+PORT = 65000
+MODEL_PATH = "models/checkpoints/dqn_checkpoint_fullpath_final.pth"
 BUFFER_TIMEOUT = 1.0  # giây
 
 # Logger
@@ -32,7 +32,6 @@ def load_components() -> Tuple[DQN, StateBuilder]:
     except FileNotFoundError:
         logger.error(f"❌ LỖI: Không tìm thấy mô hình tại {MODEL_PATH}. Vui lòng chạy main_train.py trước.")
         raise
-        
     model.eval()
     
     logger.info("2. Đang kết nối MongoDB...")
@@ -42,77 +41,85 @@ def load_components() -> Tuple[DQN, StateBuilder]:
     logger.info("✅ DQN Agent đã sẵn sàng.")
     return model, state_builder
 
-# ===================== 2. PATH PREDICTION (FULL PATH) =====================
+# ===================== 2. PATH PREDICTION =====================
 def get_optimal_path(model: DQN, state_builder: StateBuilder, packet_data: Dict[str, Any], max_hops: int = 20) -> Tuple[List[str], str]:
     """
-    Dự đoán toàn bộ path từ currentHoldingNodeId đến đích dự đoán bởi DQN.
+    Dự đoán toàn bộ path từ currentHoldingNodeId đến đích dựa trên DQN.
     :param max_hops: giới hạn vòng lặp để tránh infinite loop
     :return: (path_list, status)
     """
     start_node = packet_data.get('currentHoldingNodeId')
     if not start_node:
         return ["ERROR_START_NODE"], "ERROR:missing_start_node"
-        
+
     path: List[str] = [str(start_node)]
     current_packet = packet_data.copy()
-    current_packet['path'] = path # Thêm trường path vào packet
+    current_packet['path'] = path
     hops = 0
+    visited_nodes = set([start_node])  # Dùng để tránh loop
 
     while hops < max_hops:
         current_node_id = current_packet.get('currentHoldingNodeId')
-        
-        # 1. KIỂM TRA ĐIỀU KIỆN KẾT THÚC
-        if current_node_id == current_packet.get('stationDest'):
+        dest_node_id = current_packet.get('stationDest')
+
+        # 1. Kiểm tra điều kiện kết thúc
+        if current_node_id == dest_node_id:
             return path, "SUCCESS"
-        
+
         if current_packet.get('dropped', False) or current_packet.get('ttl', 0) <= 0:
-            return path, "DROP_TTL" 
+            return path, "DROP_TTL"
 
         try:
-            # 2. TÍNH TOÁN VÀ DỰ ĐOÁN
+            # 2. Lấy trạng thái vector S
             state_vector = state_builder.get_state_vector(current_packet)
             state_tensor = torch.from_numpy(state_vector).float().unsqueeze(0)
-            
-            current_node = state_builder.db.get_node(str(current_node_id), projection={'neighbors':1})
+
+            # 3. Lấy neighbor thực tế từ DB
+            current_node = state_builder.db.get_node(str(current_node_id), projection={'neighbors': 1})
             neighbor_ids = current_node.get('neighbors', []) if current_node else []
 
             if not neighbor_ids:
                 return path, "NO_NEIGHBORS"
 
+            neighbor_count = len(neighbor_ids)
+
+            # 4. DQN inference
             with torch.no_grad():
                 q_values_tensor = model(state_tensor)
-            
-            q_values = q_values_tensor.cpu().numpy().flatten() # Array 4 phần tử
-            
-            action_index = np.argmax(q_values)
+            q_values = q_values_tensor.cpu().numpy().flatten()
+
+            # Chỉ lấy các q_value hợp lệ (dưới số lượng neighbor)
+            valid_q_values = q_values[:neighbor_count]
+            action_index = int(np.argmax(valid_q_values))
             next_hop = neighbor_ids[action_index]
+
+            # 5. Loop prevention
+            attempted_indices = set()
             last_node_id = path[-2] if len(path) >= 2 else None
-            
-            # 3. XỬ LÝ VÒNG LẶP (LOOP PREVENTION LOGIC)
-            if next_hop == last_node_id and len(neighbor_ids) > 1:
-                # Đặt Q-Value của hành động quay lại thành rất thấp và chọn lại
-                logger.warning(f"Loop detected at {current_node_id}. Re-selecting hop.")
-                q_values[action_index] = -1e9 
-                action_index = np.argmax(q_values)
+            while (next_hop == last_node_id or next_hop in visited_nodes) and len(attempted_indices) < neighbor_count:
+                attempted_indices.add(action_index)
+                valid_q_values[action_index] = -1e9
+                action_index = int(np.argmax(valid_q_values))
                 next_hop = neighbor_ids[action_index]
-            
-            # 4. CẬP NHẬT TRẠNG THÁI
-            if next_hop == last_node_id:
-                # Nếu chỉ còn 1 lựa chọn và nó là node cũ, Agent bị kẹt
-                return path, "LOOP_STUCK" 
-            
+
+            if next_hop == last_node_id or next_hop in visited_nodes:
+                return path, "LOOP_STUCK"
+
+            # 6. Cập nhật path và packet state
             path.append(next_hop)
+            visited_nodes.add(next_hop)
             current_packet['currentHoldingNodeId'] = next_hop
-            current_packet['path'] = path # Cập nhật path trong packet
+            current_packet['path'] = path
             current_packet['ttl'] = max(current_packet.get('ttl', 10) - 1, 0)
-            
+
             hops += 1
 
         except Exception as e:
-            logger.error(f"Error in path prediction: {e}")
+            logger.error(f"Error in path prediction: {e}", exc_info=True)
             return path, f"ERROR:{e}"
 
     return path, "MAX_HOPS_EXCEEDED"
+
 
 # ===================== 3. TCP SERVER =====================
 def start_tcp_server():
@@ -121,7 +128,6 @@ def start_tcp_server():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         logger.info(f"Binding to {HOST}:{PORT}...")
         s.bind((HOST, PORT))
-        
         s.listen()
         logger.info(f"🚀 RL Router listening on {HOST}:{PORT} (TCP)")
 
@@ -146,11 +152,11 @@ def start_tcp_server():
 
                     request_json = json.loads(data_buffer.strip().decode('utf-8'))
 
-                    # Lấy path tối ưu từ DQN
+                    # Lấy path tối ưu
                     path_list, status = get_optimal_path(model, state_builder, request_json, max_hops=20)
 
-                    # nextHopNodeId là node thứ hai trong path (hoặc chính nó nếu chỉ có 1 hop)
-                    next_hop_id = path_list[1] if len(path_list) > 1 else path_list[0] 
+                    # nextHopNodeId = node thứ 2 nếu có, ngược lại chính node hiện tại
+                    next_hop_id = path_list[1] if len(path_list) > 1 else path_list[0]
 
                     response_obj = {
                         "nextHopNodeId": next_hop_id,
