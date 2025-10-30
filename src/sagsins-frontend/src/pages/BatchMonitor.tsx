@@ -1,9 +1,10 @@
-// src/components/Dashboard.tsx
-
 import React, { useState, useMemo } from 'react';
 import { useBatchWebSocket } from '../hooks/useBatchWebSocket'; // Giả định hook của bạn
 import { calculateCongestionMap } from '../utils/calculateCongestionMap';
-import { NetworkTopologyView, BatchStatistics, PacketFlowDetail, AlgorithmComparisonChart } from '../components/batchchart/BatchChart';
+import { BatchStatistics } from '../components/batchchart/BatchStatistics';
+import { NetworkTopologyView } from '../components/batchchart/NetworkTopologyView';
+import { PacketFlowDetail } from '../components/batchchart/PacketFlowDetail';
+import { AlgorithmComparisonChart } from '../components/batchchart/AlgorithmComparisonChart';
 
 const DASHBOARD_ENDPOINT = 'http://localhost:8080/ws'; // Hoặc endpoint chính xác
 
@@ -47,7 +48,7 @@ const BatchDashboard: React.FC = () => {
             {/* 2. So sánh Thuật toán & Tắc nghẽn Node */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
-                    <NetworkTopologyView 
+                    <NetworkTopologyView
                         congestionMap={congestionMap}
                         selectedNode={selectedNodeId}
                         onSelectNode={setSelectedNodeId}

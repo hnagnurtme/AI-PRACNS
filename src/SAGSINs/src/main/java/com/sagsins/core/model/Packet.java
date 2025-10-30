@@ -44,7 +44,7 @@ public class Packet {
     private double maxAcceptableLossRate = 0.01;
     private boolean dropped = false;
     private String dropReason;
-    private Map<String, Object> analysisData;
+    private AnalysisData analysisData;
 
     /**
      * Giải mã payload từ Base64 sang chuỗi UTF-8.

@@ -1,6 +1,4 @@
 package com.sagsins.core.model;
-import java.util.Map;
-
 public record HopRecord(
     String fromNodeId,
     String toNodeId,
@@ -9,6 +7,6 @@ public record HopRecord(
     Position fromNodePosition,
     Position toNodePosition,
     double distanceKm,
-    Map<String, Object> fromNodeBufferState,
-    Map<String, Object> routingDecisionInfo
+    BufferState fromNodeBufferState,
+    RoutingDecisionInfo routingDecisionInfo
 ) {}
