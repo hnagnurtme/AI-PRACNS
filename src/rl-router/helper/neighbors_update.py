@@ -1,13 +1,14 @@
 import pymongo
-import random
+from typing import List, Dict, Any, Tuple
 import math
 import logging
+import os
 
-# ----------------- Logger -----------------
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+# --- Logger setup ---
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# ----------------- Config -----------------
+# --- NodeType config ---
 R_EARTH = 6371.0  # km
 NODE_TYPE_MAX_RANGE = {
     "GROUND_STATION": 2000.0,
@@ -16,88 +17,117 @@ NODE_TYPE_MAX_RANGE = {
     "GEO_SATELLITE": 35000.0
 }
 
-DB_URI = "mongodb://user:password123@localhost:27017/?authSource=admin"
+# --- MongoDB setup ---
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://user:password123@localhost:27017/?authSource=admin")
 DB_NAME = "sagsin_network"
 COLLECTION_NAME = "network_nodes"
 
-# ----------------- Helper Functions -----------------
-def geo_to_xyz(lat: float, lon: float, alt: float) -> tuple:
-    """Chuyển lat/lon/alt (km) sang hệ tọa độ ECEF (x, y, z) km"""
-    lat_rad = math.radians(lat)
-    lon_rad = math.radians(lon)
-    R = R_EARTH + alt
-    x = R * math.cos(lat_rad) * math.cos(lon_rad)
-    y = R * math.cos(lat_rad) * math.sin(lon_rad)
-    z = R * math.sin(lat_rad)
-    return x, y, z
+class NodeService:
+    def __init__(self, uri: str = MONGO_URI):
+        self.client = pymongo.MongoClient(uri)
+        self.db = self.client[DB_NAME]
+        self.collection = self.db[COLLECTION_NAME]
+        logger.info("Connected to MongoDB: %s, DB: %s, Collection: %s", uri, DB_NAME, COLLECTION_NAME)
 
-def distance_3d(node1: dict, node2: dict) -> float:
-    x1, y1, z1 = geo_to_xyz(node1["position"]["latitude"], node1["position"]["longitude"], node1["position"]["altitude"])
-    x2, y2, z2 = geo_to_xyz(node2["position"]["latitude"], node2["position"]["longitude"], node2["position"]["altitude"])
-    return math.sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
+    @staticmethod
+    def geo_to_xyz(node: Dict[str, Any]) -> Tuple[float, float, float]:
+        """Chuyển Lat/Lon/Alt sang tọa độ 3D ECEF (km)."""
+        lat = math.radians(node["position"]["latitude"])
+        lon = math.radians(node["position"]["longitude"])
+        alt = node["position"].get("altitude", 0.0)
+        R = R_EARTH + alt
+        x = R * math.cos(lat) * math.cos(lon)
+        y = R * math.cos(lat) * math.sin(lon)
+        z = R * math.sin(lat)
+        return x, y, z
 
-def los_max_distance(node1: dict, node2: dict) -> float:
-    """Khoảng cách tối đa theo LOS giữa node khác loại"""
-    alt1 = node1["position"].get("altitude", 0.0)
-    alt2 = node2["position"].get("altitude", 0.0)
-    return math.sqrt((R_EARTH + alt1)**2 + (R_EARTH + alt2)**2) - R_EARTH
+    @staticmethod
+    def distance_3d(node1: Dict[str, Any], node2: Dict[str, Any]) -> float:
+        x1, y1, z1 = NodeService.geo_to_xyz(node1)
+        x2, y2, z2 = NodeService.geo_to_xyz(node2)
+        return math.sqrt((x2 - x1)**2 + (y2 - y1)**2 + (z2 - z1)**2)
 
-# ----------------- Generate Nodes -----------------
-gs_nodes = [
-    {"nodeId": "N-HANOI", "nodeType": "GROUND_STATION", "position": {"latitude": 21.0285, "longitude": 105.8542, "altitude": 0.02}},
-    {"nodeId": "N-BEIJING", "nodeType": "GROUND_STATION", "position": {"latitude": 39.9042, "longitude": 116.4074, "altitude": 0.05}},
-    {"nodeId": "N-TOKYO", "nodeType": "GROUND_STATION", "position": {"latitude": 35.6895, "longitude": 139.6917, "altitude": 0.04}},
-    {"nodeId": "N-SINGAPORE", "nodeType": "GROUND_STATION", "position": {"latitude": 1.3521, "longitude": 103.8198, "altitude": 0.03}},
-]
+    def compute_neighbors(self, nodes: List[Dict[str, Any]]) -> Dict[str, List[str]]:
+        """
+        Cập nhật neighbors thực tế giữa các loại node:
+        - GS ↔ tất cả satellites trong tầm nhìn.
+        - Satellites ↔ satellites theo khoảng cách max thực tế.
+        """
+        neighbors_map = {}
 
-leo_nodes = []
-for i in range(1, 11):  # 10 LEO
-    lat = random.uniform(-60, 60)
-    lon = random.uniform(60, 150)
-    leo_nodes.append({"nodeId": f"SAT-LEO-{i}", "nodeType": "LEO_SATELLITE", "position": {"latitude": lat, "longitude": lon, "altitude": 550}})
+        def elevation_ok(gs: Dict[str, Any], sat: Dict[str, Any], min_elev_deg=5.0) -> bool:
+            """Kiểm tra satellite có nằm trong góc nhìn từ GS."""
+            alt_gs = gs["position"].get("altitude", 0.0)
+            alt_sat = sat["position"].get("altitude", 0.0)
+            dist = self.distance_3d(gs, sat)
+            max_dist = math.sqrt((R_EARTH + alt_sat)**2 - R_EARTH**2)
+            return dist <= max_dist
 
-meo_nodes = []
-for i in range(1, 6):  # 5 MEO
-    lat = random.uniform(-40, 40)
-    lon = random.uniform(70, 150)
-    meo_nodes.append({"nodeId": f"SAT-MEO-{i}", "nodeType": "MEO_SATELLITE", "position": {"latitude": lat, "longitude": lon, "altitude": 20000}})
+        for node_a in nodes:
+            node_a_id = node_a["nodeId"]
+            type_a = node_a.get("nodeType", "GROUND_STATION")
+            neighbors = []
 
-geo_nodes = []
-geo_positions = [100, 110, 120]  # GEO longitudes Asia
-for i, lon in enumerate(geo_positions, 1):
-    geo_nodes.append({"nodeId": f"SAT-GEO-{i}", "nodeType": "GEO_SATELLITE", "position": {"latitude": 0.0, "longitude": lon, "altitude": 35786}})
+            for node_b in nodes:
+                if node_b["nodeId"] == node_a_id:
+                    continue
+                type_b = node_b.get("nodeType", "GROUND_STATION")
+                distance = self.distance_3d(node_a, node_b)
 
-all_nodes = gs_nodes + leo_nodes + meo_nodes + geo_nodes
+                # Same type
+                if type_a == type_b:
+                    max_dist = NODE_TYPE_MAX_RANGE.get(type_a, 2000.0)
+                    if distance <= max_dist:
+                        neighbors.append(node_b["nodeId"])
+                else:
+                    # Cross-type
+                    if type_a == "GROUND_STATION" or type_b == "GROUND_STATION":
+                        gs = node_a if type_a == "GROUND_STATION" else node_b
+                        sat = node_b if gs is node_a else node_a
+                        if elevation_ok(gs, sat):
+                            neighbors.append(node_b["nodeId"])
+                    else:
+                        # Satellite ↔ Satellite
+                        max_range_map = {
+                            ("LEO_SATELLITE","MEO_SATELLITE"): 12000,
+                            ("LEO_SATELLITE","GEO_SATELLITE"): 40000,
+                            ("MEO_SATELLITE","GEO_SATELLITE"): 30000,
+                            ("LEO_SATELLITE","LEO_SATELLITE"): NODE_TYPE_MAX_RANGE["LEO_SATELLITE"],
+                            ("MEO_SATELLITE","MEO_SATELLITE"): NODE_TYPE_MAX_RANGE["MEO_SATELLITE"],
+                            ("GEO_SATELLITE","GEO_SATELLITE"): NODE_TYPE_MAX_RANGE["GEO_SATELLITE"],
+                        }
+                        key = (type_a,type_b) if (type_a,type_b) in max_range_map else (type_b,type_a)
+                        max_dist = max_range_map.get(key, 15000)
+                        if distance <= max_dist:
+                            neighbors.append(node_b["nodeId"])
 
-# ----------------- Compute Neighbors -----------------
-def compute_neighbors(nodes: list) -> dict:
-    neighbors_map = {}
-    for node_a in nodes:
-        node_a_id = node_a["nodeId"]
-        type_a = node_a["nodeType"]
-        neighbors = []
-        for node_b in nodes:
-            if node_b["nodeId"] == node_a_id:
-                continue
-            type_b = node_b["nodeType"]
-            dist = distance_3d(node_a, node_b)
-            if type_a == type_b:
-                max_dist = NODE_TYPE_MAX_RANGE.get(type_a, 2000.0)
-            else:
-                max_dist = los_max_distance(node_a, node_b)
-            if dist <= max_dist:
-                neighbors.append(node_b["nodeId"])
-        neighbors_map[node_a_id] = neighbors
-    return neighbors_map
+            neighbors_map[node_a_id] = neighbors
 
-neighbors_map = compute_neighbors(all_nodes)
-for node in all_nodes:
-    node["neighbors"] = neighbors_map[node["nodeId"]]
+        return neighbors_map
 
-# ----------------- Insert to MongoDB -----------------
-mongo_client = pymongo.MongoClient(DB_URI)
-db = mongo_client[DB_NAME]
-collection = db[COLLECTION_NAME]
-collection.delete_many({})
-collection.insert_many(all_nodes)
-logger.info(f"Inserted {len(all_nodes)} nodes with neighbors into MongoDB.")
+    def update_neighbors_in_db(self):
+        """Tải tất cả node, tính neighbors, cập nhật MongoDB."""
+        nodes = list(self.collection.find({}))
+        logger.info("Calculating neighbors for %d nodes...", len(nodes))
+        neighbors_map = self.compute_neighbors(nodes)
+
+        for node_id, neighbors in neighbors_map.items():
+            self.collection.update_one(
+                {"nodeId": node_id},
+                {"$set": {"neighbors": neighbors}}
+            )
+            logger.info(f"  {node_id}: {len(neighbors)} neighbors updated")
+        logger.info("✅ All neighbors updated successfully.")
+
+    def close(self):
+        self.client.close()
+        logger.info("MongoDB connection closed.")
+
+if __name__ == "__main__":
+    service = NodeService()
+    try:
+        service.update_neighbors_in_db()
+    except Exception as e:
+        logger.error(f"❌ FATAL ERROR during neighbor update: {e}", exc_info=True)
+    finally:
+        service.close()
