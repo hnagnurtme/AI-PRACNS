@@ -58,15 +58,9 @@ public class PacketHelper {
                 currentNode.getPosition(),
                 nextNode.getPosition(),
                 calculateDistanceKm(currentNode, nextNode),
-                getBufferState(currentNode),
-                new HashMap<>() {{
-                    put("totalCost", routeInfo.getTotalCost());
-                    put("avgPacketLoss", routeInfo.getAvgPacketLossRate());
-                    put("hopCount", routeInfo.getHopCount());
-                    put("linkLatency", linkLatency);
-                    put("nodePacketLossRate", currentNode.getPacketLossRate());
-                    put("combinedLossRate", combinedLossRate);
-                }}
+                getBufferState(currentNode)
+                , null
+                
         );
 
         if (packet.getHopRecords() != null) {
