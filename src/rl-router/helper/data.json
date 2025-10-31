@@ -1,0 +1,2948 @@
+[{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92c8"
+  },
+  "id": "GROUND_STATION_001",
+  "nodeId": "GROUND_STATION_001",
+  "nodeName": "Hanoi Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 21.0285,
+    "longitude": 105.8542,
+    "altitude": 0.14
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 1.972116244773425,
+    "bandwidthMHz": 344,
+    "transmitPowerDbW": 39,
+    "antennaGainDb": 15,
+    "beamWidthDeg": 20.985617433662696,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.114.216.62",
+    "port": 6882,
+    "protocol": "QUIC"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 14.91,
+  "packetLossRate": 0.0305,
+  "resourceUtilization": 0.5,
+  "packetBufferCapacity": 9790,
+  "currentPacketCount": 226,
+  "weather": "RAIN",
+  "lastUpdated": "2025-10-30T10:31:52.507449Z",
+  "host": "node-1.sagsin.network",
+  "port": 6882,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_002",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92c9"
+  },
+  "id": "GROUND_STATION_002",
+  "nodeId": "GROUND_STATION_002",
+  "nodeName": "Bangkok Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 13.7563,
+    "longitude": 100.5018,
+    "altitude": -0.02
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.265543784047224,
+    "bandwidthMHz": 279,
+    "transmitPowerDbW": 29,
+    "antennaGainDb": 42,
+    "beamWidthDeg": 15.312127507012917,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.79.60.110",
+    "port": 5951,
+    "protocol": "QUIC"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 8.85,
+  "packetLossRate": 0.0187,
+  "resourceUtilization": 0.72,
+  "packetBufferCapacity": 9278,
+  "currentPacketCount": 412,
+  "weather": "LIGHT_RAIN",
+  "lastUpdated": "2025-10-30T10:31:52.507485Z",
+  "host": "node-2.sagsin.network",
+  "port": 5951,
+  "healthy": false,
+  "neighbors": [
+    "GROUND_STATION_001",
+    "GROUND_STATION_006",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92ca"
+  },
+  "id": "GROUND_STATION_003",
+  "nodeId": "GROUND_STATION_003",
+  "nodeName": "New York Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 40.7128,
+    "longitude": -74.006,
+    "altitude": -0.21
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.1973104630486704,
+    "bandwidthMHz": 248,
+    "transmitPowerDbW": 45,
+    "antennaGainDb": 15,
+    "beamWidthDeg": 4.296631155320203,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.249.105.144",
+    "port": 6744,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 5.13,
+  "packetLossRate": 0.0191,
+  "resourceUtilization": 0.74,
+  "packetBufferCapacity": 2882,
+  "currentPacketCount": 147,
+  "weather": "SEVERE_STORM",
+  "lastUpdated": "2025-10-30T10:31:52.507513Z",
+  "host": "node-3.sagsin.network",
+  "port": 6744,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_016",
+    "LEO_SATELLITE_036",
+    "LEO_SATELLITE_037",
+    "LEO_SATELLITE_038",
+    "MEO_SATELLITE_041",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046",
+    "MEO_SATELLITE_047",
+    "GEO_SATELLITE_050"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92cb"
+  },
+  "id": "GROUND_STATION_004",
+  "nodeId": "GROUND_STATION_004",
+  "nodeName": "London Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 51.5074,
+    "longitude": -0.1278,
+    "altitude": -0.49
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.0055254949401506,
+    "bandwidthMHz": 144,
+    "transmitPowerDbW": 28,
+    "antennaGainDb": 19,
+    "beamWidthDeg": 2.7789933023227706,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.251.169.232",
+    "port": 8198,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 10.61,
+  "packetLossRate": 0.042,
+  "resourceUtilization": 0.11,
+  "packetBufferCapacity": 8589,
+  "currentPacketCount": 131,
+  "weather": "SNOW",
+  "lastUpdated": "2025-10-30T10:31:52.507554Z",
+  "host": "node-4.sagsin.network",
+  "port": 8198,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_012",
+    "GROUND_STATION_013",
+    "LEO_SATELLITE_039",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046",
+    "GEO_SATELLITE_050"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92cc"
+  },
+  "id": "GROUND_STATION_005",
+  "nodeId": "GROUND_STATION_005",
+  "nodeName": "Tokyo Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 35.6762,
+    "longitude": 139.6503,
+    "altitude": 0.33
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.5571380382025115,
+    "bandwidthMHz": 97,
+    "transmitPowerDbW": 20,
+    "antennaGainDb": 25,
+    "beamWidthDeg": 13.26311291219098,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.198.77.164",
+    "port": 8095,
+    "protocol": "TCP"
+  },
+  "isOperational": false,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 9.21,
+  "packetLossRate": 0.0282,
+  "resourceUtilization": 0.67,
+  "packetBufferCapacity": 1738,
+  "currentPacketCount": 174,
+  "weather": "LIGHT_RAIN",
+  "lastUpdated": "2025-10-30T10:31:52.507580Z",
+  "host": "node-5.sagsin.network",
+  "port": 8095,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_011",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_044",
+    "MEO_SATELLITE_047",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92cd"
+  },
+  "id": "GROUND_STATION_006",
+  "nodeId": "GROUND_STATION_006",
+  "nodeName": "Singapore Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 1.3521,
+    "longitude": 103.8198,
+    "altitude": -0.07
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.176095325019572,
+    "bandwidthMHz": 116,
+    "transmitPowerDbW": 24,
+    "antennaGainDb": 30,
+    "beamWidthDeg": 11.498849241570301,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.167.253.140",
+    "port": 8617,
+    "protocol": "TCP"
+  },
+  "isOperational": false,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 10.31,
+  "packetLossRate": 0.0087,
+  "resourceUtilization": 0.69,
+  "packetBufferCapacity": 3823,
+  "currentPacketCount": 437,
+  "weather": "LIGHT_RAIN",
+  "lastUpdated": "2025-10-30T10:31:52.507603Z",
+  "host": "node-6.sagsin.network",
+  "port": 8617,
+  "healthy": false,
+  "neighbors": [
+    "GROUND_STATION_002",
+    "GROUND_STATION_020",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92ce"
+  },
+  "id": "GROUND_STATION_007",
+  "nodeId": "GROUND_STATION_007",
+  "nodeName": "Sydney Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": -33.8688,
+    "longitude": 151.2093,
+    "altitude": -0.48
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.3260470837082843,
+    "bandwidthMHz": 443,
+    "transmitPowerDbW": 34,
+    "antennaGainDb": 24,
+    "beamWidthDeg": 22.792138450380953,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.68.79.70",
+    "port": 7203,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 12.17,
+  "packetLossRate": 0.0414,
+  "resourceUtilization": 0.73,
+  "packetBufferCapacity": 2653,
+  "currentPacketCount": 416,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.507625Z",
+  "host": "node-7.sagsin.network",
+  "port": 7203,
+  "healthy": true,
+  "neighbors": [
+    "LEO_SATELLITE_029",
+    "MEO_SATELLITE_044",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92cf"
+  },
+  "id": "GROUND_STATION_008",
+  "nodeId": "GROUND_STATION_008",
+  "nodeName": "Dubai Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 25.2048,
+    "longitude": 55.2708,
+    "altitude": 0.47
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.897290577448766,
+    "bandwidthMHz": 180,
+    "transmitPowerDbW": 23,
+    "antennaGainDb": 36,
+    "beamWidthDeg": 12.744325841056916,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.139.55.101",
+    "port": 8345,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 7.61,
+  "packetLossRate": 0.0162,
+  "resourceUtilization": 0.8,
+  "packetBufferCapacity": 3590,
+  "currentPacketCount": 222,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.507655Z",
+  "host": "node-8.sagsin.network",
+  "port": 8345,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_009",
+    "MEO_SATELLITE_043",
+    "GEO_SATELLITE_050"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92d0"
+  },
+  "id": "GROUND_STATION_009",
+  "nodeId": "GROUND_STATION_009",
+  "nodeName": "Mumbai Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 19.076,
+    "longitude": 72.8777,
+    "altitude": 0.27
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.5297406441000234,
+    "bandwidthMHz": 173,
+    "transmitPowerDbW": 24,
+    "antennaGainDb": 16,
+    "beamWidthDeg": 1.9561353282586125,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.87.133.102",
+    "port": 7338,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 9.06,
+  "packetLossRate": 0.0288,
+  "resourceUtilization": 0.68,
+  "packetBufferCapacity": 5508,
+  "currentPacketCount": 242,
+  "weather": "SNOW",
+  "lastUpdated": "2025-10-30T10:31:52.507681Z",
+  "host": "node-9.sagsin.network",
+  "port": 7338,
+  "healthy": false,
+  "neighbors": [
+    "GROUND_STATION_008",
+    "GEO_SATELLITE_050"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92d1"
+  },
+  "id": "GROUND_STATION_010",
+  "nodeId": "GROUND_STATION_010",
+  "nodeName": "Beijing Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 39.9042,
+    "longitude": 116.4074,
+    "altitude": -0.46
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.1972602850690737,
+    "bandwidthMHz": 89,
+    "transmitPowerDbW": 42,
+    "antennaGainDb": 23,
+    "beamWidthDeg": 5.0507212238773675,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.179.10.64",
+    "port": 5277,
+    "protocol": "QUIC"
+  },
+  "isOperational": false,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 9.33,
+  "packetLossRate": 0.0428,
+  "resourceUtilization": 0.25,
+  "packetBufferCapacity": 6447,
+  "currentPacketCount": 411,
+  "weather": "SEVERE_STORM",
+  "lastUpdated": "2025-10-30T10:31:52.507700Z",
+  "host": "node-10.sagsin.network",
+  "port": 5277,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_011",
+    "MEO_SATELLITE_043",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92d2"
+  },
+  "id": "GROUND_STATION_011",
+  "nodeId": "GROUND_STATION_011",
+  "nodeName": "Seoul Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 37.5665,
+    "longitude": 126.978,
+    "altitude": -0.22
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.519567984630196,
+    "bandwidthMHz": 196,
+    "transmitPowerDbW": 41,
+    "antennaGainDb": 20,
+    "beamWidthDeg": 8.020959603339772,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.189.118.202",
+    "port": 7251,
+    "protocol": "QUIC"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 14.92,
+  "packetLossRate": 0.0015,
+  "resourceUtilization": 0.36,
+  "packetBufferCapacity": 7073,
+  "currentPacketCount": 385,
+  "weather": "LIGHT_RAIN",
+  "lastUpdated": "2025-10-30T10:31:52.507718Z",
+  "host": "node-11.sagsin.network",
+  "port": 7251,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_005",
+    "GROUND_STATION_010",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_044",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92d3"
+  },
+  "id": "GROUND_STATION_012",
+  "nodeId": "GROUND_STATION_012",
+  "nodeName": "Paris Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 48.8566,
+    "longitude": 2.3522,
+    "altitude": -0.48
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.0274701914814854,
+    "bandwidthMHz": 391,
+    "transmitPowerDbW": 50,
+    "antennaGainDb": 16,
+    "beamWidthDeg": 16.08188238228061,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.71.149.199",
+    "port": 7723,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 11.39,
+  "packetLossRate": 0.0061,
+  "resourceUtilization": 0.65,
+  "packetBufferCapacity": 2195,
+  "currentPacketCount": 168,
+  "weather": "SEVERE_STORM",
+  "lastUpdated": "2025-10-30T10:31:52.507737Z",
+  "host": "node-12.sagsin.network",
+  "port": 7723,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_004",
+    "GROUND_STATION_013",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046",
+    "GEO_SATELLITE_050"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92d4"
+  },
+  "id": "GROUND_STATION_013",
+  "nodeId": "GROUND_STATION_013",
+  "nodeName": "Berlin Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 52.52,
+    "longitude": 13.405,
+    "altitude": 0.2
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.4065685990250483,
+    "bandwidthMHz": 405,
+    "transmitPowerDbW": 49,
+    "antennaGainDb": 27,
+    "beamWidthDeg": 22.486926795642688,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.106.245.84",
+    "port": 8171,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 10.02,
+  "packetLossRate": 0.0207,
+  "resourceUtilization": 0.46,
+  "packetBufferCapacity": 5935,
+  "currentPacketCount": 268,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.507760Z",
+  "host": "node-13.sagsin.network",
+  "port": 8171,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_004",
+    "GROUND_STATION_012",
+    "GROUND_STATION_014",
+    "GROUND_STATION_019",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046",
+    "GEO_SATELLITE_050"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92d5"
+  },
+  "id": "GROUND_STATION_014",
+  "nodeId": "GROUND_STATION_014",
+  "nodeName": "Moscow Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 55.7558,
+    "longitude": 37.6173,
+    "altitude": {
+      "$numberDouble": "-0.0"
+    }
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.271863532791034,
+    "bandwidthMHz": 79,
+    "transmitPowerDbW": 39,
+    "antennaGainDb": 33,
+    "beamWidthDeg": 12.52675868218333,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.202.252.114",
+    "port": 7569,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 8.69,
+  "packetLossRate": 0.0168,
+  "resourceUtilization": 0.69,
+  "packetBufferCapacity": 5043,
+  "currentPacketCount": 405,
+  "weather": "SNOW",
+  "lastUpdated": "2025-10-30T10:31:52.507777Z",
+  "host": "node-14.sagsin.network",
+  "port": 7569,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_013",
+    "GROUND_STATION_019",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046",
+    "GEO_SATELLITE_050"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92d6"
+  },
+  "id": "GROUND_STATION_015",
+  "nodeId": "GROUND_STATION_015",
+  "nodeName": "Los Angeles Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 34.0522,
+    "longitude": -118.2437,
+    "altitude": 0.38
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.622739637797246,
+    "bandwidthMHz": 298,
+    "transmitPowerDbW": 28,
+    "antennaGainDb": 18,
+    "beamWidthDeg": 26.315353984733232,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.109.77.50",
+    "port": 8959,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 5.01,
+  "packetLossRate": 0.006,
+  "resourceUtilization": 0.71,
+  "packetBufferCapacity": 5891,
+  "currentPacketCount": 341,
+  "weather": "LIGHT_RAIN",
+  "lastUpdated": "2025-10-30T10:31:52.507796Z",
+  "host": "node-15.sagsin.network",
+  "port": 8959,
+  "healthy": false,
+  "neighbors": [
+    "LEO_SATELLITE_034",
+    "LEO_SATELLITE_035",
+    "LEO_SATELLITE_036",
+    "MEO_SATELLITE_041",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_044",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046",
+    "MEO_SATELLITE_047",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92d7"
+  },
+  "id": "GROUND_STATION_016",
+  "nodeId": "GROUND_STATION_016",
+  "nodeName": "Toronto Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 43.6532,
+    "longitude": -79.3832,
+    "altitude": -0.45
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.6758331315266544,
+    "bandwidthMHz": 175,
+    "transmitPowerDbW": 20,
+    "antennaGainDb": 31,
+    "beamWidthDeg": 26.0400268119269,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.251.131.238",
+    "port": 7707,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 5.67,
+  "packetLossRate": 0.0225,
+  "resourceUtilization": 0.19,
+  "packetBufferCapacity": 1057,
+  "currentPacketCount": 376,
+  "weather": "STORM",
+  "lastUpdated": "2025-10-30T10:31:52.507813Z",
+  "host": "node-16.sagsin.network",
+  "port": 7707,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_003",
+    "LEO_SATELLITE_036",
+    "LEO_SATELLITE_037",
+    "LEO_SATELLITE_038",
+    "MEO_SATELLITE_041",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046",
+    "MEO_SATELLITE_047"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92d8"
+  },
+  "id": "GROUND_STATION_017",
+  "nodeId": "GROUND_STATION_017",
+  "nodeName": "Sao Paulo Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": -23.5505,
+    "longitude": -46.6333,
+    "altitude": 0.13
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.757961603235914,
+    "bandwidthMHz": 382,
+    "transmitPowerDbW": 27,
+    "antennaGainDb": 17,
+    "beamWidthDeg": 27.976212394149183,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.112.239.139",
+    "port": 7189,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 13.05,
+  "packetLossRate": 0.0443,
+  "resourceUtilization": 0.27,
+  "packetBufferCapacity": 7318,
+  "currentPacketCount": 288,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.507833Z",
+  "host": "node-17.sagsin.network",
+  "port": 7189,
+  "healthy": true,
+  "neighbors": [
+    "MEO_SATELLITE_042",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_048",
+    "GEO_SATELLITE_050"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92d9"
+  },
+  "id": "GROUND_STATION_018",
+  "nodeId": "GROUND_STATION_018",
+  "nodeName": "Cairo Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 30.0444,
+    "longitude": 31.2357,
+    "altitude": -0.29
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.8877025738471884,
+    "bandwidthMHz": 199,
+    "transmitPowerDbW": 42,
+    "antennaGainDb": 44,
+    "beamWidthDeg": 4.6452856002732155,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.200.78.219",
+    "port": 5203,
+    "protocol": "UDP"
+  },
+  "isOperational": false,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 8.61,
+  "packetLossRate": 0.0209,
+  "resourceUtilization": 0.66,
+  "packetBufferCapacity": 2002,
+  "currentPacketCount": 291,
+  "weather": "STORM",
+  "lastUpdated": "2025-10-30T10:31:52.507855Z",
+  "host": "node-18.sagsin.network",
+  "port": 5203,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_019",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_045",
+    "GEO_SATELLITE_050"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92da"
+  },
+  "id": "GROUND_STATION_019",
+  "nodeId": "GROUND_STATION_019",
+  "nodeName": "Istanbul Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": 41.0082,
+    "longitude": 28.9784,
+    "altitude": 0.33
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.5018913501191173,
+    "bandwidthMHz": 131,
+    "transmitPowerDbW": 45,
+    "antennaGainDb": 27,
+    "beamWidthDeg": 24.23595099373643,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.56.62.162",
+    "port": 8993,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 10.02,
+  "packetLossRate": 0.0118,
+  "resourceUtilization": 0.75,
+  "packetBufferCapacity": 9916,
+  "currentPacketCount": 239,
+  "weather": "LIGHT_RAIN",
+  "lastUpdated": "2025-10-30T10:31:52.507872Z",
+  "host": "node-19.sagsin.network",
+  "port": 8993,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_013",
+    "GROUND_STATION_014",
+    "GROUND_STATION_018",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046",
+    "GEO_SATELLITE_050"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92db"
+  },
+  "id": "GROUND_STATION_020",
+  "nodeId": "GROUND_STATION_020",
+  "nodeName": "Jakarta Ground Station",
+  "nodeType": "GROUND_STATION",
+  "position": {
+    "latitude": -6.2088,
+    "longitude": 106.8456,
+    "altitude": -0.21
+  },
+  "orbit": {
+    "semiMajorAxisKm": 0,
+    "eccentricity": 0,
+    "inclinationDeg": 0,
+    "raanDeg": 0,
+    "argumentOfPerigeeDeg": 0,
+    "trueAnomalyDeg": 0
+  },
+  "velocity": {
+    "velocityX": 0,
+    "velocityY": 0,
+    "velocityZ": 0
+  },
+  "communication": {
+    "frequencyGHz": 2.387102188564343,
+    "bandwidthMHz": 251,
+    "transmitPowerDbW": 28,
+    "antennaGainDb": 33,
+    "beamWidthDeg": 10.002832153808983,
+    "maxRangeKm": 2000,
+    "minElevationDeg": 5,
+    "ipAddress": "10.255.103.137",
+    "port": 7314,
+    "protocol": "QUIC"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 100,
+  "nodeProcessingDelayMs": 7.1,
+  "packetLossRate": 0.0099,
+  "resourceUtilization": 0.62,
+  "packetBufferCapacity": 4948,
+  "currentPacketCount": 321,
+  "weather": "LIGHT_RAIN",
+  "lastUpdated": "2025-10-30T10:31:52.507889Z",
+  "host": "node-20.sagsin.network",
+  "port": 7314,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_006",
+    "LEO_SATELLITE_028",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92dc"
+  },
+  "id": "LEO_SATELLITE_021",
+  "nodeId": "LEO_SATELLITE_021",
+  "nodeName": "Leo Satellite 21",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": -82.01228269054066,
+    "longitude": 1.3374596210221075,
+    "altitude": 466.88
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6837.878855535353,
+    "eccentricity": 0.009279924907499548,
+    "inclinationDeg": 21.432428013318766,
+    "raanDeg": 88.89080217031665,
+    "argumentOfPerigeeDeg": 185.28740661949695,
+    "trueAnomalyDeg": 155.5444098181317
+  },
+  "velocity": {
+    "velocityX": 4.4232463932697135,
+    "velocityY": -0.06312333527746355,
+    "velocityZ": 5.942223259282977
+  },
+  "communication": {
+    "frequencyGHz": 12.263282258380485,
+    "bandwidthMHz": 436,
+    "transmitPowerDbW": 27,
+    "antennaGainDb": 38,
+    "beamWidthDeg": 11.015998100794897,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.6.74.224",
+    "port": 5801,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 62.22,
+  "nodeProcessingDelayMs": 29.45,
+  "packetLossRate": 0.0244,
+  "resourceUtilization": 0.24,
+  "packetBufferCapacity": 9374,
+  "currentPacketCount": 253,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.507930Z",
+  "host": "node-21.sagsin.network",
+  "port": 5801,
+  "healthy": true,
+  "neighbors": [
+    "LEO_SATELLITE_022",
+    "LEO_SATELLITE_023"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92dd"
+  },
+  "id": "LEO_SATELLITE_022",
+  "nodeId": "LEO_SATELLITE_022",
+  "nodeName": "Leo Satellite 22",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": -68.14884988909193,
+    "longitude": 26.981689542214173,
+    "altitude": 472.7
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6843.702029515473,
+    "eccentricity": 0.0033084402743852413,
+    "inclinationDeg": 2.431330696996006,
+    "raanDeg": 0.9449736296538891,
+    "argumentOfPerigeeDeg": 214.34011224181594,
+    "trueAnomalyDeg": 218.5067625386642
+  },
+  "velocity": {
+    "velocityX": 2.349271246055156,
+    "velocityY": -0.8240181142163295,
+    "velocityZ": 7.167213794955169
+  },
+  "communication": {
+    "frequencyGHz": 12.479375274119105,
+    "bandwidthMHz": 167,
+    "transmitPowerDbW": 37,
+    "antennaGainDb": 30,
+    "beamWidthDeg": 16.625744665401474,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.19.205.169",
+    "port": 7922,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 98.23,
+  "nodeProcessingDelayMs": 21.18,
+  "packetLossRate": 0.0266,
+  "resourceUtilization": 0.73,
+  "packetBufferCapacity": 2439,
+  "currentPacketCount": 28,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.507954Z",
+  "host": "node-22.sagsin.network",
+  "port": 7922,
+  "healthy": false,
+  "neighbors": [
+    "LEO_SATELLITE_021",
+    "LEO_SATELLITE_023",
+    "LEO_SATELLITE_024",
+    "MEO_SATELLITE_042"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92de"
+  },
+  "id": "LEO_SATELLITE_023",
+  "nodeId": "LEO_SATELLITE_023",
+  "nodeName": "Leo Satellite 23",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": -62.46330324212256,
+    "longitude": 36.087454558293175,
+    "altitude": 460.52
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6831.5160574118745,
+    "eccentricity": 0.0034724196027044346,
+    "inclinationDeg": 40.85449665622241,
+    "raanDeg": 158.01730252105935,
+    "argumentOfPerigeeDeg": 218.57056959612459,
+    "trueAnomalyDeg": 82.63647702734674
+  },
+  "velocity": {
+    "velocityX": 0.7476423634763658,
+    "velocityY": 1.464487179166104,
+    "velocityZ": 5.9379293582035775
+  },
+  "communication": {
+    "frequencyGHz": 12.186167173551143,
+    "bandwidthMHz": 347,
+    "transmitPowerDbW": 43,
+    "antennaGainDb": 16,
+    "beamWidthDeg": 15.864537675135303,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.52.44.233",
+    "port": 8113,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 78.83,
+  "nodeProcessingDelayMs": 23.33,
+  "packetLossRate": 0.0316,
+  "resourceUtilization": 0.59,
+  "packetBufferCapacity": 9241,
+  "currentPacketCount": 498,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.507975Z",
+  "host": "node-23.sagsin.network",
+  "port": 8113,
+  "healthy": true,
+  "neighbors": [
+    "LEO_SATELLITE_021",
+    "LEO_SATELLITE_022",
+    "LEO_SATELLITE_024",
+    "LEO_SATELLITE_025"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92df"
+  },
+  "id": "LEO_SATELLITE_024",
+  "nodeId": "LEO_SATELLITE_024",
+  "nodeName": "Leo Satellite 24",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": -58.74002715306412,
+    "longitude": 47.21934353007648,
+    "altitude": 534.71
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6905.708713807489,
+    "eccentricity": 0.0029574125951332413,
+    "inclinationDeg": 138.83790393930946,
+    "raanDeg": 24.612546975961052,
+    "argumentOfPerigeeDeg": 181.8046854357661,
+    "trueAnomalyDeg": 75.59679232058758
+  },
+  "velocity": {
+    "velocityX": 5.886569085622277,
+    "velocityY": -0.13611809312392745,
+    "velocityZ": 4.080890059182004
+  },
+  "communication": {
+    "frequencyGHz": 12.285323984519499,
+    "bandwidthMHz": 281,
+    "transmitPowerDbW": 47,
+    "antennaGainDb": 32,
+    "beamWidthDeg": 17.334910368991427,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.122.72.132",
+    "port": 6759,
+    "protocol": "QUIC"
+  },
+  "isOperational": false,
+  "batteryChargePercent": 88.17,
+  "nodeProcessingDelayMs": 23.87,
+  "packetLossRate": 0.0459,
+  "resourceUtilization": 0.67,
+  "packetBufferCapacity": 1300,
+  "currentPacketCount": 405,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.507996Z",
+  "host": "node-24.sagsin.network",
+  "port": 6759,
+  "healthy": true,
+  "neighbors": [
+    "LEO_SATELLITE_022",
+    "LEO_SATELLITE_023",
+    "LEO_SATELLITE_025"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92e0"
+  },
+  "id": "LEO_SATELLITE_025",
+  "nodeId": "LEO_SATELLITE_025",
+  "nodeName": "Leo Satellite 25",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": -52.58621361271139,
+    "longitude": 78.4489703921058,
+    "altitude": 463.25
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6834.253940420526,
+    "eccentricity": 0.0018791081143267583,
+    "inclinationDeg": 112.59929298997261,
+    "raanDeg": 88.4704569241425,
+    "argumentOfPerigeeDeg": 209.89840932103965,
+    "trueAnomalyDeg": 245.3908034273764
+  },
+  "velocity": {
+    "velocityX": -6.8242084471431435,
+    "velocityY": -4.318983379446742,
+    "velocityZ": 6.78461930787993
+  },
+  "communication": {
+    "frequencyGHz": 12.750846259573635,
+    "bandwidthMHz": 405,
+    "transmitPowerDbW": 39,
+    "antennaGainDb": 32,
+    "beamWidthDeg": 28.751448226604282,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.17.60.40",
+    "port": 8497,
+    "protocol": "QUIC"
+  },
+  "isOperational": false,
+  "batteryChargePercent": 62.04,
+  "nodeProcessingDelayMs": 25.64,
+  "packetLossRate": 0.0496,
+  "resourceUtilization": 0.63,
+  "packetBufferCapacity": 5407,
+  "currentPacketCount": 161,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508016Z",
+  "host": "node-25.sagsin.network",
+  "port": 8497,
+  "healthy": true,
+  "neighbors": [
+    "LEO_SATELLITE_023",
+    "LEO_SATELLITE_024",
+    "LEO_SATELLITE_026"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92e1"
+  },
+  "id": "LEO_SATELLITE_026",
+  "nodeId": "LEO_SATELLITE_026",
+  "nodeName": "Leo Satellite 26",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": -41.24800279042502,
+    "longitude": 94.1592092175469,
+    "altitude": 475.67
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6846.668998311552,
+    "eccentricity": 0.008965624513197667,
+    "inclinationDeg": 65.08153327776402,
+    "raanDeg": 95.5178354211287,
+    "argumentOfPerigeeDeg": 315.9014302833954,
+    "trueAnomalyDeg": 249.07819051899364
+  },
+  "velocity": {
+    "velocityX": 6.324170382907079,
+    "velocityY": 0.24237669558413855,
+    "velocityZ": 5.168792147413037
+  },
+  "communication": {
+    "frequencyGHz": 12.522789108550926,
+    "bandwidthMHz": 476,
+    "transmitPowerDbW": 30,
+    "antennaGainDb": 43,
+    "beamWidthDeg": 10.912436501026201,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.113.226.81",
+    "port": 5064,
+    "protocol": "QUIC"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 97.15,
+  "nodeProcessingDelayMs": 26.69,
+  "packetLossRate": 0.0337,
+  "resourceUtilization": 0.63,
+  "packetBufferCapacity": 7717,
+  "currentPacketCount": 181,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508035Z",
+  "host": "node-26.sagsin.network",
+  "port": 5064,
+  "healthy": true,
+  "neighbors": [
+    "LEO_SATELLITE_025",
+    "LEO_SATELLITE_027"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92e2"
+  },
+  "id": "LEO_SATELLITE_027",
+  "nodeId": "LEO_SATELLITE_027",
+  "nodeName": "Leo Satellite 27",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": -34.682901703850874,
+    "longitude": 109.71681007346027,
+    "altitude": 525.85
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6896.851806969054,
+    "eccentricity": 0.012585984784916545,
+    "inclinationDeg": 0.6752793647290156,
+    "raanDeg": 29.98290609107962,
+    "argumentOfPerigeeDeg": 3.528176005090873,
+    "trueAnomalyDeg": 214.84267852907269
+  },
+  "velocity": {
+    "velocityX": -4.263901335235652,
+    "velocityY": -1.8752440754744664,
+    "velocityZ": 5.89421290757756
+  },
+  "communication": {
+    "frequencyGHz": 12.539483095586233,
+    "bandwidthMHz": 468,
+    "transmitPowerDbW": 20,
+    "antennaGainDb": 16,
+    "beamWidthDeg": 8.622487267516703,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.72.6.5",
+    "port": 5460,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 77.29,
+  "nodeProcessingDelayMs": 20.49,
+  "packetLossRate": 0.034,
+  "resourceUtilization": 0.61,
+  "packetBufferCapacity": 1210,
+  "currentPacketCount": 286,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508058Z",
+  "host": "node-27.sagsin.network",
+  "port": 5460,
+  "healthy": false,
+  "neighbors": [
+    "LEO_SATELLITE_026",
+    "LEO_SATELLITE_028"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92e3"
+  },
+  "id": "LEO_SATELLITE_028",
+  "nodeId": "LEO_SATELLITE_028",
+  "nodeName": "Leo Satellite 28",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": -24.528551172321237,
+    "longitude": 117.64065611546437,
+    "altitude": 519.99
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6890.991053301767,
+    "eccentricity": 0.004446453989363757,
+    "inclinationDeg": 121.7851475053145,
+    "raanDeg": 189.61665070277786,
+    "argumentOfPerigeeDeg": 141.5758703108678,
+    "trueAnomalyDeg": 165.2747421300501
+  },
+  "velocity": {
+    "velocityX": 7.2550263487516045,
+    "velocityY": 2.6945376655203286,
+    "velocityZ": 7.171457210286182
+  },
+  "communication": {
+    "frequencyGHz": 12.86127124886812,
+    "bandwidthMHz": 155,
+    "transmitPowerDbW": 41,
+    "antennaGainDb": 30,
+    "beamWidthDeg": 25.294961100739197,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.255.34.174",
+    "port": 8999,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 77.07,
+  "nodeProcessingDelayMs": 23.78,
+  "packetLossRate": 0.0086,
+  "resourceUtilization": 0.45,
+  "packetBufferCapacity": 3719,
+  "currentPacketCount": 335,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508078Z",
+  "host": "node-28.sagsin.network",
+  "port": 8999,
+  "healthy": false,
+  "neighbors": [
+    "GROUND_STATION_020",
+    "LEO_SATELLITE_027",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92e4"
+  },
+  "id": "LEO_SATELLITE_029",
+  "nodeId": "LEO_SATELLITE_029",
+  "nodeName": "Leo Satellite 29",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": -13.187769368774925,
+    "longitude": 145.19965796878338,
+    "altitude": 489.45
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6860.445347813559,
+    "eccentricity": 0.011258977192979107,
+    "inclinationDeg": 39.711301768662544,
+    "raanDeg": 1.9418725228875067,
+    "argumentOfPerigeeDeg": 238.80627122633564,
+    "trueAnomalyDeg": 187.73322310017946
+  },
+  "velocity": {
+    "velocityX": 2.3144011820695067,
+    "velocityY": 3.4615493208834485,
+    "velocityZ": 7.241612903802242
+  },
+  "communication": {
+    "frequencyGHz": 12.50633029922748,
+    "bandwidthMHz": 179,
+    "transmitPowerDbW": 30,
+    "antennaGainDb": 37,
+    "beamWidthDeg": 10.46296655437257,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.30.9.233",
+    "port": 6073,
+    "protocol": "UDP"
+  },
+  "isOperational": false,
+  "batteryChargePercent": 86.16,
+  "nodeProcessingDelayMs": 29.5,
+  "packetLossRate": 0.0205,
+  "resourceUtilization": 0.7,
+  "packetBufferCapacity": 3417,
+  "currentPacketCount": 129,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508099Z",
+  "host": "node-29.sagsin.network",
+  "port": 6073,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_007",
+    "LEO_SATELLITE_030",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92e5"
+  },
+  "id": "LEO_SATELLITE_030",
+  "nodeId": "LEO_SATELLITE_030",
+  "nodeName": "Leo Satellite 30",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": -3.038068933482961,
+    "longitude": 158.33890584163242,
+    "altitude": 549.63
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6920.632450003572,
+    "eccentricity": 0.00727081062657801,
+    "inclinationDeg": 161.432631911172,
+    "raanDeg": 41.944692226774066,
+    "argumentOfPerigeeDeg": 33.90803791031572,
+    "trueAnomalyDeg": 6.703407320164585
+  },
+  "velocity": {
+    "velocityX": -5.917496566562899,
+    "velocityY": 6.364767199567311,
+    "velocityZ": 5.269231857151048
+  },
+  "communication": {
+    "frequencyGHz": 12.97900183950531,
+    "bandwidthMHz": 250,
+    "transmitPowerDbW": 22,
+    "antennaGainDb": 29,
+    "beamWidthDeg": 29.718065403698628,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.130.28.193",
+    "port": 8599,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 81.95,
+  "nodeProcessingDelayMs": 27.51,
+  "packetLossRate": 0.0345,
+  "resourceUtilization": 0.46,
+  "packetBufferCapacity": 6856,
+  "currentPacketCount": 96,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508120Z",
+  "host": "node-30.sagsin.network",
+  "port": 8599,
+  "healthy": false,
+  "neighbors": [
+    "LEO_SATELLITE_029",
+    "LEO_SATELLITE_031",
+    "MEO_SATELLITE_044",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92e6"
+  },
+  "id": "LEO_SATELLITE_031",
+  "nodeId": "LEO_SATELLITE_031",
+  "nodeName": "Leo Satellite 31",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": 3.273055265340414,
+    "longitude": 181.8353689042182,
+    "altitude": 505.24
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6876.2411717575105,
+    "eccentricity": 0.008591930871267727,
+    "inclinationDeg": 21.882001690201246,
+    "raanDeg": 182.64464285742736,
+    "argumentOfPerigeeDeg": 115.9672760382707,
+    "trueAnomalyDeg": 217.79469847943417
+  },
+  "velocity": {
+    "velocityX": -5.296181975870001,
+    "velocityY": -6.542274353993756,
+    "velocityZ": 6.5616346067298466
+  },
+  "communication": {
+    "frequencyGHz": 12.995132148869384,
+    "bandwidthMHz": 176,
+    "transmitPowerDbW": 21,
+    "antennaGainDb": 17,
+    "beamWidthDeg": 8.731812352077933,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.22.56.229",
+    "port": 8466,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 70.41,
+  "nodeProcessingDelayMs": 27.72,
+  "packetLossRate": 0.0104,
+  "resourceUtilization": 0.76,
+  "packetBufferCapacity": 1540,
+  "currentPacketCount": 394,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508143Z",
+  "host": "node-31.sagsin.network",
+  "port": 8466,
+  "healthy": true,
+  "neighbors": [
+    "LEO_SATELLITE_030",
+    "LEO_SATELLITE_032",
+    "MEO_SATELLITE_044",
+    "MEO_SATELLITE_047",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92e7"
+  },
+  "id": "LEO_SATELLITE_032",
+  "nodeId": "LEO_SATELLITE_032",
+  "nodeName": "Leo Satellite 32",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": 3.122778519883452,
+    "longitude": 197.89311309313112,
+    "altitude": 539.34
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6910.3375816951375,
+    "eccentricity": 0.007835119929438292,
+    "inclinationDeg": 144.83465126621948,
+    "raanDeg": 118.30349020302837,
+    "argumentOfPerigeeDeg": 237.69219687072678,
+    "trueAnomalyDeg": 323.1561556577163
+  },
+  "velocity": {
+    "velocityX": -6.5093725283930715,
+    "velocityY": 5.757618087890045,
+    "velocityZ": 4.994965733610989
+  },
+  "communication": {
+    "frequencyGHz": 12.555123313165604,
+    "bandwidthMHz": 256,
+    "transmitPowerDbW": 31,
+    "antennaGainDb": 31,
+    "beamWidthDeg": 21.47500089916479,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.152.91.231",
+    "port": 5742,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 83.24,
+  "nodeProcessingDelayMs": 24.58,
+  "packetLossRate": 0.0189,
+  "resourceUtilization": 0.11,
+  "packetBufferCapacity": 2347,
+  "currentPacketCount": 54,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508170Z",
+  "host": "node-32.sagsin.network",
+  "port": 5742,
+  "healthy": true,
+  "neighbors": [
+    "LEO_SATELLITE_031",
+    "MEO_SATELLITE_044",
+    "MEO_SATELLITE_047",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92e8"
+  },
+  "id": "LEO_SATELLITE_033",
+  "nodeId": "LEO_SATELLITE_033",
+  "nodeName": "Leo Satellite 33",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": 11.407915614683127,
+    "longitude": 225.74265066388784,
+    "altitude": 514.84
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6885.835521320417,
+    "eccentricity": 0.0043103920198039785,
+    "inclinationDeg": 89.67868001030139,
+    "raanDeg": 249.31859226036323,
+    "argumentOfPerigeeDeg": 56.94941585780386,
+    "trueAnomalyDeg": 298.3392758893215
+  },
+  "velocity": {
+    "velocityX": -4.60679445029786,
+    "velocityY": -3.0413080485641815,
+    "velocityZ": 7.358298975426941
+  },
+  "communication": {
+    "frequencyGHz": 12.680259946076283,
+    "bandwidthMHz": 173,
+    "transmitPowerDbW": 31,
+    "antennaGainDb": 44,
+    "beamWidthDeg": 29.660139805886892,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.229.254.18",
+    "port": 8520,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 94.78,
+  "nodeProcessingDelayMs": 20.66,
+  "packetLossRate": 0.0114,
+  "resourceUtilization": 0.59,
+  "packetBufferCapacity": 6579,
+  "currentPacketCount": 432,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508189Z",
+  "host": "node-33.sagsin.network",
+  "port": 8520,
+  "healthy": true,
+  "neighbors": [
+    "LEO_SATELLITE_034",
+    "MEO_SATELLITE_041",
+    "MEO_SATELLITE_044",
+    "MEO_SATELLITE_047",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92e9"
+  },
+  "id": "LEO_SATELLITE_034",
+  "nodeId": "LEO_SATELLITE_034",
+  "nodeName": "Leo Satellite 34",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": 23.757238555370392,
+    "longitude": 238.44175200128834,
+    "altitude": 527.44
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6898.444831879396,
+    "eccentricity": 0.0013688041802537318,
+    "inclinationDeg": 98.42102988094209,
+    "raanDeg": 181.12920863304404,
+    "argumentOfPerigeeDeg": 222.69205098522178,
+    "trueAnomalyDeg": 315.1412157969827
+  },
+  "velocity": {
+    "velocityX": 7.32708818984924,
+    "velocityY": 5.9683965877380425,
+    "velocityZ": 5.132065079038896
+  },
+  "communication": {
+    "frequencyGHz": 12.32543718040384,
+    "bandwidthMHz": 323,
+    "transmitPowerDbW": 38,
+    "antennaGainDb": 24,
+    "beamWidthDeg": 3.4183808305359866,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.4.113.122",
+    "port": 6707,
+    "protocol": "QUIC"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 96.41,
+  "nodeProcessingDelayMs": 25.34,
+  "packetLossRate": 0.0191,
+  "resourceUtilization": 0.82,
+  "packetBufferCapacity": 5598,
+  "currentPacketCount": 130,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508209Z",
+  "host": "node-34.sagsin.network",
+  "port": 6707,
+  "healthy": false,
+  "neighbors": [
+    "GROUND_STATION_015",
+    "LEO_SATELLITE_033",
+    "LEO_SATELLITE_035",
+    "MEO_SATELLITE_041",
+    "MEO_SATELLITE_047",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92ea"
+  },
+  "id": "LEO_SATELLITE_035",
+  "nodeId": "LEO_SATELLITE_035",
+  "nodeName": "Leo Satellite 35",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": 33.496545601823485,
+    "longitude": 247.1423448683621,
+    "altitude": 521.7
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6892.703845368244,
+    "eccentricity": 0.019998369248653988,
+    "inclinationDeg": 159.86626023492298,
+    "raanDeg": 102.37810575090427,
+    "argumentOfPerigeeDeg": 58.87725891030086,
+    "trueAnomalyDeg": 10.047956184255447
+  },
+  "velocity": {
+    "velocityX": 6.829376853772002,
+    "velocityY": 2.79073154891639,
+    "velocityZ": 6.686644685479695
+  },
+  "communication": {
+    "frequencyGHz": 12.120161494129604,
+    "bandwidthMHz": 482,
+    "transmitPowerDbW": 42,
+    "antennaGainDb": 44,
+    "beamWidthDeg": 18.451641232717694,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.188.244.191",
+    "port": 5805,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 77,
+  "nodeProcessingDelayMs": 29.69,
+  "packetLossRate": 0.0277,
+  "resourceUtilization": 0.74,
+  "packetBufferCapacity": 2180,
+  "currentPacketCount": 127,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508228Z",
+  "host": "node-35.sagsin.network",
+  "port": 5805,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_015",
+    "LEO_SATELLITE_034",
+    "LEO_SATELLITE_036",
+    "MEO_SATELLITE_041",
+    "MEO_SATELLITE_047"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92eb"
+  },
+  "id": "LEO_SATELLITE_036",
+  "nodeId": "LEO_SATELLITE_036",
+  "nodeName": "Leo Satellite 36",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": 44.3050556671336,
+    "longitude": 266.679955043304,
+    "altitude": 545.98
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6916.980079230567,
+    "eccentricity": 0.0002804043618894318,
+    "inclinationDeg": 112.85316168049543,
+    "raanDeg": 268.3446758314446,
+    "argumentOfPerigeeDeg": 149.45019680293186,
+    "trueAnomalyDeg": 354.1612296735486
+  },
+  "velocity": {
+    "velocityX": 2.7717527815771463,
+    "velocityY": 6.483734947589982,
+    "velocityZ": 5.538584454339355
+  },
+  "communication": {
+    "frequencyGHz": 12.700619903252818,
+    "bandwidthMHz": 270,
+    "transmitPowerDbW": 36,
+    "antennaGainDb": 26,
+    "beamWidthDeg": 5.444410515569356,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.103.181.196",
+    "port": 8585,
+    "protocol": "QUIC"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 84.98,
+  "nodeProcessingDelayMs": 26.7,
+  "packetLossRate": 0.0406,
+  "resourceUtilization": 0.36,
+  "packetBufferCapacity": 9172,
+  "currentPacketCount": 88,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508247Z",
+  "host": "node-36.sagsin.network",
+  "port": 8585,
+  "healthy": false,
+  "neighbors": [
+    "GROUND_STATION_003",
+    "GROUND_STATION_015",
+    "GROUND_STATION_016",
+    "LEO_SATELLITE_035",
+    "LEO_SATELLITE_037",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92ec"
+  },
+  "id": "LEO_SATELLITE_037",
+  "nodeId": "LEO_SATELLITE_037",
+  "nodeName": "Leo Satellite 37",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": 47.067122568689186,
+    "longitude": 280.1789843744885,
+    "altitude": 521.63
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6892.627720343513,
+    "eccentricity": 0.0028323356708280646,
+    "inclinationDeg": 5.793247668714738,
+    "raanDeg": 149.44659904628972,
+    "argumentOfPerigeeDeg": 317.5390801673015,
+    "trueAnomalyDeg": 88.71331148343089
+  },
+  "velocity": {
+    "velocityX": -6.7771273524208375,
+    "velocityY": 0.24724205934604374,
+    "velocityZ": 6.316681382275454
+  },
+  "communication": {
+    "frequencyGHz": 12.203760482257925,
+    "bandwidthMHz": 464,
+    "transmitPowerDbW": 45,
+    "antennaGainDb": 35,
+    "beamWidthDeg": 25.975269950583808,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.232.225.66",
+    "port": 6894,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 98.04,
+  "nodeProcessingDelayMs": 24.8,
+  "packetLossRate": 0.0198,
+  "resourceUtilization": 0.79,
+  "packetBufferCapacity": 2651,
+  "currentPacketCount": 292,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508269Z",
+  "host": "node-37.sagsin.network",
+  "port": 6894,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_003",
+    "GROUND_STATION_016",
+    "LEO_SATELLITE_036",
+    "LEO_SATELLITE_038",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92ed"
+  },
+  "id": "LEO_SATELLITE_038",
+  "nodeId": "LEO_SATELLITE_038",
+  "nodeName": "Leo Satellite 38",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": 54.76420648861854,
+    "longitude": 306.6177291531415,
+    "altitude": 497.83
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6868.831500970688,
+    "eccentricity": 0.015136520720334397,
+    "inclinationDeg": 156.89696346328796,
+    "raanDeg": 157.57413540130602,
+    "argumentOfPerigeeDeg": 183.1941560951305,
+    "trueAnomalyDeg": 103.48155027424936
+  },
+  "velocity": {
+    "velocityX": 4.625487718036023,
+    "velocityY": 1.121503225578093,
+    "velocityZ": 4.965182826482975
+  },
+  "communication": {
+    "frequencyGHz": 12.336757212821997,
+    "bandwidthMHz": 359,
+    "transmitPowerDbW": 42,
+    "antennaGainDb": 27,
+    "beamWidthDeg": 7.682960838021171,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.243.11.64",
+    "port": 8939,
+    "protocol": "QUIC"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 82.97,
+  "nodeProcessingDelayMs": 27.89,
+  "packetLossRate": 0.0181,
+  "resourceUtilization": 0.46,
+  "packetBufferCapacity": 9605,
+  "currentPacketCount": 98,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508289Z",
+  "host": "node-38.sagsin.network",
+  "port": 8939,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_003",
+    "GROUND_STATION_016",
+    "LEO_SATELLITE_037",
+    "LEO_SATELLITE_039",
+    "LEO_SATELLITE_040",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92ee"
+  },
+  "id": "LEO_SATELLITE_039",
+  "nodeId": "LEO_SATELLITE_039",
+  "nodeName": "Leo Satellite 39",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": 60.4583493623986,
+    "longitude": 325.70797872330684,
+    "altitude": 453.37
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6824.367921532625,
+    "eccentricity": 0.006938012468776106,
+    "inclinationDeg": 152.5445304433869,
+    "raanDeg": 230.4084030451579,
+    "argumentOfPerigeeDeg": 190.5568420208018,
+    "trueAnomalyDeg": 88.51592078100003
+  },
+  "velocity": {
+    "velocityX": 0.3801313771463412,
+    "velocityY": -2.88799164718821,
+    "velocityZ": 6.225107309059419
+  },
+  "communication": {
+    "frequencyGHz": 12.86373970853153,
+    "bandwidthMHz": 165,
+    "transmitPowerDbW": 35,
+    "antennaGainDb": 24,
+    "beamWidthDeg": 15.784743953586723,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.208.165.94",
+    "port": 8515,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 92.86,
+  "nodeProcessingDelayMs": 21.15,
+  "packetLossRate": 0.0223,
+  "resourceUtilization": 0.17,
+  "packetBufferCapacity": 6408,
+  "currentPacketCount": 263,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508308Z",
+  "host": "node-39.sagsin.network",
+  "port": 8515,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_004",
+    "LEO_SATELLITE_038",
+    "LEO_SATELLITE_040",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046",
+    "GEO_SATELLITE_050"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92ef"
+  },
+  "id": "LEO_SATELLITE_040",
+  "nodeId": "LEO_SATELLITE_040",
+  "nodeName": "Leo Satellite 40",
+  "nodeType": "LEO_SATELLITE",
+  "position": {
+    "latitude": 72.12892762794235,
+    "longitude": 338.2565410043929,
+    "altitude": 528.69
+  },
+  "orbit": {
+    "semiMajorAxisKm": 6899.694097763498,
+    "eccentricity": 0.00668869484666947,
+    "inclinationDeg": 69.58261703187661,
+    "raanDeg": 125.3033774872699,
+    "argumentOfPerigeeDeg": 48.31028782230381,
+    "trueAnomalyDeg": 282.1864559649575
+  },
+  "velocity": {
+    "velocityX": -6.172068874980661,
+    "velocityY": 3.4326467412957395,
+    "velocityZ": 5.446702718081598
+  },
+  "communication": {
+    "frequencyGHz": 12.997483994162355,
+    "bandwidthMHz": 119,
+    "transmitPowerDbW": 24,
+    "antennaGainDb": 33,
+    "beamWidthDeg": 29.105100339050132,
+    "maxRangeKm": 3000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.233.67.53",
+    "port": 6965,
+    "protocol": "UDP"
+  },
+  "isOperational": false,
+  "batteryChargePercent": 65.78,
+  "nodeProcessingDelayMs": 27.07,
+  "packetLossRate": 0.023,
+  "resourceUtilization": 0.76,
+  "packetBufferCapacity": 4141,
+  "currentPacketCount": 251,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508328Z",
+  "host": "node-40.sagsin.network",
+  "port": 6965,
+  "healthy": true,
+  "neighbors": [
+    "LEO_SATELLITE_038",
+    "LEO_SATELLITE_039",
+    "MEO_SATELLITE_043",
+    "MEO_SATELLITE_045",
+    "MEO_SATELLITE_046"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92f0"
+  },
+  "id": "MEO_SATELLITE_041",
+  "nodeId": "MEO_SATELLITE_041",
+  "nodeName": "Meo Satellite 41",
+  "nodeType": "MEO_SATELLITE",
+  "position": {
+    "latitude": 2.639979,
+    "longitude": -113.207716,
+    "altitude": 10032.29
+  },
+  "orbit": {
+    "semiMajorAxisKm": 16403.28641609432,
+    "eccentricity": 0.009158344109276514,
+    "inclinationDeg": 173.8972222852476,
+    "raanDeg": 353.4842428653849,
+    "argumentOfPerigeeDeg": 69.90147011748992,
+    "trueAnomalyDeg": 145.84162039796428
+  },
+  "velocity": {
+    "velocityX": -1.7966164737741046,
+    "velocityY": 3.705680515143994,
+    "velocityZ": 4.258646720486609
+  },
+  "communication": {
+    "frequencyGHz": 13.761775088172604,
+    "bandwidthMHz": 378,
+    "transmitPowerDbW": 31,
+    "antennaGainDb": 16,
+    "beamWidthDeg": 26.272194392245087,
+    "maxRangeKm": 10000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.195.66.246",
+    "port": 6116,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 76.59,
+  "nodeProcessingDelayMs": 57.11,
+  "packetLossRate": 0.0382,
+  "resourceUtilization": 0.43,
+  "packetBufferCapacity": 8958,
+  "currentPacketCount": 285,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508358Z",
+  "host": "node-41.sagsin.network",
+  "port": 6116,
+  "healthy": false,
+  "neighbors": [
+    "GROUND_STATION_003",
+    "GROUND_STATION_015",
+    "GROUND_STATION_016",
+    "LEO_SATELLITE_033",
+    "LEO_SATELLITE_034",
+    "LEO_SATELLITE_035"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92f1"
+  },
+  "id": "MEO_SATELLITE_042",
+  "nodeId": "MEO_SATELLITE_042",
+  "nodeName": "Meo Satellite 42",
+  "nodeType": "MEO_SATELLITE",
+  "position": {
+    "latitude": -35.029575,
+    "longitude": -12.655099,
+    "altitude": 9976.97
+  },
+  "orbit": {
+    "semiMajorAxisKm": 16347.968574545299,
+    "eccentricity": 0.013558793033823898,
+    "inclinationDeg": 115.21574852803317,
+    "raanDeg": 359.40990796760525,
+    "argumentOfPerigeeDeg": 23.147192646559027,
+    "trueAnomalyDeg": 309.5817349177956
+  },
+  "velocity": {
+    "velocityX": 2.9564758371112294,
+    "velocityY": -3.410660139852423,
+    "velocityZ": 3.1306565269848474
+  },
+  "communication": {
+    "frequencyGHz": 14.327977563116056,
+    "bandwidthMHz": 66,
+    "transmitPowerDbW": 40,
+    "antennaGainDb": 44,
+    "beamWidthDeg": 10.41769247907681,
+    "maxRangeKm": 10000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.12.205.64",
+    "port": 8041,
+    "protocol": "TCP"
+  },
+  "isOperational": false,
+  "batteryChargePercent": 91.65,
+  "nodeProcessingDelayMs": 58.88,
+  "packetLossRate": 0.0046,
+  "resourceUtilization": 0.68,
+  "packetBufferCapacity": 2553,
+  "currentPacketCount": 238,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508378Z",
+  "host": "node-42.sagsin.network",
+  "port": 8041,
+  "healthy": false,
+  "neighbors": [
+    "GROUND_STATION_017",
+    "LEO_SATELLITE_022",
+    "MEO_SATELLITE_048"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92f2"
+  },
+  "id": "MEO_SATELLITE_043",
+  "nodeId": "MEO_SATELLITE_043",
+  "nodeName": "Meo Satellite 43",
+  "nodeType": "MEO_SATELLITE",
+  "position": {
+    "latitude": 88.188394,
+    "longitude": 135.159631,
+    "altitude": 9993.46
+  },
+  "orbit": {
+    "semiMajorAxisKm": 16364.459417030219,
+    "eccentricity": 0.0014417463860453422,
+    "inclinationDeg": 29.097757980122502,
+    "raanDeg": 247.183666779557,
+    "argumentOfPerigeeDeg": 29.974351841450456,
+    "trueAnomalyDeg": 257.9138170922806
+  },
+  "velocity": {
+    "velocityX": -4.0993231596908775,
+    "velocityY": 4.147358172653948,
+    "velocityZ": 3.730924961088131
+  },
+  "communication": {
+    "frequencyGHz": 14.017519112985203,
+    "bandwidthMHz": 485,
+    "transmitPowerDbW": 28,
+    "antennaGainDb": 41,
+    "beamWidthDeg": 4.952110748652078,
+    "maxRangeKm": 10000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.125.255.207",
+    "port": 8672,
+    "protocol": "UDP"
+  },
+  "isOperational": false,
+  "batteryChargePercent": 85.44,
+  "nodeProcessingDelayMs": 59.1,
+  "packetLossRate": 0.0499,
+  "resourceUtilization": 0.78,
+  "packetBufferCapacity": 5005,
+  "currentPacketCount": 44,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508398Z",
+  "host": "node-43.sagsin.network",
+  "port": 8672,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_003",
+    "GROUND_STATION_004",
+    "GROUND_STATION_005",
+    "GROUND_STATION_008",
+    "GROUND_STATION_010",
+    "GROUND_STATION_011",
+    "GROUND_STATION_012",
+    "GROUND_STATION_013",
+    "GROUND_STATION_014",
+    "GROUND_STATION_015",
+    "GROUND_STATION_016",
+    "GROUND_STATION_018",
+    "GROUND_STATION_019",
+    "LEO_SATELLITE_038",
+    "LEO_SATELLITE_039",
+    "LEO_SATELLITE_040"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92f3"
+  },
+  "id": "MEO_SATELLITE_044",
+  "nodeId": "MEO_SATELLITE_044",
+  "nodeName": "Meo Satellite 44",
+  "nodeType": "MEO_SATELLITE",
+  "position": {
+    "latitude": 17.606586,
+    "longitude": -169.078575,
+    "altitude": 9966.34
+  },
+  "orbit": {
+    "semiMajorAxisKm": 16337.343381269779,
+    "eccentricity": 0.012700143144818373,
+    "inclinationDeg": 30.440642538889772,
+    "raanDeg": 254.87669057560933,
+    "argumentOfPerigeeDeg": 9.902256384130887,
+    "trueAnomalyDeg": 42.64195294193062
+  },
+  "velocity": {
+    "velocityX": 1.4411181149748562,
+    "velocityY": 0.30862482235654,
+    "velocityZ": 4.074147517794781
+  },
+  "communication": {
+    "frequencyGHz": 14.280805591842167,
+    "bandwidthMHz": 478,
+    "transmitPowerDbW": 41,
+    "antennaGainDb": 18,
+    "beamWidthDeg": 24.882872072320765,
+    "maxRangeKm": 10000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.91.181.154",
+    "port": 6010,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 60.5,
+  "nodeProcessingDelayMs": 52.56,
+  "packetLossRate": 0.0076,
+  "resourceUtilization": 0.86,
+  "packetBufferCapacity": 6795,
+  "currentPacketCount": 39,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508417Z",
+  "host": "node-44.sagsin.network",
+  "port": 6010,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_005",
+    "GROUND_STATION_007",
+    "GROUND_STATION_011",
+    "GROUND_STATION_015",
+    "LEO_SATELLITE_030",
+    "LEO_SATELLITE_031",
+    "LEO_SATELLITE_032",
+    "LEO_SATELLITE_033",
+    "MEO_SATELLITE_047",
+    "GEO_SATELLITE_049"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92f4"
+  },
+  "id": "MEO_SATELLITE_045",
+  "nodeId": "MEO_SATELLITE_045",
+  "nodeName": "Meo Satellite 45",
+  "nodeType": "MEO_SATELLITE",
+  "position": {
+    "latitude": 34.628811,
+    "longitude": -49.060311,
+    "altitude": 9982.55
+  },
+  "orbit": {
+    "semiMajorAxisKm": 16353.554618451957,
+    "eccentricity": 0.0012568658605318775,
+    "inclinationDeg": 148.64064130066134,
+    "raanDeg": 35.76269168844683,
+    "argumentOfPerigeeDeg": 84.11943089443733,
+    "trueAnomalyDeg": 4.849777858469788
+  },
+  "velocity": {
+    "velocityX": -4.5759828790508745,
+    "velocityY": -2.6886795042616334,
+    "velocityZ": 2.6598791450465904
+  },
+  "communication": {
+    "frequencyGHz": 13.760224443027399,
+    "bandwidthMHz": 242,
+    "transmitPowerDbW": 46,
+    "antennaGainDb": 43,
+    "beamWidthDeg": 27.674931111191007,
+    "maxRangeKm": 10000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.23.105.100",
+    "port": 7325,
+    "protocol": "UDP"
+  },
+  "isOperational": false,
+  "batteryChargePercent": 79.75,
+  "nodeProcessingDelayMs": 57.82,
+  "packetLossRate": 0.0072,
+  "resourceUtilization": 0.78,
+  "packetBufferCapacity": 7867,
+  "currentPacketCount": 353,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508437Z",
+  "host": "node-45.sagsin.network",
+  "port": 7325,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_003",
+    "GROUND_STATION_004",
+    "GROUND_STATION_012",
+    "GROUND_STATION_013",
+    "GROUND_STATION_014",
+    "GROUND_STATION_015",
+    "GROUND_STATION_016",
+    "GROUND_STATION_017",
+    "GROUND_STATION_018",
+    "GROUND_STATION_019",
+    "LEO_SATELLITE_036",
+    "LEO_SATELLITE_037",
+    "LEO_SATELLITE_038",
+    "LEO_SATELLITE_039",
+    "LEO_SATELLITE_040",
+    "MEO_SATELLITE_046"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92f5"
+  },
+  "id": "MEO_SATELLITE_046",
+  "nodeId": "MEO_SATELLITE_046",
+  "nodeName": "Meo Satellite 46",
+  "nodeType": "MEO_SATELLITE",
+  "position": {
+    "latitude": 49.574617,
+    "longitude": -59.425238,
+    "altitude": 10029.6
+  },
+  "orbit": {
+    "semiMajorAxisKm": 16400.595663900083,
+    "eccentricity": 0.011310342064225444,
+    "inclinationDeg": 18.219199793487387,
+    "raanDeg": 64.68023850397525,
+    "argumentOfPerigeeDeg": 160.78433175249745,
+    "trueAnomalyDeg": 11.375653434350488
+  },
+  "velocity": {
+    "velocityX": 4.0590037899100295,
+    "velocityY": 3.9619799206556823,
+    "velocityZ": 4.1834631950569925
+  },
+  "communication": {
+    "frequencyGHz": 13.663577514646256,
+    "bandwidthMHz": 186,
+    "transmitPowerDbW": 49,
+    "antennaGainDb": 30,
+    "beamWidthDeg": 26.93086248306999,
+    "maxRangeKm": 10000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.146.119.81",
+    "port": 7173,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 65.03,
+  "nodeProcessingDelayMs": 51.14,
+  "packetLossRate": 0.0299,
+  "resourceUtilization": 0.3,
+  "packetBufferCapacity": 3180,
+  "currentPacketCount": 245,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508460Z",
+  "host": "node-46.sagsin.network",
+  "port": 7173,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_003",
+    "GROUND_STATION_004",
+    "GROUND_STATION_012",
+    "GROUND_STATION_013",
+    "GROUND_STATION_014",
+    "GROUND_STATION_015",
+    "GROUND_STATION_016",
+    "GROUND_STATION_019",
+    "LEO_SATELLITE_036",
+    "LEO_SATELLITE_037",
+    "LEO_SATELLITE_038",
+    "LEO_SATELLITE_039",
+    "LEO_SATELLITE_040",
+    "MEO_SATELLITE_045"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92f6"
+  },
+  "id": "MEO_SATELLITE_047",
+  "nodeId": "MEO_SATELLITE_047",
+  "nodeName": "Meo Satellite 47",
+  "nodeType": "MEO_SATELLITE",
+  "position": {
+    "latitude": 27.713057,
+    "longitude": -148.666435,
+    "altitude": 9985.24
+  },
+  "orbit": {
+    "semiMajorAxisKm": 16356.244860334307,
+    "eccentricity": 0.015009820525277525,
+    "inclinationDeg": 70.39254856487037,
+    "raanDeg": 269.9352970826468,
+    "argumentOfPerigeeDeg": 188.21191897357815,
+    "trueAnomalyDeg": 202.52105275503592
+  },
+  "velocity": {
+    "velocityX": 2.2039346066196104,
+    "velocityY": 1.2087247078293382,
+    "velocityZ": 3.408612835057222
+  },
+  "communication": {
+    "frequencyGHz": 13.514274151461516,
+    "bandwidthMHz": 278,
+    "transmitPowerDbW": 50,
+    "antennaGainDb": 16,
+    "beamWidthDeg": 10.623973594740882,
+    "maxRangeKm": 10000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.98.108.165",
+    "port": 5596,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 80.4,
+  "nodeProcessingDelayMs": 50.15,
+  "packetLossRate": 0.0182,
+  "resourceUtilization": 0.81,
+  "packetBufferCapacity": 3918,
+  "currentPacketCount": 308,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508479Z",
+  "host": "node-47.sagsin.network",
+  "port": 5596,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_003",
+    "GROUND_STATION_005",
+    "GROUND_STATION_015",
+    "GROUND_STATION_016",
+    "LEO_SATELLITE_031",
+    "LEO_SATELLITE_032",
+    "LEO_SATELLITE_033",
+    "LEO_SATELLITE_034",
+    "LEO_SATELLITE_035",
+    "MEO_SATELLITE_044"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92f7"
+  },
+  "id": "MEO_SATELLITE_048",
+  "nodeId": "MEO_SATELLITE_048",
+  "nodeName": "Meo Satellite 48",
+  "nodeType": "MEO_SATELLITE",
+  "position": {
+    "latitude": -33.03866,
+    "longitude": -13.94717,
+    "altitude": 9974.28
+  },
+  "orbit": {
+    "semiMajorAxisKm": 16345.2778118652,
+    "eccentricity": 0.004236621028852396,
+    "inclinationDeg": 167.2607485807958,
+    "raanDeg": 272.51802019473956,
+    "argumentOfPerigeeDeg": 258.87400678446664,
+    "trueAnomalyDeg": 328.3874485813277
+  },
+  "velocity": {
+    "velocityX": -3.616636625769541,
+    "velocityY": -0.5599932717710907,
+    "velocityZ": 2.875733565271207
+  },
+  "communication": {
+    "frequencyGHz": 13.73573200015925,
+    "bandwidthMHz": 104,
+    "transmitPowerDbW": 32,
+    "antennaGainDb": 15,
+    "beamWidthDeg": 3.666704140416247,
+    "maxRangeKm": 10000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.100.188.76",
+    "port": 6002,
+    "protocol": "TCP"
+  },
+  "isOperational": false,
+  "batteryChargePercent": 71.08,
+  "nodeProcessingDelayMs": 59.22,
+  "packetLossRate": 0.0277,
+  "resourceUtilization": 0.85,
+  "packetBufferCapacity": 3506,
+  "currentPacketCount": 234,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508499Z",
+  "host": "node-48.sagsin.network",
+  "port": 6002,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_017",
+    "MEO_SATELLITE_042"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92f8"
+  },
+  "id": "GEO_SATELLITE_049",
+  "nodeId": "GEO_SATELLITE_049",
+  "nodeName": "Geo Satellite 49",
+  "nodeType": "GEO_SATELLITE",
+  "position": {
+    "latitude": 0,
+    "longitude": -180,
+    "altitude": 35764.31
+  },
+  "orbit": {
+    "semiMajorAxisKm": 42135.30578299224,
+    "eccentricity": 0.0037564389637228628,
+    "inclinationDeg": 8.085543540466105,
+    "raanDeg": 309.2218768494069,
+    "argumentOfPerigeeDeg": 255.68302353441908,
+    "trueAnomalyDeg": 210.4952022599224
+  },
+  "velocity": {
+    "velocityX": 2.0594764728502253,
+    "velocityY": -0.5014384695174735,
+    "velocityZ": 2.9817703199031382
+  },
+  "communication": {
+    "frequencyGHz": 19.953047105456513,
+    "bandwidthMHz": 362,
+    "transmitPowerDbW": 37,
+    "antennaGainDb": 40,
+    "beamWidthDeg": 19.006514986868307,
+    "maxRangeKm": 35000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.139.28.80",
+    "port": 8162,
+    "protocol": "TCP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 75.38,
+  "nodeProcessingDelayMs": 252.12,
+  "packetLossRate": 0.0291,
+  "resourceUtilization": 0.16,
+  "packetBufferCapacity": 7052,
+  "currentPacketCount": 377,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508529Z",
+  "host": "node-49.sagsin.network",
+  "port": 8162,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_001",
+    "GROUND_STATION_002",
+    "GROUND_STATION_005",
+    "GROUND_STATION_006",
+    "GROUND_STATION_007",
+    "GROUND_STATION_010",
+    "GROUND_STATION_011",
+    "GROUND_STATION_015",
+    "GROUND_STATION_020",
+    "LEO_SATELLITE_028",
+    "LEO_SATELLITE_029",
+    "LEO_SATELLITE_030",
+    "LEO_SATELLITE_031",
+    "LEO_SATELLITE_032",
+    "LEO_SATELLITE_033",
+    "LEO_SATELLITE_034",
+    "MEO_SATELLITE_044"
+  ]
+},
+{
+  "_id": {
+    "$oid": "69033e98d8b44176411b92f9"
+  },
+  "id": "GEO_SATELLITE_050",
+  "nodeId": "GEO_SATELLITE_050",
+  "nodeName": "Geo Satellite 50",
+  "nodeType": "GEO_SATELLITE",
+  "position": {
+    "latitude": 0,
+    "longitude": 0,
+    "altitude": 35811.76
+  },
+  "orbit": {
+    "semiMajorAxisKm": 42182.762675542705,
+    "eccentricity": 0.0036485114420218173,
+    "inclinationDeg": 72.71962457581219,
+    "raanDeg": 7.1050687094633425,
+    "argumentOfPerigeeDeg": 185.83634429388084,
+    "trueAnomalyDeg": 21.33134880316161
+  },
+  "velocity": {
+    "velocityX": 1.3775292097774325,
+    "velocityY": -0.9673235346733311,
+    "velocityZ": 2.697485562936398
+  },
+  "communication": {
+    "frequencyGHz": 20.303453873192844,
+    "bandwidthMHz": 69,
+    "transmitPowerDbW": 44,
+    "antennaGainDb": 44,
+    "beamWidthDeg": 11.466726589721654,
+    "maxRangeKm": 35000,
+    "minElevationDeg": 0,
+    "ipAddress": "10.112.234.68",
+    "port": 7460,
+    "protocol": "UDP"
+  },
+  "isOperational": true,
+  "batteryChargePercent": 64.94,
+  "nodeProcessingDelayMs": 251.41,
+  "packetLossRate": 0.0064,
+  "resourceUtilization": 0.37,
+  "packetBufferCapacity": 9498,
+  "currentPacketCount": 387,
+  "weather": "CLEAR",
+  "lastUpdated": "2025-10-30T10:31:52.508549Z",
+  "host": "node-50.sagsin.network",
+  "port": 7460,
+  "healthy": true,
+  "neighbors": [
+    "GROUND_STATION_003",
+    "GROUND_STATION_004",
+    "GROUND_STATION_008",
+    "GROUND_STATION_009",
+    "GROUND_STATION_012",
+    "GROUND_STATION_013",
+    "GROUND_STATION_014",
+    "GROUND_STATION_017",
+    "GROUND_STATION_018",
+    "GROUND_STATION_019",
+    "LEO_SATELLITE_039"
+  ]
+}]

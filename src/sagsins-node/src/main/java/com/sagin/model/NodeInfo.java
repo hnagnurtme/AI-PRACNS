@@ -11,6 +11,7 @@ import org.bson.codecs.pojo.annotations.BsonProperty;
 import org.bson.codecs.pojo.annotations.BsonRepresentation;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 
 @Getter
@@ -36,7 +37,8 @@ public class NodeInfo {
     private Orbit orbit;
     private Velocity velocity;
     private Communication communication;
-
+    
+    private List<String> neigbours;
     private boolean isOperational;
     private double batteryChargePercent;
     private double nodeProcessingDelayMs;

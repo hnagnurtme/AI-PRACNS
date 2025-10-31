@@ -7,6 +7,7 @@ import lombok.*;
 
 import jakarta.validation.constraints.*;
 import java.time.Instant;
+import java.util.List;
 
 /**
  * Data Transfer Object for Node Information
@@ -38,9 +39,7 @@ public class NodeDTO {
     private Position position;
 
     private Orbit orbit;
-    
     private Velocity velocity;
-
     private Communication communication;
 
     @NotNull(message = "Operational status is required")
@@ -69,6 +68,9 @@ public class NodeDTO {
 
     private WeatherCondition weather;
 
+    /** ✅ Thêm danh sách neighbors (bị thiếu trong version cũ) */
+    private List<String> neighbors;
+
     private Instant lastUpdated;
 
     @NotBlank(message = "Host is required")
@@ -83,22 +85,22 @@ public class NodeDTO {
      */
     @JsonProperty(value = "healthy", access = JsonProperty.Access.READ_ONLY)
     public Boolean isHealthy() {
-        if (isOperational == null || batteryChargePercent == null || 
+        if (isOperational == null || batteryChargePercent == null ||
             packetBufferCapacity == null || currentPacketCount == null || weather == null) {
             return null;
         }
 
         final double MIN_POWER = 10.0;
         final double MAX_BUFFER_LOAD_RATIO = 0.8;
-        
+
         double bufferLoadRatio = (packetBufferCapacity > 0)
-            ? (double) currentPacketCount / packetBufferCapacity
-            : 0.0;
+                ? (double) currentPacketCount / packetBufferCapacity
+                : 0.0;
 
         return isOperational
-            && batteryChargePercent > MIN_POWER
-            && bufferLoadRatio <= MAX_BUFFER_LOAD_RATIO
-            && weather != WeatherCondition.SEVERE_STORM;
+                && batteryChargePercent > MIN_POWER
+                && bufferLoadRatio <= MAX_BUFFER_LOAD_RATIO
+                && weather != WeatherCondition.SEVERE_STORM;
     }
 
     /**
@@ -110,26 +112,27 @@ public class NodeDTO {
         }
 
         return NodeDTO.builder()
-            .id(nodeInfo.getId())
-            .nodeId(nodeInfo.getNodeId())
-            .nodeName(nodeInfo.getNodeName())
-            .nodeType(nodeInfo.getNodeType())
-            .position(nodeInfo.getPosition())
-            .orbit(nodeInfo.getOrbit())
-            .velocity(nodeInfo.getVelocity())
-            .communication(nodeInfo.getCommunication())
-            .isOperational(nodeInfo.isOperational())
-            .batteryChargePercent(nodeInfo.getBatteryChargePercent())
-            .nodeProcessingDelayMs(nodeInfo.getNodeProcessingDelayMs())
-            .packetLossRate(nodeInfo.getPacketLossRate())
-            .resourceUtilization(nodeInfo.getResourceUtilization())
-            .packetBufferCapacity(nodeInfo.getPacketBufferCapacity())
-            .currentPacketCount(nodeInfo.getCurrentPacketCount())
-            .weather(nodeInfo.getWeather())
-            .lastUpdated(nodeInfo.getLastUpdated())
-            .host(nodeInfo.getHost())
-            .port(nodeInfo.getPort())
-            .build();
+                .id(nodeInfo.getId())
+                .nodeId(nodeInfo.getNodeId())
+                .nodeName(nodeInfo.getNodeName())
+                .nodeType(nodeInfo.getNodeType())
+                .position(nodeInfo.getPosition())
+                .orbit(nodeInfo.getOrbit())
+                .velocity(nodeInfo.getVelocity())
+                .communication(nodeInfo.getCommunication())
+                .isOperational(nodeInfo.isOperational())
+                .batteryChargePercent(nodeInfo.getBatteryChargePercent())
+                .nodeProcessingDelayMs(nodeInfo.getNodeProcessingDelayMs())
+                .packetLossRate(nodeInfo.getPacketLossRate())
+                .resourceUtilization(nodeInfo.getResourceUtilization())
+                .packetBufferCapacity(nodeInfo.getPacketBufferCapacity())
+                .currentPacketCount(nodeInfo.getCurrentPacketCount())
+                .weather(nodeInfo.getWeather())
+                .neighbors(nodeInfo.getNeighbors()) // ✅ thêm neighbors
+                .lastUpdated(nodeInfo.getLastUpdated())
+                .host(nodeInfo.getHost())
+                .port(nodeInfo.getPort())
+                .build();
     }
 
     /**
@@ -153,6 +156,7 @@ public class NodeDTO {
         nodeInfo.setPacketBufferCapacity(this.packetBufferCapacity != null ? this.packetBufferCapacity : 100);
         nodeInfo.setCurrentPacketCount(this.currentPacketCount != null ? this.currentPacketCount : 0);
         nodeInfo.setWeather(this.weather != null ? this.weather : WeatherCondition.CLEAR);
+        nodeInfo.setNeighbors(this.neighbors); // ✅ thêm neighbors
         nodeInfo.setLastUpdated(this.lastUpdated != null ? this.lastUpdated : Instant.now());
         nodeInfo.setHost(this.host);
         nodeInfo.setPort(this.port);
@@ -178,6 +182,7 @@ public class NodeDTO {
         if (this.packetBufferCapacity != null) nodeInfo.setPacketBufferCapacity(this.packetBufferCapacity);
         if (this.currentPacketCount != null) nodeInfo.setCurrentPacketCount(this.currentPacketCount);
         if (this.weather != null) nodeInfo.setWeather(this.weather);
+        if (this.neighbors != null) nodeInfo.setNeighbors(this.neighbors); // ✅ thêm neighbors
         if (this.host != null) nodeInfo.setHost(this.host);
         if (this.port != null) nodeInfo.setPort(this.port);
         nodeInfo.setLastUpdated(Instant.now());
