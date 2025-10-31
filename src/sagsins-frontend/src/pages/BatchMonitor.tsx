@@ -6,7 +6,7 @@ import { NetworkTopologyView } from '../components/batchchart/NetworkTopologyVie
 import { PacketFlowDetail } from '../components/batchchart/PacketFlowDetail';
 import { AlgorithmComparisonChart } from '../components/batchchart/AlgorithmComparisonChart';
 
-const DASHBOARD_ENDPOINT = 'http://localhost:8080/ws'; // Hoặc endpoint chính xác
+const DASHBOARD_ENDPOINT = import.meta.env.VITE_WS_URL; // Sử dụng biến môi trường
 
 const BatchDashboard: React.FC = () => {
     // 1. Lấy dữ liệu lô gói tin từ WebSocket

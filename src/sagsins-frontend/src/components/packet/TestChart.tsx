@@ -15,7 +15,7 @@ import { FlowChart } from '../packet/FlowChart';
 
 // --- BƯỚC 2: ĐỊNH NGHĨA URL WEBSOCKET ---
 // (Thay đổi URL này thành URL server của bạn)
-const PACKET_STREAM_URL = 'ws://localhost:8080/packet-stream';
+const PACKET_STREAM_URL = import.meta.env.VITE_WS_URL; // Ví dụ: 'ws://localhost:8080/packets'
 
 function FullDashboard () {
     // ----------------------------------------------
