@@ -5,7 +5,7 @@ import { CombinedHopMetricsChart } from "../components/chart/CombinedHopMetricsC
 
 export const ComparisonDashboard: React.FC = () => {
     // Nhận realtime packets từ backend
-    const packets = usePacketWebSocket( "http://localhost:8080/ws" );
+    const packets = usePacketWebSocket(import.meta.env.VITE_WS_URL);
 
     // Chỉ lấy gói cuối cùng để hiển thị
     const latest = packets.at( -1 );
