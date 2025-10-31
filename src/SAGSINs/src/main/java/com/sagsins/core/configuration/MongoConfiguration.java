@@ -9,14 +9,15 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 @Configuration
 public class MongoConfiguration {
 
-    public static final String DATABASE_NAME = "sagsin_network";
+    public static final String DATABASE_NAME = "network";
 
     /**
      * Tạo MongoClient từ URI kết nối MongoDB
      */
     @Bean
     public MongoClient mongoClient() {
-        String uri = "mongodb://user:password123@localhost:27017/?authSource=admin";
+        String uri = "mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/network"
+                + "?retryWrites=true&w=majority&tls=true&appName=MONGO1";
         return MongoClients.create(uri);
     }
 
