@@ -36,7 +36,7 @@ def load_components() -> Tuple[DQN, StateBuilder]:
     model.eval()
     
     logger.info("2. Đang kết nối MongoDB...")
-    mongo_conn = MongoConnector(uri="mongodb://user:password123@localhost:27017/?authSource=admin")
+    mongo_conn = MongoConnector(uri="mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/?appName=MONGO1")
     state_builder = StateBuilder(mongo_conn)
     
     logger.info("✅ DQN Agent đã sẵn sàng.")

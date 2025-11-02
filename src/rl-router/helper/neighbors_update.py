@@ -27,8 +27,8 @@ MAX_RANGE_MAP = {
 }
 
 # --- MongoDB setup ---
-MONGO_URI = "mongodb://user:password123@localhost:27017/?authSource=admin"
-DB_NAME = "sagsin_network"
+MONGO_URI = "mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/?appName=MONGO1"
+DB_NAME = "network"
 COLLECTION_NAME = "network_nodes"
 
 class NodeService:
