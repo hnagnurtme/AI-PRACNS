@@ -49,9 +49,10 @@ public class PacketHelper {
         //     packet.setDropReason("LOSS_RATE_EXCEEDED");
         //     return;
         // }
+
         BufferState bufferState = new BufferState(
             currentNode.getPacketBufferCapacity(),
-            currentNode.getCommunication().bandwidthMHz()
+            currentNode.getCommunication().getBandwidthMHz()
         );
 
         RoutingDecisionInfo routingDecisionInfo = new RoutingDecisionInfo(

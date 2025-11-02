@@ -31,15 +31,18 @@ public class SimulationMain {
         Map<String, NodeInfo> nodeInfoMap = nodeRepository.loadAllNodeConfigs();
         logger.info("Loaded {} node configurations from repository.", nodeInfoMap.size());
 
+        String envHost = "127.0.0.1";
         nodeInfoMap.values().forEach(nodeInfo -> {
+            nodeService.updateNodeIpAddress(nodeInfo.getNodeId(), envHost);
+            nodeService.flushToDatabase();
             TCP_Service tcpService = new TCP_Service(nodeRepository, nodeService, userRepository, routingService);
             NodeGateway nodeGateway = new NodeGateway(tcpService);
 
             new Thread(() -> {
                 try {
-                    nodeGateway.startListening(nodeInfo, nodeInfo.getCommunication().port());
+                    nodeGateway.startListening(nodeInfo, nodeInfo.getCommunication().getPort());
                     logger.info("Node Gateway started for node: {} ({}) on port {}",
-                            nodeInfo.getNodeId(), nodeInfo.getNodeType(), nodeInfo.getCommunication().port());
+                            nodeInfo.getNodeId(), nodeInfo.getNodeType(), nodeInfo.getCommunication().getPort());
 
                     Thread.currentThread().join();
                 } catch (InterruptedException e) {

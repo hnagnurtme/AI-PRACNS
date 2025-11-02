@@ -27,8 +27,8 @@ MAX_RANGE_MAP = {
 }
 
 # --- MongoDB setup ---
-MONGO_URI = "mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/?appName=MONGO1"
-DB_NAME = "network"
+MONGO_URI = "mongodb://user:password123@localhost:27017/?authSource=admin"
+DB_NAME = "sagsin_network"
 COLLECTION_NAME = "network_nodes"
 
 class NodeService:
@@ -125,7 +125,10 @@ class NodeService:
                 {"nodeId": node_id},
                 {"$set": {
                     "neighbors": neighbors,
-                    "host": "127.0.0.1"
+                    "communication.ipAddress": "127.0.0.1",
+                    "host": "127.0.0.1",
+                    "isOperational": True,
+                    "healthy":True
                 }}
             )
             logger.info(f"  {node_id}: {len(neighbors)} neighbors updated")

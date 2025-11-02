@@ -311,7 +311,7 @@ public class NodeService implements INodeService {
      * CHỈ tính độ trễ Truyền (Transmission) và Truyền sóng (Propagation).
      */
     private TransmissionDelayProfile computeTransmissionDelay(NodeInfo node, Packet packet, double altitudeKm, WeatherCondition weather) {
-        double bandwidthMHz = node.getCommunication().bandwidthMHz();
+        double bandwidthMHz = node.getCommunication().getBandwidthMHz();
         double dataRateMbps = bandwidthMHz;
         double bandwidthBps = dataRateMbps * SimulationConstants.MBPS_TO_BPS_CONVERSION;
         double bandwidthBpms = bandwidthBps / 1000.0;
@@ -410,6 +410,17 @@ public class NodeService implements INodeService {
         double dz = z2 - z1;
 
         return Math.sqrt(dx*dx + dy*dy + dz*dz);
+    }
+
+    @Override
+    public void updateNodeIpAddress(String nodeId, String newIpAddress) {
+        NodeInfo node = nodeStateCache.get(nodeId);
+        if (node == null) {
+            logger.warn("[NodeService] Không tìm thấy node {} trong cache để cập nhật IP.", nodeId);
+            return;
+        }
+        node.getCommunication().setIpAddress(newIpAddress);
+        dirtyNodeIds.add(nodeId);
     }
 
 }

@@ -14,7 +14,7 @@ import java.util.ArrayList;
 public class SimulationClient {
     public static void main(String[] args) {
         String host = "localhost";
-        int port = 6882;
+        int port = 7765;
 
         // --- 1. Tạo packet mẫu ---
         Packet packet = new Packet();
@@ -24,8 +24,8 @@ public class SimulationClient {
         packet.setPayloadSizeByte(12012);
         packet.setSourceUserId("user-01");
         packet.setDestinationUserId("user-02");
-        packet.setStationSource("GROUND_STATION_001");
-        packet.setStationDest("GROUND_STATION_015");
+        packet.setStationSource("GS_TOKYO");
+        packet.setStationDest("GS_RIO");
         packet.setTTL(10);
         packet.setPriorityLevel(1);
         packet.setMaxAcceptableLatencyMs(500);
@@ -41,7 +41,7 @@ public class SimulationClient {
         packet.setDropReason(null);
         packet.setAccumulatedDelayMs(0);
         packet.setAnalysisData(null);
-        packet.setUseRL(false);
+        packet.setUseRL(true);
 
         // --- 2. Chuẩn bị ObjectMapper ---
         ObjectMapper objectMapper = new ObjectMapper();

@@ -45,7 +45,6 @@ public class NodeInfo {
     private int currentPacketCount;
     private WeatherCondition weather;
     private Instant lastUpdated;
-    private String host;
     private int port;
 
     private Boolean healthy;

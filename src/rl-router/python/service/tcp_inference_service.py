@@ -36,7 +36,7 @@ def load_components() -> Tuple[DQN, StateBuilder]:
     model.eval()
     
     logger.info("2. Đang kết nối MongoDB...")
-    mongo_conn = MongoConnector(uri="mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/?appName=MONGO1")
+    mongo_conn = MongoConnector(uri="mongodb://user:password123@localhost:27017/?authSource=admin")
     state_builder = StateBuilder(mongo_conn)
     
     logger.info("✅ DQN Agent đã sẵn sàng.")
@@ -73,6 +73,7 @@ def get_optimal_path(model: DQN, state_builder: StateBuilder, packet_data: Dict[
             return path, "DROP_TTL"
 
         try:
+            print('Dang xu li ')
             # 1. Lấy trạng thái vector S
             state_vector = state_builder.get_state_vector(current_packet)
             state_tensor = torch.from_numpy(state_vector).float().unsqueeze(0)
@@ -172,6 +173,8 @@ def start_tcp_server():
                         continue
 
                     request_json = json.loads(data_buffer.strip().decode('utf-8'))
+                    
+                    print(request_json)
 
                     # Lấy path tối ưu
                     path_list, status = get_optimal_path(model, state_builder, request_json, max_hops=20)

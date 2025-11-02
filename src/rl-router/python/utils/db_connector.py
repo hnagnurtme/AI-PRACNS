@@ -14,8 +14,8 @@ class MongoConnector:
 
     def __init__(
         self, 
-        uri: str = "mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/?appName=MONGO1",
-        db_name: str = "network",
+        uri: str = "mongodb://user:password123@localhost:27017/?authSource=admin",
+        db_name: str = "sagsin_network",
         nodes_collection_name: str = "network_nodes"
     ):
         self.client = MongoClient(uri)
