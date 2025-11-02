@@ -14,7 +14,7 @@ class MongoConnector:
 
     def __init__(
         self, 
-        uri: str = "mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/?appName=MONGO1",
+        uri: str = "mongodb://user:password123@localhost:27017/?authSource=admin",
         db_name: str = "sagsin_network",
         nodes_collection_name: str = "network_nodes"
     ):
@@ -96,3 +96,4 @@ class MongoConnector:
         
         # 2. Fetch trạng thái chi tiết của tất cả Neighbors trong 1 batch
         return self.get_neighbor_status_batch(neighbor_ids, projection)
+    

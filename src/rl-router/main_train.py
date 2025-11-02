@@ -10,7 +10,7 @@ from typing import Dict, Any, List, Tuple
 from python.utils.db_connector import MongoConnector
 from python.utils.state_builder import StateBuilder
 from python.env.satellite_simulator import SatelliteEnv
-from python.rl_agent.trainer import DQNAgent, TARGET_UPDATE
+from python.rl_agent.trainer import DQNAgent, TARGET_UPDATE_INTERVAL
 from python.rl_agent.policy import get_epsilon # Cần cho logging
 
 # --- CẤU HÌNH VÀ HẰNG SỐ ---
@@ -36,7 +36,7 @@ def generate_packet(node_list: List[str]) -> Dict[str, Any]:
         "currentHoldingNodeId": src,
         "stationDest": dest,
         "accumulatedDelayMs": 0.0,
-        "ttl": random.randint(15, 25),
+        "ttl": random.randint(35, 45),
         "serviceQoS": {
             "serviceType": random.choice(["VIDEO_STREAM", "AUDIO_CALL", "FILE_TRANSFER"]),
             "maxLatencyMs": random.uniform(100.0, 300.0),
@@ -48,69 +48,89 @@ def generate_packet(node_list: List[str]) -> Dict[str, Any]:
     }
     return packet
 
-def simulate_full_path(env: SatelliteEnv, agent: DQNAgent, state_builder: StateBuilder, packet: Dict[str, Any]) -> Tuple[List[Tuple], float]:
+def simulate_full_path(
+    env: SatelliteEnv,
+    agent: DQNAgent,
+    state_builder: StateBuilder,
+    packet: Dict[str, Any],
+    max_hops: int = MAX_HOPS_PER_EPISODE
+) -> Tuple[List[Tuple], float]:
     """
-    Mô phỏng hành trình packet đầy đủ (nhiều hop) cho một Episode.
-    Trả về danh sách transitions và tổng reward.
+    Mô phỏng hành trình của 1 packet qua nhiều hop đến đích.
+    Trả về (transitions, total_reward)
     """
     state = env.reset(packet)
     transitions = []
-    total_reward = 0
+    total_reward = 0.0
     hops = 0
+
     current_packet = packet.copy()
 
-    while hops < MAX_HOPS_PER_EPISODE:
+    while True:
         current_node_id = current_packet["currentHoldingNodeId"]
-        
-        # Lấy thông tin neighbors cho Agent (dù Agent dùng Q-Network) và cho mô phỏng
-        current_node_data = state_builder.db.get_node(current_node_id, projection={"neighbors": 1})
-        neighbor_ids = current_node_data.get("neighbors", []) if current_node_data else []
+        dest_node_id = current_packet["stationDest"]
 
-        # Kiểm tra điều kiện kết thúc sớm
-        if current_packet.get("dropped") or current_packet.get("ttl", 0) <= 0 or current_node_id == current_packet.get("stationDest"):
-            # Lưu transition cuối (nếu có) và kết thúc
-            if hops > 0:
-                 transitions.append((state, None, 0.0, state, True)) # Transition cuối giả định
+        # ---- Điều kiện kết thúc ----
+        if (
+            current_packet.get("dropped")
+            or current_packet.get("ttl", 0) <= 0
+            or current_node_id == dest_node_id
+            or hops >= max_hops
+        ):
+            done = True
+            # Phạt nhẹ nếu TTL cạn hoặc bị drop
+            if current_packet.get("dropped", False):
+                total_reward += -150.0
+            elif current_packet.get("ttl", 0) <= 0:
+                total_reward += -50.0
+            elif current_node_id == dest_node_id:
+                total_reward += 200.0  # Thưởng đến đích
             break
 
-        # 1. Chọn Hành động (Action Selection)
-        action_index = agent.select_action(state)
-        
-        # Xử lý trường hợp không có neighbors
+        # ---- Lấy neighbors hiện tại ----
+        node_data = state_builder.db.get_node(current_node_id, projection={"neighbors": 1})
+        neighbor_ids = node_data.get("neighbors", []) if node_data else []
+
         if not neighbor_ids:
             current_packet["dropped"] = True
-            continue # Lặp lại và sẽ bị bắt ở kiểm tra điều kiện kết thúc
+            continue
 
-        # 2. Ánh xạ Hành động sang Node ID
+        # ---- Agent chọn hành động ----
+        action_index = agent.select_action(state)
+
+        # Xử lý nếu action_index vượt quá số neighbor thực tế
         if action_index < len(neighbor_ids):
             next_hop_id = neighbor_ids[action_index]
         else:
-            # Nếu Agent chọn index ngoài phạm vi (padding), chọn ngẫu nhiên neighbor hợp lệ
-            next_hop_id = random.choice(neighbor_ids) 
-            
-        # 3. Cập nhật packet mô phỏng hop tiếp theo (Môi trường)
+            next_hop_id = random.choice(neighbor_ids)
+
+        # ---- Mô phỏng chuyển tiếp ----
         next_packet = current_packet.copy()
         next_packet["currentHoldingNodeId"] = next_hop_id
         next_packet["ttl"] = max(current_packet.get("ttl", 10) - 1, 0)
-        
-        # Giả lập tăng độ trễ (sử dụng random)
-        next_packet["accumulatedDelayMs"] += random.uniform(5.0, 20.0) 
+        next_packet["accumulatedDelayMs"] += random.uniform(5.0, 20.0)
         next_packet["path"] = current_packet["path"] + [next_hop_id]
 
-        # 4. Step trong môi trường
-        # Hàm env.step sẽ tính Reward dựa trên trạng thái cũ (current_packet) và trạng thái mới (next_packet)
+        # ---- Step trong môi trường ----
         next_state, reward, done = env.step(action_index, next_hop_id, next_packet)
+
+        # ---- Ghi nhận ----
         total_reward += reward
-        
-        # 5. Lưu trữ Transition
         transitions.append((state, action_index, reward, next_state, done))
 
-        current_packet = next_packet
+        # ---- Cập nhật cho vòng tiếp theo ----
         state = next_state
+        current_packet = next_packet
         hops += 1
 
         if done:
             break
+
+    # ---- Logging chi tiết ----
+    logger.info(
+        f"[Episode Path] {packet['path'][0]} → {current_packet['currentHoldingNodeId']} "
+        f"| TotalReward={total_reward:.2f} | Hops={hops} | TTL={current_packet.get('ttl',0)}"
+    )
 
     return transitions, total_reward
 
@@ -158,7 +178,7 @@ def train_agent():
                 agent.optimize_model()
 
         # Cập nhật Target Network
-        if episode % TARGET_UPDATE == 0:
+        if episode % TARGET_UPDATE_INTERVAL == 0:
             agent.update_target_network()
 
         # Logging và Checkpoint

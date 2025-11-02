@@ -9,10 +9,10 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger("add_data")
 
 # ----------------- Config -----------------
-DB_URI = "mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/?appName=MONGO1"
-DB_NAME = "network"
+DB_URI = "mongodb://user:password123@localhost:27017/?authSource=admin"
+DB_NAME = "sagsin_network"
 COLLECTION_NAME = "network_nodes"
-JSON_FILE = "/Users/anhnon/PBL4/src/rl-router/helper/data.json"
+JSON_FILE = "/Users/anhnon/PBL4/src/rl-router/helper/network_nodes.json"
 
 # ----------------- Connect MongoDB -----------------
 try:
