@@ -14,18 +14,18 @@ import java.util.ArrayList;
 public class SimulationClient {
     public static void main(String[] args) {
         String host = "localhost";
-        int port = 5001;
+        int port = 6882;
 
         // --- 1. Tạo packet mẫu ---
         Packet packet = new Packet();
         packet.setPacketId("P-TEST-001");
         packet.setType("TEST");
         packet.setPayloadDataBase64("SGVsbG8gV29ybGQ="); // "Hello World" base64
-        packet.setPayloadSizeByte(11);
+        packet.setPayloadSizeByte(12012);
         packet.setSourceUserId("user-01");
         packet.setDestinationUserId("user-02");
-        packet.setStationSource("N-BANGKOK");
-        packet.setStationDest("N-SINGAPORE");
+        packet.setStationSource("GROUND_STATION_001");
+        packet.setStationDest("GROUND_STATION_015");
         packet.setTTL(10);
         packet.setPriorityLevel(1);
         packet.setMaxAcceptableLatencyMs(500);

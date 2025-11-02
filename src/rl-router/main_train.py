@@ -118,7 +118,7 @@ def simulate_full_path(env: SatelliteEnv, agent: DQNAgent, state_builder: StateB
 
 def train_agent():
     logger.info("=== KHỞI TẠO HỆ THỐNG DQN ROUTER FULLPATH ===")
-    mongo_conn = MongoConnector(uri="mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/?appName=MONGO1")
+    mongo_conn = MongoConnector(uri="mongodb://user:password123@localhost:27017/sagsin_network?authSource=admin")
     state_builder = StateBuilder(mongo_conn)
 
     # Weights cho Reward (Đã thêm hop_cost để giải quyết lỗi lang thang)

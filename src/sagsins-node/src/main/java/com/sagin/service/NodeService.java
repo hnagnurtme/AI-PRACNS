@@ -58,6 +58,8 @@ public class NodeService implements INodeService {
             packet.setDropped(true); packet.setDropReason("NODE_NOT_FOUND_");
             return;
         }
+        //log 
+        logger.info(node.toString());
         if (node.getCurrentPacketCount() >= node.getPacketBufferCapacity()) {
             packet.setDropped(true); packet.setDropReason("BUFFER_OVERFLOW_AT_" + nodeId);
             logger.warn("[NodeService] Node {} buffer đầy. Packet {} bị drop.", nodeId, packet.getPacketId());
