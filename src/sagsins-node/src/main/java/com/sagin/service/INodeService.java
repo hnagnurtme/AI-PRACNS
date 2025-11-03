@@ -14,8 +14,9 @@ public interface INodeService {
      *
      * @param nodeId Node nhận packet
      * @param packet Packet vừa được nhận
+     * @return Delay của RX/CPU (Queuing + Processing) để tính tổng delay của hop
      */
-    void updateNodeStatus(String nodeId, Packet packet);
+    double updateNodeStatus(String nodeId, Packet packet);
 
     /**
      * Hạch toán chi phí GỬI (TX) cho một lần truyền thành công.
@@ -25,8 +26,9 @@ public interface INodeService {
      *
      * @param nodeId The ID of the node that sent the packet.
      * @param packet The packet that was successfully sent.
+     * @return Delay thực tế của hop này (Transmission + Propagation) để tạo HopRecord
      */
-    void processSuccessfulSend(String nodeId, Packet packet);
+    double processSuccessfulSend(String nodeId, Packet packet);
 
     /**
      * Xử lý một "tick" mô phỏng (hiện không dùng nhiều).

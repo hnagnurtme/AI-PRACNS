@@ -12,16 +12,13 @@ import com.sagin.routing.RouteInfo;
 public class PacketHelper {
 
     /**
-     * Cập nhật packet khi đi qua node.
+     * **BƯỚC 1 (TRƯỚC KHI GỬI)**: Cập nhật thông tin cơ bản của packet.
      * - Giảm TTL, drop nếu TTL <= 0
      * - Cập nhật pathHistory
-     * - Tạo hopRecord mới
-     * - Cập nhật accumulatedDelay dựa trên node info và link latency
-     * - Tính toán packet loss dựa trên node + link
-     * - Kiểm tra QoS (maxAcceptableLatencyMs, maxAcceptableLossRate)
+     * 
+     * ⚠️ KHÔNG TẠO HopRecord Ở ĐÂY! HopRecord sẽ được tạo SAU khi gửi thành công với delay THỰC TẾ.
      */
-    public static void updatePacketForTransit(Packet packet, NodeInfo currentNode, NodeInfo nextNode, RouteInfo routeInfo) {
-
+    public static void preparePacketForTransit(Packet packet, NodeInfo nextNode) {
         // --- Giảm TTL ---
         packet.setTTL(packet.getTTL() - 1);
         if (packet.getTTL() <= 0) {
@@ -34,37 +31,40 @@ public class PacketHelper {
         if (packet.getPathHistory() != null) {
             packet.getPathHistory().add(nextNode.getNodeId());
         }
+    }
 
-        // --- Tính latency dựa vào node + route ---
-        double linkLatency = calculateLinkLatency(currentNode, nextNode, routeInfo);
-        packet.setAccumulatedDelayMs(packet.getAccumulatedDelayMs() + linkLatency);
-
-        // --- Tính toán packet loss chính xác ---
-        double nodeLoss = currentNode.getPacketLossRate();
-        double linkLoss = routeInfo.getAvgPacketLossRate();
-        double combinedLossRate = 1 - (1 - nodeLoss) * (1 - linkLoss);
-
-        // if (combinedLossRate > packet.getMaxAcceptableLossRate()) {
-        //     packet.setDropped(true);
-        //     packet.setDropReason("LOSS_RATE_EXCEEDED");
-        //     return;
-        // }
-
+    /**
+     * **BƯỚC 2 (SAU KHI GỬI THÀNH CÔNG)**: Tạo HopRecord với delay THỰC TẾ.
+     * 
+     * @param packet Packet đã gửi thành công
+     * @param currentNode Node gửi
+     * @param nextNode Node nhận
+     * @param actualDelayMs Delay THỰC TẾ vừa tính (queuing + processing + transmission + propagation)
+     * @param routeInfo Thông tin routing để lấy metric
+     */
+    public static void createHopRecordWithActualDelay(
+            Packet packet, 
+            NodeInfo currentNode, 
+            NodeInfo nextNode, 
+            double actualDelayMs,
+            RouteInfo routeInfo) {
+        
         BufferState bufferState = new BufferState(
             currentNode.getPacketBufferCapacity(),
             currentNode.getCommunication().getBandwidthMHz()
         );
 
         RoutingDecisionInfo routingDecisionInfo = new RoutingDecisionInfo(
-            Algorithm.Dijkstra,
+            packet.isUseRL() ? RoutingDecisionInfo.Algorithm.ReinforcementLearning : Algorithm.Dijkstra,
             "latency",
-            linkLatency
+            actualDelayMs  // ✅ Sử dụng delay THỰC TẾ
         );
-        // --- Tạo hop record ---
+        
+        // --- Tạo hop record với delay THỰC TẾ ---
         HopRecord hop = new HopRecord(
                 currentNode.getNodeId(),
                 nextNode.getNodeId(),
-                linkLatency,
+                actualDelayMs,  // ✅ Delay thực tế đã được tính toán chính xác
                 System.currentTimeMillis(),
                 currentNode.getPosition(),
                 nextNode.getPosition(),
@@ -72,29 +72,10 @@ public class PacketHelper {
                 bufferState,
                 routingDecisionInfo
         );
-    //     String fromNodeId,
-    // String toNodeId,
-    // double latencyMs,
-    // long timestampMs,
-    // Position fromNodePosition,
-    // Position toNodePosition,
-    // double distanceKm,
-    // BufferState fromNodeBufferState,
-    // RoutingDecisionInfo routingDecisionInfo
 
         if (packet.getHopRecords() != null) {
             packet.getHopRecords().add(hop);
         }
-
-        // --- Kiểm tra QoS: Latency ---
-        if (packet.getAccumulatedDelayMs() > packet.getMaxAcceptableLatencyMs()) {
-            packet.setDropped(true);
-            packet.setDropReason("LATENCY_EXCEEDED");
-        }
-    }
-
-    private static double calculateLinkLatency(NodeInfo from, NodeInfo to, RouteInfo route) {
-        return route.getTotalLatencyMs() / Math.max(1, route.getHopCount());
     }
 
     private static double calculateDistanceKm(NodeInfo from, NodeInfo to) {

@@ -1,4 +1,4 @@
-package com.sagin.model;
+package com.example.model;
 
 import org.bson.BsonType;
 import org.bson.codecs.pojo.annotations.BsonId;
