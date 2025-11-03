@@ -225,8 +225,8 @@ public class TCP_Service implements ITCP_Service {
         }
 
         UserInfo user = userOpt.get();
-        String host = user.getCommunication().getIpAddress();
-        int port = user.getCommunication().getPort();
+        String host = user.getIpAddress();
+        int port = user.getPort();
         if (host == null || port <= 0) {
             logger.error("[TCP_Service] (forwardUser) Người dùng {} có thông tin host/port không hợp lệ.", userId);
             return;

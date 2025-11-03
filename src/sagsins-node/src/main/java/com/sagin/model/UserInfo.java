@@ -16,6 +16,7 @@ public class UserInfo {
     @BsonProperty("userId")
     private String userId;
     private String userName;
-    private Communication communication; 
-    private Position position;
+    private String ipAddress;
+    private int port;
+    private String cityName;
 }

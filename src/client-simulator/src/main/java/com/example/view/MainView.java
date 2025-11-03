@@ -95,14 +95,20 @@ public class MainView {
     taPayload.setPromptText("Enter message content");
     senderGrid.add(taPayload, 1, r++);
     
+    senderGrid.add(new Label("Packet Size (bytes)"), 0, r);
+    tfPayloadSizeByte.setPromptText("Enter packet size in bytes");
+    senderGrid.add(tfPayloadSizeByte, 1, r++);
+    
     senderGrid.add(new Label("Service Type"), 0, r);
     cbServiceType.getItems().addAll(com.example.model.ServiceType.values());
     cbServiceType.setPrefWidth(240);
     cbServiceType.setPromptText("Select service type");
     senderGrid.add(cbServiceType, 1, r++);
     
-    senderGrid.add(new Label("QoS Details (auto)"), 0, r); 
-    lblQoSDetail.setStyle("-fx-font-size: 10px; -fx-text-fill: gray;");
+    senderGrid.add(new Label("QoS Details"), 0, r); 
+    lblQoSDetail.setWrapText(true);
+    lblQoSDetail.setMaxWidth(300);
+    lblQoSDetail.setStyle("-fx-font-size: 11px; -fx-text-fill: #333; -fx-padding: 5;");
     senderGrid.add(lblQoSDetail, 1, r++);
     
     // Optional fields

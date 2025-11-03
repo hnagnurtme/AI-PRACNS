@@ -76,6 +76,13 @@ public class MainController {
                 onDestinationUsernameSelected(newV.trim());
             }
         });
+        
+        // When service type is selected, display detailed QoS information
+        view.cbServiceType.valueProperty().addListener((obs, oldV, newV) -> {
+            if (newV != null) {
+                onServiceTypeSelected(newV);
+            }
+        });
     }
 
     // repositories and nodeService (optional if Mongo not available)
@@ -86,10 +93,45 @@ public class MainController {
     private void onSend() {
         try {
             Packet p = buildPacketFromForm();
-            String host = view.tfSendHost.getText().trim();
-            int port = Integer.parseInt(view.tfSendPort.getText().trim());
+            
+            // Send to stationSource node (not directly to destination user)
+            String stationSourceId = p.getStationSource();
+            if (stationSourceId == null || stationSourceId.trim().isEmpty()) {
+                view.lblStatus.setText("Station source not set. Please select sender username.");
+                return;
+            }
+            
+            // Load stationSource node from database to get its communication info
+            if (nodeRepo == null) {
+                view.lblStatus.setText("Node repository not available");
+                return;
+            }
+            
+            var nodeOpt = nodeRepo.getNodeInfo(stationSourceId);
+            if (nodeOpt.isEmpty()) {
+                view.lblStatus.setText("Station source node not found: " + stationSourceId);
+                return;
+            }
+            
+            NodeInfo stationNode = nodeOpt.get();
+            if (stationNode.getCommunication() == null) {
+                view.lblStatus.setText("Station node has no communication info: " + stationSourceId);
+                return;
+            }
+            
+            // Get IP and port from station node's communication
+            String host = stationNode.getCommunication().getIpAddress();
+            int port = stationNode.getCommunication().getPort();
+            
+            if (host == null || host.trim().isEmpty()) {
+                view.lblStatus.setText("Station node has no IP address: " + stationSourceId);
+                return;
+            }
+            
+            // Send packet to station source node
             sender.send(host, port, p);
-            view.lblStatus.setText("Sent packet " + p.getPacketId());
+            view.lblStatus.setText("Sent packet " + p.getPacketId() + " to station " + stationSourceId + " (" + host + ":" + port + ")");
+            
         } catch (Exception ex) {
             view.lblStatus.setText("Send failed: " + ex.getMessage());
             ex.printStackTrace();
@@ -135,7 +177,7 @@ public class MainController {
             view.cbSenderUsername.getSelectionModel().selectFirst();
             view.cbDestinationUsername.getSelectionModel().selectFirst();
             view.lblStatus.setText("Ready");
-            
+
         } catch (Exception ex) {
             view.lblStatus.setText("Error loading usernames: " + ex.getMessage());
             ex.printStackTrace();
@@ -143,8 +185,34 @@ public class MainController {
     }
 
     /**
+     * Called when service type is selected. Displays detailed QoS information.
+     */
+    private void onServiceTypeSelected(ServiceType serviceType) {
+        try {
+            ServiceQoS qos = QoSProfileFactory.getQosProfile(serviceType);
+            String qosInfo = String.format(
+                "Service: %s\n" +
+                "Priority: %d\n" +
+                "Max Latency: %.1f ms\n" +
+                "Max Jitter: %.1f ms\n" +
+                "Min Bandwidth: %.1f Mbps\n" +
+                "Max Loss Rate: %.2f%%",
+                qos.serviceType(),
+                qos.defaultPriority(),
+                qos.maxLatencyMs(),
+                qos.maxJitterMs(),
+                qos.minBandwidthMbps(),
+                qos.maxLossRate() * 100
+            );
+            view.lblQoSDetail.setText(qosInfo);
+        } catch (Exception ex) {
+            view.lblQoSDetail.setText("Failed to load QoS profile: " + ex.getMessage());
+        }
+    }
+
+    /**
      * Called when sender username is selected. Fetches user info from DB,
-     * fills sourceUserId, send host/port, and computes stationSource (nearest node).
+     * fills sourceUserId, sets listen port (where sender receives packets), and computes stationSource (nearest node).
      */
     private void onSenderUsernameSelected(String username) {
         if (userRepo == null || nodeService == null) {
@@ -152,8 +220,6 @@ public class MainController {
             return;
         }
         try {
-            // Find user by userName field (assuming userName field stores the username)
-            // We need to iterate or add a findByUserName method. For now, assume userId == username.
             var userOpt = userRepo.findByUserId(username);
             if (userOpt.isPresent()) {
                 UserInfo u = userOpt.get();
@@ -161,15 +227,14 @@ public class MainController {
                 // Auto-fill sourceUserId
                 view.tfSourceUserId.setText(u.getUserId());
                 
-                // Fill send host/port from DB (destination port will be set when dest user selected)
-                if (u.getIpAddress() != null) view.tfSendHost.setText(u.getIpAddress());
-                view.tfSendPort.setText(String.valueOf(u.getPort()));
+                // Set listen port based on sender's port (where this user listens for incoming packets)
+                view.tfListenPort.setText(String.valueOf(u.getPort()));
 
                 // Compute nearest node (stationSource) based on user's city
                 NodeInfo nearest = nodeService.getNearestNode(u.getUserId());
                 if (nearest != null) {
                     view.tfStationSource.setText(nearest.getNodeId());
-                    view.lblStatus.setText("Sender: " + u.getUserId() + " -> Station: " + nearest.getNodeId());
+                    view.lblStatus.setText("Sender: " + u.getUserId() + " (listen on port " + u.getPort() + ") -> Station: " + nearest.getNodeId());
                 } else {
                     view.lblStatus.setText("No nearest node found for sender " + username);
                 }
@@ -184,7 +249,7 @@ public class MainController {
 
     /**
      * Called when destination username is selected. Fetches user info from DB,
-     * fills destinationUserId and computes stationDest (nearest node).
+     * fills destinationUserId, sets send host/port (where to send the packet), and computes stationDest (nearest node).
      */
     private void onDestinationUsernameSelected(String username) {
         if (userRepo == null || nodeService == null) {
@@ -198,12 +263,18 @@ public class MainController {
                 
                 // Auto-fill destinationUserId
                 view.tfDestinationUserId.setText(u.getUserId());
+                
+                // Set send host/port to destination user's IP and port (where to send the packet)
+                if (u.getIpAddress() != null) {
+                    view.tfSendHost.setText(u.getIpAddress());
+                }
+                view.tfSendPort.setText(String.valueOf(u.getPort()));
 
                 // Compute nearest node (stationDest) based on user's city
                 NodeInfo nearest = nodeService.getNearestNode(u.getUserId());
                 if (nearest != null) {
                     view.tfStationDest.setText(nearest.getNodeId());
-                    view.lblStatus.setText("Destination: " + u.getUserId() + " -> Station: " + nearest.getNodeId());
+                    view.lblStatus.setText("Destination: " + u.getUserId() + " (send to " + u.getIpAddress() + ":" + u.getPort() + ") -> Station: " + nearest.getNodeId());
                 } else {
                     view.lblStatus.setText("No nearest node found for destination " + username);
                 }
@@ -245,7 +316,26 @@ public class MainController {
             byte[] bytes = payload.getBytes(java.nio.charset.StandardCharsets.UTF_8);
             String base64 = Base64.getEncoder().encodeToString(bytes);
             p.setPayloadDataBase64(base64);
-            p.setPayloadSizeByte(bytes.length);
+            
+            // Use user-provided packet size if specified, otherwise use actual payload size
+            try {
+                String sizeStr = view.tfPayloadSizeByte.getText().trim();
+                if (!sizeStr.isEmpty()) {
+                    p.setPayloadSizeByte(Integer.parseInt(sizeStr));
+                } else {
+                    p.setPayloadSizeByte(bytes.length);
+                }
+            } catch (Exception ex) {
+                p.setPayloadSizeByte(bytes.length);
+            }
+        } else {
+            // If no payload but size is specified, use the specified size
+            try {
+                String sizeStr = view.tfPayloadSizeByte.getText().trim();
+                if (!sizeStr.isEmpty()) {
+                    p.setPayloadSizeByte(Integer.parseInt(sizeStr));
+                }
+            } catch (Exception ignored) {}
         }
 
         // Use selected ServiceType to fill ServiceQoS via QoSProfileFactory

@@ -15,6 +15,7 @@ public class UserSeeder {
 
             // --- 2. Lấy danh sách 50 thành phố lớn ---
             Map<String, ?> cities = PositionFactory.createWorldCities();
+            int port = 10000;
 
             List<UserInfo> users = new ArrayList<>();
             for (String cityName : cities.keySet()) {
@@ -25,7 +26,8 @@ public class UserSeeder {
 
                 // IP và port ví dụ
                 user.setIpAddress("127.0.0.1");
-                user.setPort(5000); // tất cả cùng port ví dụ, bạn có thể random nếu muốn
+                
+                user.setPort(port++); // tất cả cùng port ví dụ, bạn có thể random nếu muốn
 
                 user.setCityName(cityName);
 
