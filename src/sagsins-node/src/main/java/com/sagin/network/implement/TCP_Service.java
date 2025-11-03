@@ -54,6 +54,16 @@ public class TCP_Service implements ITCP_Service {
     
 
     /**
+     * Context để tạo HopRecord với delay thực tế SAU KHI gửi thành công.
+     */
+    private record HopContext(
+            NodeInfo currentNode,
+            NodeInfo nextNode,
+            RouteInfo routeInfo,
+            double rxCpuDelay) {
+    }
+
+    /**
      * Đối tượng nội bộ để đóng gói packet và số lần thử.
      * Chứa 'originalNodeId' để biết node nào cần bị trừ tài nguyên (TX)
      * sau khi gửi thành công.
@@ -64,7 +74,8 @@ public class TCP_Service implements ITCP_Service {
             String host,
             int port,
             String destinationDesc,
-            int attemptCount) {
+            int attemptCount,
+            HopContext hopContext) { 
     }
 
     /**
@@ -101,26 +112,36 @@ public class TCP_Service implements ITCP_Service {
         }
 
         String currentNodeId = packet.getCurrentHoldingNodeId();
-        logger.info("[TCP_Service] Đã nhận Packet {} tại {}.", packet.getPacketId(), currentNodeId);
+        logger.info("[TCP_Service] 📥 Nhận Packet {} tại {} | TTL: {} | Delay hiện tại: {:.2f}ms", 
+                   packet.getPacketId(), currentNodeId, packet.getTTL(), packet.getAccumulatedDelayMs());
 
-        // --- Hạch toán chi phí nhận (RX) ---
+        // === BƯỚC 1: Hạch toán chi phí NHẬN (RX/CPU) ===
+        double rxCpuDelay = 0.0;
         try {
-            nodeService.updateNodeStatus(currentNodeId, packet);
+            rxCpuDelay = nodeService.updateNodeStatus(currentNodeId, packet);
         } catch (Exception e) {
             logger.error("[TCP_Service] Lỗi khi hạch toán RX/CPU cho {}: {}", currentNodeId, e.getMessage(), e);
         }
 
-        // --- Node đích ---
+        // Kiểm tra nếu packet bị drop trong updateNodeStatus
+        if (packet.isDropped()) {
+            logger.warn("[TCP_Service] Packet {} bị drop tại {}: {}", 
+                    packet.getPacketId(), currentNodeId, packet.getDropReason());
+            return;
+        }
+
+        // === BƯỚC 2: Kiểm tra đích ===
         if (currentNodeId.equals(packet.getStationDest())) {
             if (packet.getPathHistory() != null) {
                 packet.getPathHistory().add(currentNodeId);
             }
-            logger.info("[TCP_Service] Packet {} đã đến trạm đích. Forward đến user...", packet.getPacketId());
+            logger.info("[TCP_Service] ✅ Packet {} đã đến trạm đích {}. Forward đến user...", 
+                    packet.getPacketId(), currentNodeId);
             forwardPacketToUser(packet, currentNodeId);
             return;
         }
         
-        // --- Node transit ---
+        // === BƯỚC 3: Định tuyến (Node transit) ===
         RouteInfo bestRoute = getBestRoute(packet);
         if (bestRoute == null) {
             packet.setDropped(true);
@@ -130,39 +151,64 @@ public class TCP_Service implements ITCP_Service {
             return;
         }
 
-
         String nextHopNodeId = bestRoute.getNextHopNodeId();
         packet.setNextHopNodeId(nextHopNodeId);
 
         Optional<NodeInfo> currentNodeOpt = nodeRepository.getNodeInfo(currentNodeId);
         Optional<NodeInfo> nextNodeOpt = nodeRepository.getNodeInfo(nextHopNodeId);
 
-        if (currentNodeOpt.isPresent() && nextNodeOpt.isPresent()) {
-            NodeInfo currentNode = currentNodeOpt.get();
-            NodeInfo nextNode = nextNodeOpt.get();
-
-            // --- Cập nhật packet qua helper ---
-            PacketHelper.updatePacketForTransit(packet, currentNode, nextNode, bestRoute);
-
-            logger.info("[TCP_Service] Định tuyến Packet {} từ {} đến {} qua {}.",
-                    packet.getPacketId(), currentNodeId, packet.getStationDest(), nextHopNodeId);
-            logger.info(nextNode.toString());
-            // --- Nếu packet còn sống, gửi tiếp ---
-            if (!packet.isDropped()) {
-                packet.setCurrentHoldingNodeId(nextHopNodeId);
-                sendPacket(packet, currentNodeId);
-            } else {
-                logger.warn("[TCP_Service] Packet {} bị drop: {}", packet.getPacketId(), packet.getDropReason());
-            }
-        } else {
+        if (currentNodeOpt.isEmpty() || nextNodeOpt.isEmpty()) {
             packet.setDropped(true);
             packet.setDropReason("NODE_INFO_NOT_FOUND");
             logger.error("[TCP_Service] Không tìm thấy thông tin node cho {} hoặc {}.", currentNodeId, nextHopNodeId);
+            return;
         }
+
+        NodeInfo currentNode = currentNodeOpt.get();
+        NodeInfo nextNode = nextNodeOpt.get();
+
+        // === BƯỚC 4: Chuẩn bị packet (TTL, pathHistory) ===
+        PacketHelper.preparePacketForTransit(packet, nextNode);
+
+        if (packet.isDropped()) {
+            logger.warn("[TCP_Service] Packet {} bị drop: {}", packet.getPacketId(), packet.getDropReason());
+            return;
+        }
+
+        logger.info("[TCP_Service] 🔄 Định tuyến Packet {} | {} → {} (next: {}) | Delay: {:.2f}ms",
+                packet.getPacketId(), currentNodeId, packet.getStationDest(), nextHopNodeId, 
+                packet.getAccumulatedDelayMs());
+
+        // === BƯỚC 5: Gửi packet và tạo HopRecord SAU KHI gửi thành công ===
+        packet.setCurrentHoldingNodeId(nextHopNodeId);
+        sendPacketWithContext(packet, currentNodeId, currentNode, nextNode, bestRoute, rxCpuDelay);
     }
 
     /**
-     * (Hàm "Gửi đi" - Node-to-Node)
+     * **HÀM MỚI**: Gửi packet với context đầy đủ để tạo HopRecord SAU KHI gửi thành công.
+     */
+    private void sendPacketWithContext(Packet packet, String senderNodeId, 
+                                       NodeInfo currentNode, NodeInfo nextNode, 
+                                       RouteInfo routeInfo, double rxCpuDelay) {
+        String nextHopNodeId = packet.getNextHopNodeId();
+        String host = nextNode.getCommunication().getIpAddress();
+        int port = nextNode.getCommunication().getPort();
+        
+        if (host == null || port <= 0) {
+            logger.warn("[TCP_Service] Packet {} từ {} bị drop: Node {} có host/port không hợp lệ.",
+                    packet.getPacketId(), senderNodeId, nextHopNodeId);
+            packet.setDropped(true);
+            packet.setDropReason("INVALID_HOST_PORT");
+            return;
+        }
+
+        // Tạo context để truyền qua hàng đợi
+        HopContext context = new HopContext(currentNode, nextNode, routeInfo, rxCpuDelay);
+        addToSendQueueWithContext(senderNodeId, packet, host, port, "NODE:" + nextHopNodeId, context);
+    }
+
+    /**
+     * (Hàm "Gửi đi" - Node-to-Node) - CHỈ CHO LEGACY/TEST
      * Thêm một packet (node-to-node) vào hàng đợi.
      * 
      * @param packet       Packet để gửi
@@ -225,8 +271,8 @@ public class TCP_Service implements ITCP_Service {
         }
 
         UserInfo user = userOpt.get();
-        String host = user.getCommunication().getIpAddress();
-        int port = user.getCommunication().getPort();
+        String host = user.getIpAddress();
+        int port = user.getPort();
         if (host == null || port <= 0) {
             logger.error("[TCP_Service] (forwardUser) Người dùng {} có thông tin host/port không hợp lệ.", userId);
             return;
@@ -241,20 +287,28 @@ public class TCP_Service implements ITCP_Service {
     // ===================================================================
 
     /**
-     * (Producer)
-     * Thêm một job vào hàng đợi gửi (thread-safe).
+     * **HÀM MỚI**: Thêm packet vào hàng đợi VỚI CONTEXT để tạo HopRecord sau khi gửi.
+     * 
+     * ⚠️ DEDUPLICATION ĐÃ TẮT: Cho phép nhiều packet có cùng ID (dùng cho batch comparison)
      */
-    private void addToSendQueue(String originalNodeId, Packet packet, String host, int port, String destinationDesc) {
-        // Tạo job với 6 tham số
-        RetryablePacket job = new RetryablePacket(originalNodeId, packet, host, port, destinationDesc, 1);
+    private void addToSendQueueWithContext(String originalNodeId, Packet packet, String host, int port, 
+                                           String destinationDesc, HopContext context) {
+        RetryablePacket job = new RetryablePacket(originalNodeId, packet, host, port, destinationDesc, 1, context);
         try {
             sendQueue.put(job);
-            logger.debug("[TCP_Service] ✈️ Đã thêm Packet {} (từ {}) vào hàng đợi gửi.",
-                    packet.getPacketId(), originalNodeId);
+            logger.debug("[TCP_Service] ✈️ Đã thêm Packet {} (từ {}) vào hàng đợi gửi → {}.",
+                    packet.getPacketId(), originalNodeId, destinationDesc);
         } catch (InterruptedException e) {
             logger.error("[TCP_Service] Bị gián đoạn khi thêm packet {} vào hàng đợi.", packet.getPacketId(), e);
             Thread.currentThread().interrupt();
         }
+    }
+
+    /**
+     * (Producer) - LEGACY: Thêm vào queue KHÔNG CÓ context (cho forwardToUser).
+     */
+    private void addToSendQueue(String originalNodeId, Packet packet, String host, int port, String destinationDesc) {
+        addToSendQueueWithContext(originalNodeId, packet, host, port, destinationDesc, null);
     }
 
     /**
@@ -285,12 +339,30 @@ public class TCP_Service implements ITCP_Service {
         if (success) {
             // ====================================================
             // === GỬI THÀNH CÔNG (LOGIC QUAN TRỌNG NHẤT) ===
-            // HẠCH TOÁN CHI PHÍ GỬI (TX)
+            // HẠCH TOÁN CHI PHÍ GỬI (TX) VÀ TẠO HopRecord
             // ====================================================
-            logger.debug("[TCP_Service] Gửi {} thành công. Hạch toán TX cho node {}.",
-                    job.packet().getPacketId(), job.originalNodeId());
-            // Gọi NodeService để hạch toán chi phí TX (pin, util,...)
-            nodeService.processSuccessfulSend(job.originalNodeId(), job.packet());
+            logger.debug("[TCP_Service] ✅ Packet {} gửi thành công → {} | Đang hạch toán TX...",
+                    job.packet().getPacketId(), job.destinationDesc());
+            
+            // Gọi NodeService để hạch toán chi phí TX → Trả về TX delay
+            double txDelay = nodeService.processSuccessfulSend(job.originalNodeId(), job.packet());
+            
+            // Nếu có HopContext, tạo HopRecord với delay THỰC TẾ
+            if (job.hopContext() != null && !job.packet().isDropped()) {
+                HopContext ctx = job.hopContext();
+                double totalHopDelay = ctx.rxCpuDelay() + txDelay; // Q + P + Tx + Prop
+                
+                PacketHelper.createHopRecordWithActualDelay(
+                    job.packet(), 
+                    ctx.currentNode(), 
+                    ctx.nextNode(), 
+                    totalHopDelay,  // ✅ Delay THỰC TẾ của toàn bộ hop
+                    ctx.routeInfo()
+                );
+                
+                logger.debug("[TCP_Service] 📝 Tạo HopRecord cho Packet {} | Total Hop Delay: {:.2f}ms (RX/CPU: {:.2f} + TX: {:.2f})",
+                        job.packet().getPacketId(), totalHopDelay, ctx.rxCpuDelay(), txDelay);
+            }
 
         } else {
             // === GỬI THẤT BẠI (Lỗi I/O) ===
@@ -299,20 +371,21 @@ public class TCP_Service implements ITCP_Service {
                 logger.warn("[TCP_Service] Gửi packet {} (lần {}) thất bại. Sẽ thử lại...",
                         job.packet().getPacketId(), job.attemptCount());
 
-                // Tạo job mới với số lần thử tăng lên
+                // Tạo job mới với số lần thử tăng lên (giữ nguyên context)
                 RetryablePacket nextAttempt = new RetryablePacket(
-                        job.originalNodeId(), // Giữ nguyên
+                        job.originalNodeId(),
                         job.packet(),
                         job.host(),
                         job.port(),
                         job.destinationDesc(),
-                        job.attemptCount() + 1 // Tăng số lần thử
+                        job.attemptCount() + 1,
+                        job.hopContext() // ✅ Giữ nguyên context
                 );
                 sendQueue.add(nextAttempt); // Thêm lại vào cuối hàng đợi
 
             } else {
                 // Đã hết lượt thử
-                logger.error("[TCP_Service] HỦY BỎ packet {} đến {}: Đã vượt quá {} lần thử.",
+                logger.error("[TCP_Service] ❌ HỦY BỎ packet {} đến {}: Đã vượt quá {} lần thử.",
                         job.packet().getPacketId(), job.destinationDesc(), MAX_RETRIES);
 
                 if (job.destinationDesc().startsWith("NODE:")) {

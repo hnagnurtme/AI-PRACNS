@@ -44,9 +44,11 @@ public class NodeService implements INodeService {
 
     /**
      * Hạch toán chi phí NHẬN (RX) và XỬ LÝ (CPU) khi packet đến.
+     * 
+     * @return Delay của RX/CPU (Queuing + Processing) để tính tổng delay của hop
      */
     @Override
-    public void updateNodeStatus(String nodeId, Packet packet) {
+    public double updateNodeStatus(String nodeId, Packet packet) {
         
         // === BƯỚC 1, 2, 3 (Lấy Node, Check Buffer, Check Healthy) ---
         NodeInfo node = nodeStateCache.computeIfAbsent(nodeId, id -> {
@@ -56,7 +58,7 @@ public class NodeService implements INodeService {
         if (node == null) {
             logger.warn("[NodeService] Node {} không tìm thấy. Packet {} bị drop.", nodeId, packet.getPacketId());
             packet.setDropped(true); packet.setDropReason("NODE_NOT_FOUND_");
-            return;
+            return 0.0;
         }
         //log 
         logger.info(node.toString());
@@ -66,12 +68,12 @@ public class NodeService implements INodeService {
             double newLoss = updateNodeMetricEMA(node.getPacketLossRate(), 1.0, SimulationConstants.BETA_LOSS);
             node.setPacketLossRate(Math.min(1.0, newLoss));
             dirtyNodeIds.add(nodeId);
-            return;
+            return 0.0;
         }
         if (!node.getHealthy()) {
             packet.setDropped(true); packet.setDropReason("NODE_UNHEALTHY_" + nodeId); 
             logger.warn("[NodeService] Node {} không khỏe. Packet {} bị drop.", nodeId, packet.getPacketId());
-            return;
+            return 0.0;
         }
         node.setCurrentPacketCount(node.getCurrentPacketCount() + 1); // Chiếm buffer
         // --- Hết ---
@@ -107,7 +109,7 @@ public class NodeService implements INodeService {
             
             node.setBatteryChargePercent(newBattery); // Vẫn cập nhật pin
             dirtyNodeIds.add(nodeId); // Đánh dấu là "dirty"
-            return;
+            return delays.queuingMs() + delays.processingMs(); // Trả về delay đã tính
         }
 
         // 5e. Cập nhật Utilization (CHỈ DỰA TRÊN CPU VÀ BUFFER)
@@ -133,19 +135,36 @@ public class NodeService implements INodeService {
         dirtyNodeIds.add(nodeId);
 
         flushToDatabase();
-        logger.info("[NodeService] Processed (RX/CPU) Packet {} on Node: {}", 
-                    packet.getPacketId(), nodeId);
+        
+        double rxCpuDelay = delays.queuingMs() + delays.processingMs();
+        logger.info("[NodeService] ✅ RX/CPU Packet {} on Node {} | Delay: +{:.2f}ms (Q:{:.2f} + P:{:.2f}) | Battery: {:.2f}% | Util: {:.2f}%", 
+                    packet.getPacketId(), nodeId,
+                    rxCpuDelay,
+                    delays.queuingMs(), delays.processingMs(),
+                    newBattery, newUtilization * 100);
+        
+        return rxCpuDelay; // ✅ Trả về delay thực tế của RX/CPU
     }
 
     /**
      * **HÀM MỚI**: Hạch toán chi phí GỬI (TX) SAU KHI gửi thành công.
+     * 
+     * @return Delay của hop này (Tx + Prop) để tạo HopRecord với delay thực tế
      */
     @Override
-    public void processSuccessfulSend(String nodeId, Packet packet) {
+    public double processSuccessfulSend(String nodeId, Packet packet) {
         NodeInfo node = nodeStateCache.get(nodeId);
         if (node == null) {
             logger.warn("[NodeService] (processSend) Không tìm thấy node {} trong cache.", nodeId);
-            return; 
+            return 0.0; 
+        }
+
+        // --- Kiểm tra pin trước khi gửi ---
+        if (node.getBatteryChargePercent() <= SimulationConstants.MIN_BATTERY) {
+            logger.warn("[NodeService] Node {} không đủ pin để gửi packet {}. Drop!", nodeId, packet.getPacketId());
+            packet.setDropped(true);
+            packet.setDropReason("INSUFFICIENT_BATTERY_TX");
+            return 0.0;
         }
 
         // --- Lấy Yếu tố Môi trường ---
@@ -162,23 +181,44 @@ public class NodeService implements INodeService {
 
         // 2. Hạch toán Độ trễ (Chỉ Transmission và Propagation)
         TransmissionDelayProfile delays = computeTransmissionDelay(node, packet, altitudeKm, weather);
+        double txDelayMs = delays.transmissionMs() + delays.propagationMs();
         
         // 3. Cập nhật độ trễ TÍCH LŨY (phần truyền tải)
-        packet.setAccumulatedDelayMs(packet.getAccumulatedDelayMs() + delays.transmissionMs() + delays.propagationMs());
+        packet.setAccumulatedDelayMs(packet.getAccumulatedDelayMs() + txDelayMs);
 
-        // 4. Cập nhật Utilization (DỰA TRÊN TẢI KÊNH TRUYỀN)
+        // 4. Kiểm tra QoS SAU KHI cộng thêm TX delay
+        if (packet.getAccumulatedDelayMs() > packet.getMaxAcceptableLatencyMs()) {
+            packet.setDropped(true);
+            packet.setDropReason("QOS_LATENCY_EXCEEDED_TX");
+            logger.warn("[NodeService] Packet {} bị drop tại {} SAU TX: Vượt quá latency ({} > {}).",
+                    packet.getPacketId(), nodeId,
+                    String.format("%.2f", packet.getAccumulatedDelayMs()),
+                    String.format("%.2f", packet.getMaxAcceptableLatencyMs()));
+            
+            // Vẫn cập nhật pin
+            node.setBatteryChargePercent(newBattery);
+            dirtyNodeIds.add(nodeId);
+            return txDelayMs; // Trả về delay đã tính
+        }
+
+        // 5. Cập nhật Utilization (DỰA TRÊN TẢI KÊNH TRUYỀN)
         double channelLoad = Math.min(1.0, delays.transmissionMs() / SimulationConstants.SIMULATION_TIMESLOT_MS);
         double newUtilization = updateNodeMetricEMA(node.getResourceUtilization(), channelLoad, SimulationConstants.ALPHA_UTIL);
 
-        // 5. Cập nhật Node (trong cache)
+        // 6. Cập nhật Node (trong cache)
         node.setBatteryChargePercent(newBattery);
         node.setResourceUtilization(Math.min(SimulationConstants.MAX_UTILIZATION, newUtilization));
         node.setLastUpdated(Instant.now());
         
         dirtyNodeIds.add(nodeId);
         
-        logger.info("[NodeService] Processed (TX) Packet {} on Node: {}", 
-                            packet.getPacketId(), nodeId);
+        logger.info("[NodeService] ✅ TX Packet {} on Node {} | Delay: +{:.2f}ms (Tx:{:.2f} + Prop:{:.2f}) | Total: {:.2f}ms | Battery: {:.2f}%", 
+                    packet.getPacketId(), nodeId,
+                    txDelayMs, delays.transmissionMs(), delays.propagationMs(),
+                    packet.getAccumulatedDelayMs(),
+                    newBattery);
+        
+        return txDelayMs; // ✅ Trả về delay thực tế của hop này
     }
 
     /**
