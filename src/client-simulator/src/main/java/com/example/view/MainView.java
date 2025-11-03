@@ -102,6 +102,7 @@ public class MainView {
         VBox wrapper = new VBox(panel);
         wrapper.setPadding(new Insets(10));
         wrapper.setStyle("-fx-background-color: " + BACKGROUND_COLOR + ";");
+        VBox.setVgrow(panel, Priority.ALWAYS); // Allow panel to grow in wrapper
         
         return wrapper;
     }
@@ -210,6 +211,7 @@ public class MainView {
     private Node buildReceiverPane() {
         VBox v = new VBox(15);
         v.setPadding(new Insets(15));
+        v.setFillWidth(true); // Fill available width
         
         // Control buttons panel
         HBox controlBox = new HBox(10);
@@ -270,6 +272,8 @@ public class MainView {
             "-fx-border-radius: 5;" +
             "-fx-background-radius: 5;"
         );
+        lvReceived.setPrefHeight(400); // Set preferred height
+        lvReceived.setMaxHeight(Double.MAX_VALUE); // Allow unlimited growth
         
         // Status label
         lblStatus.setStyle(
