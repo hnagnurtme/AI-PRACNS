@@ -1,6 +1,5 @@
 package com.sagin.model;
 
-import java.util.Map;
 
 public record HopRecord(
     String fromNodeId,
@@ -10,6 +9,6 @@ public record HopRecord(
     Position fromNodePosition,
     Position toNodePosition,
     double distanceKm,
-    Map<String, Object> fromNodeBufferState,
-    Map<String, Object> routingDecisionInfo
+    BufferState fromNodeBufferState,
+    RoutingDecisionInfo routingDecisionInfo
 ) {}

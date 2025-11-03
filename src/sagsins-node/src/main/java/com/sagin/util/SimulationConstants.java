@@ -158,4 +158,14 @@ public final class SimulationConstants { // Thêm 'final' để ngăn kế thừ
      * Thời gian chờ kết nối TCP mặc định (milliseconds).
      */
     public static final int TCP_CONNECT_TIMEOUT_MS = 1000; // 1 giây
+
+
+    public static final int TCP_READ_TIMEOUT_MS = 2000; // 2 giây
+
+    public static final int TCP_WRITE_TIMEOUT_MS = 2000; // 2 giây
+
+    public static final int RL_ROUTING_SERVER_PORT = 65000;
+
+    public static final String RL_ROUTING_SERVER_HOST = "localhost";
+
 }

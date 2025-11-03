@@ -12,49 +12,60 @@ import com.sagin.service.INodeService;
 import com.sagin.service.NodeService;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import java.util.Optional;
+import java.util.Map;
 
 public class SimulationMain {
 
-    private static final Logger logger = LoggerFactory.getLogger(SimulationMain.class);
+    private static final Logger logger = AppLogger.getLogger(SimulationMain.class);
 
     public static void main(String[] args) {
+        String simulationId = String.valueOf(System.currentTimeMillis());
+        AppLogger.putMdc("simulationId", simulationId);
+        
+        logger.info("=== Starting full SAGIN network simulation ===");
+        logger.info("Simulation ID: {}", simulationId);
+
         INodeRepository nodeRepository = new MongoNodeRepository();
         IUserRepository userRepository = new MongoUserRepository();
         INodeService nodeService = new NodeService(nodeRepository);
         DynamicRoutingService routingService = new DynamicRoutingService(nodeRepository, nodeService);
 
-        String[] nodeIds = { "N-TOKYO", "N-SINGAPORE" };
-        for (String nodeId : nodeIds) {
-            Optional<NodeInfo> nodeInfoOptional = nodeRepository.getNodeInfo(nodeId);
-            nodeInfoOptional.ifPresent(nodeInfo -> {
-                TCP_Service tcpService = new TCP_Service(nodeRepository, nodeService, userRepository, routingService);
-                NodeGateway nodeGateway = new NodeGateway(tcpService);
+        Map<String, NodeInfo> nodeInfoMap = nodeRepository.loadAllNodeConfigs();
+        logger.info("Loaded {} node configurations from repository.", nodeInfoMap.size());
 
-                new Thread(() -> {
-                    nodeGateway.startListening(nodeInfo, nodeInfo.getCommunication().port());
-                    logger.info("Node Gateway started for node: {}", nodeInfo.getNodeId());
+        String envHost = "127.0.0.1";
+        nodeInfoMap.values().forEach(nodeInfo -> {
+            nodeService.updateNodeIpAddress(nodeInfo.getNodeId(), envHost);
+            nodeService.flushToDatabase();
+            TCP_Service tcpService = new TCP_Service(nodeRepository, nodeService, userRepository, routingService);
+            NodeGateway nodeGateway = new NodeGateway(tcpService);
 
-                    try {
-                        Thread.currentThread().join();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        logger.warn("Node {} listener interrupted", nodeInfo.getNodeId(), e);
-                    }
-                }).start();
-            });
-        }
+            new Thread(() -> {
+                try {
+                    nodeGateway.startListening(nodeInfo, nodeInfo.getCommunication().getPort());
+                    logger.info("Node Gateway started for node: {} ({}) on port {}",
+                            nodeInfo.getNodeId(), nodeInfo.getNodeType(), nodeInfo.getCommunication().getPort());
 
-        // Shutdown hook cho tất cả node
+                    Thread.currentThread().join();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    logger.warn("Node {} listener interrupted", nodeInfo.getNodeId(), e);
+                } catch (Exception e) {
+                    logger.error("Error starting node {}: {}", nodeInfo.getNodeId(), e.getMessage(), e);
+                }
+            }, "Node-" + nodeInfo.getNodeId()).start();
+        });
+
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("Shutting down all NodeGateways...");
             routingService.shutdown();
+            AppLogger.clearMdc();
         }));
 
-        // Force update routing table một lần
         routingService.forceUpdateRoutingTables();
         logger.info("Initial routing tables updated");
+
+        logger.info("=== All nodes initialized successfully ===");
     }
 }

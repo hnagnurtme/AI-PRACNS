@@ -11,6 +11,7 @@ from typing import Dict, Any, List, Tuple
 from ..utils.db_connector import MongoConnector
 from ..utils.state_builder import StateBuilder
 from ..rl_agent.dqn_model import DQN, INPUT_SIZE, OUTPUT_SIZE
+from helper.neighbors_update import NodeService
 
 # ===================== CẤU HÌNH DỊCH VỤ =====================
 HOST = '0.0.0.0'
@@ -35,17 +36,21 @@ def load_components() -> Tuple[DQN, StateBuilder]:
     model.eval()
     
     logger.info("2. Đang kết nối MongoDB...")
-    mongo_conn = MongoConnector(uri="mongodb://user:password123@localhost:27017/?authSource=admin")
+    # MongoConnector will read the URI from environment variables (MONGO_URI or MONGODB_URI) or use a default
+    mongo_conn = MongoConnector()
     state_builder = StateBuilder(mongo_conn)
     
     logger.info("✅ DQN Agent đã sẵn sàng.")
     return model, state_builder
 
 # ===================== 2. PATH PREDICTION =====================
-def get_optimal_path(model: DQN, state_builder: StateBuilder, packet_data: Dict[str, Any], max_hops: int = 20) -> Tuple[List[str], str]:
+def get_optimal_path(model: DQN, state_builder: StateBuilder, packet_data: Dict[str, Any],
+                     max_hops: int = 50, top_k_neighbors: int = 5) -> Tuple[List[str], str]:
     """
     Dự đoán toàn bộ path từ currentHoldingNodeId đến đích dựa trên DQN.
+    Sửa để tránh loop, treo, TTL=0 quá nhiều.
     :param max_hops: giới hạn vòng lặp để tránh infinite loop
+    :param top_k_neighbors: số neighbor gần nhất để RL lựa chọn
     :return: (path_list, status)
     """
     start_node = packet_data.get('currentHoldingNodeId')
@@ -56,13 +61,12 @@ def get_optimal_path(model: DQN, state_builder: StateBuilder, packet_data: Dict[
     current_packet = packet_data.copy()
     current_packet['path'] = path
     hops = 0
-    visited_nodes = set([start_node])  # Dùng để tránh loop
+    visited_nodes = set([start_node])
 
     while hops < max_hops:
         current_node_id = current_packet.get('currentHoldingNodeId')
         dest_node_id = current_packet.get('stationDest')
 
-        # 1. Kiểm tra điều kiện kết thúc
         if current_node_id == dest_node_id:
             return path, "SUCCESS"
 
@@ -70,48 +74,67 @@ def get_optimal_path(model: DQN, state_builder: StateBuilder, packet_data: Dict[
             return path, "DROP_TTL"
 
         try:
-            # 2. Lấy trạng thái vector S
+            # 1. Lấy trạng thái vector S
             state_vector = state_builder.get_state_vector(current_packet)
             state_tensor = torch.from_numpy(state_vector).float().unsqueeze(0)
 
-            # 3. Lấy neighbor thực tế từ DB
-            current_node = state_builder.db.get_node(str(current_node_id), projection={'neighbors': 1})
+            # 2. Lấy neighbor thực tế từ DB
+            current_node = state_builder.db.get_node(str(current_node_id), projection={'neighbors': 1, 'position':1})
             neighbor_ids = current_node.get('neighbors', []) if current_node else []
 
             if not neighbor_ids:
                 return path, "NO_NEIGHBORS"
 
+            # --- Heuristic: lọc top-k neighbor gần nhất đến dest ---
+            neighbor_distances = []
+            if not dest_node_id:
+                return path, "ERROR:missing_dest_node"
+            dest_node = state_builder.db.get_node(str(dest_node_id), projection={"position":1})
+            if dest_node:
+                dest_pos = NodeService.geo_to_xyz(dest_node)
+                for n_id in neighbor_ids:
+                    n_node = state_builder.db.get_node(n_id, projection={"position":1})
+                    if not n_node:
+                        continue
+                    n_pos = NodeService.geo_to_xyz(n_node)
+                    dist = NodeService.distance_3d(n_pos, dest_pos)
+                    neighbor_distances.append((n_id, dist))
+                neighbor_ids = [nid for nid, _ in sorted(neighbor_distances, key=lambda x: x[1])[:top_k_neighbors]]
+
             neighbor_count = len(neighbor_ids)
 
-            # 4. DQN inference
+            # 3. DQN inference
             with torch.no_grad():
                 q_values_tensor = model(state_tensor)
             q_values = q_values_tensor.cpu().numpy().flatten()
-
-            # Chỉ lấy các q_value hợp lệ (dưới số lượng neighbor)
             valid_q_values = q_values[:neighbor_count]
             action_index = int(np.argmax(valid_q_values))
             next_hop = neighbor_ids[action_index]
 
-            # 5. Loop prevention
+            # 4. Loop prevention
             attempted_indices = set()
             last_node_id = path[-2] if len(path) >= 2 else None
-            while (next_hop == last_node_id or next_hop in visited_nodes) and len(attempted_indices) < neighbor_count:
+            for _ in range(neighbor_count):
+                if next_hop != last_node_id and next_hop not in visited_nodes:
+                    break
                 attempted_indices.add(action_index)
                 valid_q_values[action_index] = -1e9
                 action_index = int(np.argmax(valid_q_values))
                 next_hop = neighbor_ids[action_index]
+            else:
+                # fallback: random neighbor hợp lệ
+                possible_neighbors = [n for n in neighbor_ids if n != last_node_id and n not in visited_nodes]
+                if possible_neighbors:
+                    next_hop = np.random.choice(possible_neighbors)
+                else:
+                    return path, "LOOP_STUCK"
 
-            if next_hop == last_node_id or next_hop in visited_nodes:
-                return path, "LOOP_STUCK"
-
-            # 6. Cập nhật path và packet state
+            # 5. Cập nhật path và packet state
             path.append(next_hop)
             visited_nodes.add(next_hop)
             current_packet['currentHoldingNodeId'] = next_hop
             current_packet['path'] = path
             current_packet['ttl'] = max(current_packet.get('ttl', 10) - 1, 0)
-
             hops += 1
 
         except Exception as e:
@@ -119,7 +142,6 @@ def get_optimal_path(model: DQN, state_builder: StateBuilder, packet_data: Dict[
             return path, f"ERROR:{e}"
 
     return path, "MAX_HOPS_EXCEEDED"
-
 
 # ===================== 3. TCP SERVER =====================
 def start_tcp_server():
@@ -151,6 +173,8 @@ def start_tcp_server():
                         continue
 
                     request_json = json.loads(data_buffer.strip().decode('utf-8'))
+                    
+                    print(request_json)
 
                     # Lấy path tối ưu
                     path_list, status = get_optimal_path(model, state_builder, request_json, max_hops=20)

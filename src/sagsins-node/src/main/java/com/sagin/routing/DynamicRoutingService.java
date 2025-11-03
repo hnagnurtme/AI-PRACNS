@@ -3,6 +3,8 @@ package com.sagin.routing;
 import com.sagin.model.NodeInfo;
 import com.sagin.service.INodeService;
 import com.sagin.repository.INodeRepository;
+import com.sagin.util.AppLogger;
+import org.slf4j.Logger;
 
 import java.util.*;
 import java.util.concurrent.*;
@@ -14,6 +16,8 @@ import java.util.concurrent.*;
  * - Packet chỉ lookup bảng định tuyến đã có.
  */
 public class DynamicRoutingService implements IRoutingService {
+
+    private static final Logger logger = AppLogger.getLogger(DynamicRoutingService.class);
 
     private final INodeRepository nodeRepository;
     private final INodeService nodeService;
@@ -52,26 +56,28 @@ public class DynamicRoutingService implements IRoutingService {
      * Scheduler: tính toàn bộ routing table cho tất cả node
      */
     private void updateAllRoutingTables() {
+        logger.debug("Updating routing tables for all nodes...");
         List<NodeInfo> allNodes = new ArrayList<>(nodeRepository.loadAllNodeConfigs().values());
 
         // 1 adjacency list chung cho tất cả nodes
         Map<String, List<String>> graph = buildAdjacencyList(allNodes);
 
         for (NodeInfo srcNode : allNodes) {
-            if (!srcNode.isHealthy()) {
+            if (!srcNode.getHealthy()) {
                 continue;
             }
             RoutingTable table = computeRoutingTable(srcNode.getNodeId(), graph);
             routingTables.put(srcNode.getNodeId(), table);
         }
+        logger.debug("Routing tables updated for {} nodes", routingTables.size());
     }
 
     private Map<String, List<String>> buildAdjacencyList(List<NodeInfo> nodes) {
         Map<String, List<String>> graph = new HashMap<>();
         for (NodeInfo node : nodes) {
-            if (!node.isHealthy()) continue;
+            if (!node.getHealthy()) continue;
             List<String> visibleNeighbors = nodeService.getVisibleNodes(node, nodes).stream()
-                    .filter(NodeInfo::isHealthy)
+                    .filter(NodeInfo::getHealthy)
                     .map(NodeInfo::getNodeId)
                     .toList();
             graph.put(node.getNodeId(), visibleNeighbors);
@@ -109,11 +115,23 @@ public class DynamicRoutingService implements IRoutingService {
         return table;
     }
     public void forceUpdateRoutingTables() {
+        logger.info("Force updating routing tables...");
         updateAllRoutingTables();
     }
 
 
     public void shutdown() {
+        logger.info("Shutting down DynamicRoutingService scheduler...");
+        scheduler.shutdown();
+        try {
+            if (!scheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                scheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        logger.info("DynamicRoutingService shutdown complete");
         scheduler.shutdownNow();
     }
 }

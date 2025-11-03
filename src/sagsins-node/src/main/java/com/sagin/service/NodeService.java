@@ -58,6 +58,8 @@ public class NodeService implements INodeService {
             packet.setDropped(true); packet.setDropReason("NODE_NOT_FOUND_");
             return;
         }
+        //log 
+        logger.info(node.toString());
         if (node.getCurrentPacketCount() >= node.getPacketBufferCapacity()) {
             packet.setDropped(true); packet.setDropReason("BUFFER_OVERFLOW_AT_" + nodeId);
             logger.warn("[NodeService] Node {} buffer đầy. Packet {} bị drop.", nodeId, packet.getPacketId());
@@ -66,7 +68,7 @@ public class NodeService implements INodeService {
             dirtyNodeIds.add(nodeId);
             return;
         }
-        if (!node.isHealthy()) {
+        if (!node.getHealthy()) {
             packet.setDropped(true); packet.setDropReason("NODE_UNHEALTHY_" + nodeId); 
             logger.warn("[NodeService] Node {} không khỏe. Packet {} bị drop.", nodeId, packet.getPacketId());
             return;
@@ -309,7 +311,7 @@ public class NodeService implements INodeService {
      * CHỈ tính độ trễ Truyền (Transmission) và Truyền sóng (Propagation).
      */
     private TransmissionDelayProfile computeTransmissionDelay(NodeInfo node, Packet packet, double altitudeKm, WeatherCondition weather) {
-        double bandwidthMHz = node.getCommunication().bandwidthMHz();
+        double bandwidthMHz = node.getCommunication().getBandwidthMHz();
         double dataRateMbps = bandwidthMHz;
         double bandwidthBps = dataRateMbps * SimulationConstants.MBPS_TO_BPS_CONVERSION;
         double bandwidthBpms = bandwidthBps / 1000.0;
@@ -334,7 +336,7 @@ public class NodeService implements INodeService {
     public List<NodeInfo> getVisibleNodes(NodeInfo node, List<NodeInfo> allNodes) {
         return allNodes.stream()
                 .filter(n -> !n.getNodeId().equals(node.getNodeId()))
-                .filter(NodeInfo::isHealthy)
+                .filter(NodeInfo::getHealthy)
                 .filter(n -> canSeeEachOther(node, n))
                 .collect(Collectors.toList());
     }
@@ -408,6 +410,17 @@ public class NodeService implements INodeService {
         double dz = z2 - z1;
 
         return Math.sqrt(dx*dx + dy*dy + dz*dz);
+    }
+
+    @Override
+    public void updateNodeIpAddress(String nodeId, String newIpAddress) {
+        NodeInfo node = nodeStateCache.get(nodeId);
+        if (node == null) {
+            logger.warn("[NodeService] Không tìm thấy node {} trong cache để cập nhật IP.", nodeId);
+            return;
+        }
+        node.getCommunication().setIpAddress(newIpAddress);
+        dirtyNodeIds.add(nodeId);
     }
 
 }

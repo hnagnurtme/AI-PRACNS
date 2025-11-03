@@ -1,0 +1,30 @@
+version: "3.8"
+
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_sagsins
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: user
+      MONGO_INITDB_ROOT_PASSWORD: password123
+    volumes:
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+  rl-router:
+    build:
+      context: /Users/anhnon/PBL4/src/rl-router
+      dockerfile: Dockerfile
+    container_name: rl-router
+    environment:
+      MONGO_URI: "mongodb://user:password123@mongodb:27017/"
+    depends_on:
+      - mongodb
+    ports:
+      - "65000:65000"
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:

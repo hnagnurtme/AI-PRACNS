@@ -13,3 +13,4 @@ pymongo==4.6.0
 pyyaml==6.0.1
 tqdm==4.66.1
 dnspython==2.8.0
+python-dotenv==1.0.0

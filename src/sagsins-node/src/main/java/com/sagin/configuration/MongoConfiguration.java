@@ -18,8 +18,8 @@ import static org.bson.codecs.configuration.CodecRegistries.fromRegistries;
 public final class MongoConfiguration { // Thêm 'final' để ngăn kế thừa
 
     // --- CẤU HÌNH KẾT NỐI ---
-    public static final String CONNECTION_STRING = "mongodb://user:password123@localhost:27017/?authSource=admin";
-    public static final String DATABASE_NAME = "sagsin_network";
+    public static final String CONNECTION_STRING = "mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/?appName=MONGO1";
+    public static final String DATABASE_NAME = "network";
     public static final String NODES_COLLECTION = "network_nodes";
     public static final String USERS_COLLECTION = "network_users";
 
