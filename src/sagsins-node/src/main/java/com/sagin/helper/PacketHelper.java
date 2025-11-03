@@ -1,12 +1,13 @@
 package com.sagin.helper;
 
+import com.sagin.model.BufferState;
 import com.sagin.model.HopRecord;
 import com.sagin.model.NodeInfo;
 import com.sagin.model.Packet;
+import com.sagin.model.RoutingDecisionInfo;
+import com.sagin.model.RoutingDecisionInfo.Algorithm;
 import com.sagin.routing.RouteInfo;
 
-import java.util.HashMap;
-import java.util.Map;
 
 public class PacketHelper {
 
@@ -43,12 +44,22 @@ public class PacketHelper {
         double linkLoss = routeInfo.getAvgPacketLossRate();
         double combinedLossRate = 1 - (1 - nodeLoss) * (1 - linkLoss);
 
-        if (combinedLossRate > packet.getMaxAcceptableLossRate()) {
-            packet.setDropped(true);
-            packet.setDropReason("LOSS_RATE_EXCEEDED");
-            return;
-        }
+        // if (combinedLossRate > packet.getMaxAcceptableLossRate()) {
+        //     packet.setDropped(true);
+        //     packet.setDropReason("LOSS_RATE_EXCEEDED");
+        //     return;
+        // }
 
+        BufferState bufferState = new BufferState(
+            currentNode.getPacketBufferCapacity(),
+            currentNode.getCommunication().getBandwidthMHz()
+        );
+
+        RoutingDecisionInfo routingDecisionInfo = new RoutingDecisionInfo(
+            Algorithm.Dijkstra,
+            "latency",
+            linkLatency
+        );
         // --- Tạo hop record ---
         HopRecord hop = new HopRecord(
                 currentNode.getNodeId(),
@@ -58,16 +69,18 @@ public class PacketHelper {
                 currentNode.getPosition(),
                 nextNode.getPosition(),
                 calculateDistanceKm(currentNode, nextNode),
-                getBufferState(currentNode),
-                new HashMap<>() {{
-                    put("totalCost", routeInfo.getTotalCost());
-                    put("avgPacketLoss", routeInfo.getAvgPacketLossRate());
-                    put("hopCount", routeInfo.getHopCount());
-                    put("linkLatency", linkLatency);
-                    put("nodePacketLossRate", currentNode.getPacketLossRate());
-                    put("combinedLossRate", combinedLossRate);
-                }}
+                bufferState,
+                routingDecisionInfo
         );
+    //     String fromNodeId,
+    // String toNodeId,
+    // double latencyMs,
+    // long timestampMs,
+    // Position fromNodePosition,
+    // Position toNodePosition,
+    // double distanceKm,
+    // BufferState fromNodeBufferState,
+    // RoutingDecisionInfo routingDecisionInfo
 
         if (packet.getHopRecords() != null) {
             packet.getHopRecords().add(hop);
@@ -97,13 +110,5 @@ public class PacketHelper {
                         Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
-    }
-
-    private static Map<String, Object> getBufferState(NodeInfo node) {
-        Map<String, Object> bufferState = new HashMap<>();
-        bufferState.put("currentPacketCount", node.getCurrentPacketCount());
-        bufferState.put("packetBufferCapacity", node.getPacketBufferCapacity());
-        bufferState.put("resourceUtilization", node.getResourceUtilization());
-        return bufferState;
     }
 }

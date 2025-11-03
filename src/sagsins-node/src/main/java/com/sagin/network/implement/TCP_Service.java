@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.sagin.DTOs.RoutingRequest;
 import com.sagin.helper.PacketHelper;
 import com.sagin.model.NodeInfo;
 import com.sagin.model.Packet;
@@ -13,6 +14,7 @@ import com.sagin.repository.INodeRepository;
 import com.sagin.repository.IUserRepository;
 import com.sagin.service.INodeService;
 import com.sagin.routing.IRoutingService;
+import com.sagin.routing.RLRoutingService;
 import com.sagin.routing.RouteInfo;
 import com.sagin.util.SimulationConstants;
 
@@ -43,6 +45,7 @@ public class TCP_Service implements ITCP_Service {
     private final IRoutingService routingService;
     private final ObjectMapper objectMapper;
 
+    private final RLRoutingService rlRoutingService;
     // --- Hàng đợi Gửi lại (Retry Queue) ---
     private final BlockingQueue<RetryablePacket> sendQueue;
     private final ScheduledExecutorService retryScheduler;
@@ -75,6 +78,9 @@ public class TCP_Service implements ITCP_Service {
         this.nodeService = nodeService;
         this.userRepository = userRepository;
         this.routingService = routingService;
+        this.rlRoutingService = new RLRoutingService(
+                SimulationConstants.RL_ROUTING_SERVER_HOST,
+                SimulationConstants.RL_ROUTING_SERVER_PORT);
 
         // Khởi tạo ObjectMapper và đăng ký module JavaTime (cho Instant, v.v.)
         this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
@@ -113,9 +119,9 @@ public class TCP_Service implements ITCP_Service {
             forwardPacketToUser(packet, currentNodeId);
             return;
         }
-
+        
         // --- Node transit ---
-        RouteInfo bestRoute = routingService.getBestRoute(currentNodeId, packet.getStationDest());
+        RouteInfo bestRoute = getBestRoute(packet);
         if (bestRoute == null) {
             packet.setDropped(true);
             packet.setDropReason("NO_ROUTE_TO_HOST");
@@ -123,6 +129,7 @@ public class TCP_Service implements ITCP_Service {
                     packet.getPacketId(), currentNodeId, packet.getStationDest());
             return;
         }
+
 
         String nextHopNodeId = bestRoute.getNextHopNodeId();
         packet.setNextHopNodeId(nextHopNodeId);
@@ -137,6 +144,9 @@ public class TCP_Service implements ITCP_Service {
             // --- Cập nhật packet qua helper ---
             PacketHelper.updatePacketForTransit(packet, currentNode, nextNode, bestRoute);
 
+            logger.info("[TCP_Service] Định tuyến Packet {} từ {} đến {} qua {}.",
+                    packet.getPacketId(), currentNodeId, packet.getStationDest(), nextHopNodeId);
+            logger.info(nextNode.toString());
             // --- Nếu packet còn sống, gửi tiếp ---
             if (!packet.isDropped()) {
                 packet.setCurrentHoldingNodeId(nextHopNodeId);
@@ -177,10 +187,11 @@ public class TCP_Service implements ITCP_Service {
             packet.setDropReason("ROUTING_NODE_NOT_FOUND");
             return;
         }
-
+        // Lấy thông tin host/port của next hop
+        logger.info("TCP " + nextHopNodeId);
         NodeInfo nextHop = nextHopOpt.get();
-        String host = nextHop.getHost();
-        int port = nextHop.getPort();
+        String host = nextHop.getCommunication().getIpAddress();
+        int port = nextHop.getCommunication().getPort();
         if (host == null || port <= 0) {
             logger.warn("[TCP_Service] Packet {} từ {} bị drop: Node {} có host/port không hợp lệ.",
                     packet.getPacketId(), senderNodeId, nextHopNodeId);
@@ -214,8 +225,8 @@ public class TCP_Service implements ITCP_Service {
         }
 
         UserInfo user = userOpt.get();
-        String host = user.getCommunication().ipAddress();
-        int port = user.getCommunication().port();
+        String host = user.getCommunication().getIpAddress();
+        int port = user.getCommunication().getPort();
         if (host == null || port <= 0) {
             logger.error("[TCP_Service] (forwardUser) Người dùng {} có thông tin host/port không hợp lệ.", userId);
             return;
@@ -372,6 +383,27 @@ public class TCP_Service implements ITCP_Service {
         } catch (InterruptedException e) {
             this.retryScheduler.shutdownNow();
             Thread.currentThread().interrupt();
+        }
+    }
+
+    private RouteInfo getBestRoute(Packet packet) {
+        if( packet.isUseRL() == false){
+            return routingService.getBestRoute(packet.getCurrentHoldingNodeId(), packet.getStationDest());
+        } else {
+            RouteInfo routeInfo = rlRoutingService.getNextHop(
+                new RoutingRequest(
+                    packet.getPacketId(),
+                    packet.getCurrentHoldingNodeId(),
+                    packet.getStationDest(),
+                    packet.getMaxAcceptableLatencyMs(),
+                    packet.getTTL(),
+                    packet.getServiceQoS()
+                ) 
+            );
+            if( routeInfo != null ){
+                return routeInfo;
+            }
+            return routingService.getBestRoute(packet.getCurrentHoldingNodeId(), packet.getStationDest());
         }
     }
 }

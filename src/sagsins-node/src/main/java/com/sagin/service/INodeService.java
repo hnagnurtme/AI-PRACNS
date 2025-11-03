@@ -39,6 +39,8 @@ public interface INodeService {
 
     List<NodeInfo> getVisibleNodes(NodeInfo node, List<NodeInfo> allNodes);
 
+
+    void updateNodeIpAddress(String nodeId, String newIpAddress);
     
     void flushToDatabase();
 }
