@@ -1,8 +1,14 @@
 import pymongo
 import math
 import logging
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Tuple, Optional
 import os
+# Support loading .env for local development
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
 
 # --- Logger setup ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -27,16 +33,19 @@ MAX_RANGE_MAP = {
 }
 
 # --- MongoDB setup ---
-MONGO_URI = "mongodb://user:password123@localhost:27017/?authSource=admin"
-DB_NAME = "sagsin_network"
+# Read from environment if available (MONGO_URI or MONGODB_URI), otherwise fallback to default
+MONGO_URI = os.getenv("MONGO_URI") or os.getenv("MONGODB_URI") or "mongodb://user:password123@localhost:27017/"
+DB_NAME = "network"
 COLLECTION_NAME = "network_nodes"
 
 class NodeService:
-    def __init__(self, uri: str = MONGO_URI):
-        self.client = pymongo.MongoClient(uri)
+    def __init__(self, uri: Optional[str] = None):
+        # resolve passed uri or environment
+        resolved_uri = uri or MONGO_URI
+        self.client = pymongo.MongoClient(resolved_uri)
         self.db = self.client[DB_NAME]
         self.collection = self.db[COLLECTION_NAME]
-        logger.info("Connected to MongoDB: %s, DB: %s, Collection: %s", uri, DB_NAME, COLLECTION_NAME)
+        logger.info("Connected to MongoDB, DB: %s, Collection: %s", DB_NAME, COLLECTION_NAME)
 
     @staticmethod
     def geo_to_xyz(node: Dict[str, Any]) -> Tuple[float, float, float]:

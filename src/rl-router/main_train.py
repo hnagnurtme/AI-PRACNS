@@ -138,7 +138,8 @@ def simulate_full_path(
 
 def train_agent():
     logger.info("=== KHỞI TẠO HỆ THỐNG DQN ROUTER FULLPATH ===")
-    mongo_conn = MongoConnector(uri="mongodb://user:password123@localhost:27017/sagsin_network?authSource=admin")
+    # MongoConnector will resolve the MongoDB URI from environment variables (.env) or use a default
+    mongo_conn = MongoConnector()
     state_builder = StateBuilder(mongo_conn)
 
     # Weights cho Reward (Đã thêm hop_cost để giải quyết lỗi lang thang)

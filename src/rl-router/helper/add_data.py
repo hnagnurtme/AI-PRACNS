@@ -3,23 +3,28 @@ import pymongo
 import logging
 from datetime import datetime
 from bson import json_util  # ✅ Dùng để hiểu được $oid, $date, $numberDouble, v.v.
-
+import os
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except Exception:
+    pass
 # ----------------- Logger -----------------
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger("add_data")
 
 # ----------------- Config -----------------
-DB_URI = "mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/?appName=MONGO1"
+MONGO_URI = os.getenv("MONGO_URI") or os.getenv("MONGODB_URI") or "mongodb://user:password123@localhost:27017/"
 DB_NAME = "network"
 COLLECTION_NAME = "network_nodes"
 JSON_FILE = "/Users/anhnon/PBL4/src/rl-router/helper/network_nodes.json"
 
 # ----------------- Connect MongoDB -----------------
 try:
-    client = pymongo.MongoClient(DB_URI)
+    client = pymongo.MongoClient(MONGO_URI)
     db = client[DB_NAME]
     collection = db[COLLECTION_NAME]
-    logger.info(f"✅ Connected to MongoDB Atlas: {DB_NAME}.{COLLECTION_NAME}")
+    logger.info(f"✅ Connected to MongoDB : {DB_NAME}.{COLLECTION_NAME}")
 except Exception as e:
     logger.error(f"❌ Failed to connect MongoDB: {e}")
     exit(1)
