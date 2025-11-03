@@ -59,23 +59,6 @@ public class NodeInfo {
         this.operational = operational;
     }
 
-    /**
-     * Kiểm tra Node có sẵn sàng xử lý/gửi/nhận không (Healthy Check).
-     */
-    @JsonProperty(value = "healthy")
-    public boolean isHealthy() {
-        final double MIN_POWER = 10.0;
-        final double MAX_BUFFER_LOAD_RATIO = 0.8;
-
-        double bufferLoadRatio = (packetBufferCapacity > 0)
-                ? (double) currentPacketCount / packetBufferCapacity
-                : 0.0;
-
-        return operational
-                && batteryChargePercent > MIN_POWER
-                && bufferLoadRatio <= MAX_BUFFER_LOAD_RATIO
-                && weather != WeatherCondition.SEVERE_STORM;
-    }
 
     public void setLastUpdated(Instant lastUpdated) {
         this.lastUpdated = lastUpdated;

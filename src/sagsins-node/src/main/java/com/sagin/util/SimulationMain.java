@@ -12,16 +12,19 @@ import com.sagin.service.INodeService;
 import com.sagin.service.NodeService;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 
 public class SimulationMain {
 
-    private static final Logger logger = LoggerFactory.getLogger(SimulationMain.class);
+    private static final Logger logger = AppLogger.getLogger(SimulationMain.class);
 
     public static void main(String[] args) {
+        String simulationId = String.valueOf(System.currentTimeMillis());
+        AppLogger.putMdc("simulationId", simulationId);
+        
         logger.info("=== Starting full SAGIN network simulation ===");
+        logger.info("Simulation ID: {}", simulationId);
 
         INodeRepository nodeRepository = new MongoNodeRepository();
         IUserRepository userRepository = new MongoUserRepository();
@@ -57,6 +60,7 @@ public class SimulationMain {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("Shutting down all NodeGateways...");
             routingService.shutdown();
+            AppLogger.clearMdc();
         }));
 
         routingService.forceUpdateRoutingTables();

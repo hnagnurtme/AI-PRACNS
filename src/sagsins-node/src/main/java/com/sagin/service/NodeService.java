@@ -68,7 +68,7 @@ public class NodeService implements INodeService {
             dirtyNodeIds.add(nodeId);
             return;
         }
-        if (!node.isHealthy()) {
+        if (!node.getHealthy()) {
             packet.setDropped(true); packet.setDropReason("NODE_UNHEALTHY_" + nodeId); 
             logger.warn("[NodeService] Node {} không khỏe. Packet {} bị drop.", nodeId, packet.getPacketId());
             return;
@@ -336,7 +336,7 @@ public class NodeService implements INodeService {
     public List<NodeInfo> getVisibleNodes(NodeInfo node, List<NodeInfo> allNodes) {
         return allNodes.stream()
                 .filter(n -> !n.getNodeId().equals(node.getNodeId()))
-                .filter(NodeInfo::isHealthy)
+                .filter(NodeInfo::getHealthy)
                 .filter(n -> canSeeEachOther(node, n))
                 .collect(Collectors.toList());
     }
