@@ -23,9 +23,7 @@ import java.io.IOException;
 import java.util.Base64;
 
 /**
- * Controller wiring the MainView and model classes.
- * - Handles Send button by creating a Packet from form fields and calling PacketSender
- * - Handles Listen button to start/stop PacketReceiver and update the received list in real-time
+ * Controller with dual packet sending (RL + non-RL) for comparison
  */
 public class MainController {
 
@@ -62,6 +60,7 @@ public class MainController {
     private void attachHandlers() {
         view.btnSend.setOnAction(e -> onSend());
         view.btnListen.setOnAction(e -> onListenToggle());
+        view.btnClearLog.setOnAction(e -> onClearLog());
         
         // When sender username is selected, fetch user info and compute stationSource
         view.cbSenderUsername.valueProperty().addListener((obs, oldV, newV) -> {
@@ -145,60 +144,108 @@ public class MainController {
             final String finalHost = host;
             final int finalPort = port;
             final int finalPacketCount = packetCount;
+            final int totalPackets = packetCount * 2; // Each count = 2 packets (1 RL + 1 non-RL)
             
-            // Send multiple packets using the same packetId (multi-threaded)
-            if (packetCount == 1) {
-                // Single packet - send directly
-                sender.send(finalHost, finalPort, basePacket);
-                view.lblStatus.setText("Sent packet " + basePacket.getPacketId() + " to station " + stationSourceId + " (" + finalHost + ":" + finalPort + ")");
-            } else {
-                // Multiple packets with same packetId - use multi-threading with separate sockets
-                view.lblStatus.setText("Sending " + finalPacketCount + " packets with ID " + basePacket.getPacketId() + "...");
+            view.lblStatus.setText("Sending " + finalPacketCount + " pairs (" + totalPackets + " packets total)...");
+            
+            // Create a thread pool for parallel sending
+            java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(
+                Math.min(totalPackets, 20) // max 20 concurrent threads
+            );
+            
+            java.util.concurrent.atomic.AtomicInteger successCount = new java.util.concurrent.atomic.AtomicInteger(0);
+            java.util.concurrent.atomic.AtomicInteger failCount = new java.util.concurrent.atomic.AtomicInteger(0);
+            
+            // Send pairs of packets (each pair has same packetId, different useRL)
+            for (int i = 0; i < finalPacketCount; i++) {
+                // Generate ONE shared packetId for this PAIR
+                final String sharedPacketId = java.util.UUID.randomUUID().toString();
                 
-                // Create a thread pool for parallel sending
-                java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(
-                    Math.min(finalPacketCount, 10) // max 10 concurrent threads
-                );
-                
-                java.util.concurrent.atomic.AtomicInteger successCount = new java.util.concurrent.atomic.AtomicInteger(0);
-                java.util.concurrent.atomic.AtomicInteger failCount = new java.util.concurrent.atomic.AtomicInteger(0);
-                
-                for (int i = 0; i < finalPacketCount; i++) {
-                    executor.submit(() -> {
-                        try {
-                            // Each thread creates its own PacketSender with separate socket
-                            PacketSender threadSender = new PacketSender();
-                            threadSender.send(finalHost, finalPort, basePacket);
-                            successCount.incrementAndGet();
-                        } catch (Exception ex) {
-                            failCount.incrementAndGet();
-                            ex.printStackTrace();
-                        }
-                    });
-                }
-                
-                // Shutdown executor and wait for completion in background
-                executor.shutdown();
-                new Thread(() -> {
+                // Send RL version
+                executor.submit(() -> {
                     try {
-                        executor.awaitTermination(30, java.util.concurrent.TimeUnit.SECONDS);
-                        Platform.runLater(() -> {
-                            view.lblStatus.setText(String.format(
-                                "Sent %d packets (ID: %s) to station %s - Success: %d, Failed: %d",
-                                finalPacketCount, basePacket.getPacketId(), stationSourceId, 
-                                successCount.get(), failCount.get()
-                            ));
-                        });
-                    } catch (InterruptedException ex) {
-                        Platform.runLater(() -> view.lblStatus.setText("Packet sending interrupted"));
+                        Packet rlPacket = clonePacket(basePacket);
+                        rlPacket.setPacketId(sharedPacketId);
+                        rlPacket.setUseRL(true);
+                        
+                        System.out.println("🤖 Sending RL packet: ID=" + sharedPacketId + ", useRL=" + rlPacket.isUseRL());
+                        
+                        PacketSender threadSender = new PacketSender();
+                        threadSender.send(finalHost, finalPort, rlPacket);
+                        successCount.incrementAndGet();
+                    } catch (Exception ex) {
+                        failCount.incrementAndGet();
+                        ex.printStackTrace();
                     }
-                }).start();
+                });
+                
+                // Send non-RL version (same packetId, different useRL)
+                executor.submit(() -> {
+                    try {
+                        Packet nonRlPacket = clonePacket(basePacket);
+                        nonRlPacket.setPacketId(sharedPacketId);
+                        nonRlPacket.setUseRL(false);
+                        
+                        System.out.println("📍 Sending non-RL packet: ID=" + sharedPacketId + ", useRL=" + nonRlPacket.isUseRL());
+                        
+                        PacketSender threadSender = new PacketSender();
+                        threadSender.send(finalHost, finalPort, nonRlPacket);
+                        successCount.incrementAndGet();
+                    } catch (Exception ex) {
+                        failCount.incrementAndGet();
+                        ex.printStackTrace();
+                    }
+                });
             }
+            
+            // Shutdown executor and wait for completion in background
+            executor.shutdown();
+            new Thread(() -> {
+                try {
+                    executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS);
+                    Platform.runLater(() -> {
+                        view.lblStatus.setText(String.format(
+                            "Sent %d pairs (%d packets) to station %s - Success: %d, Failed: %d",
+                            finalPacketCount, totalPackets, stationSourceId, 
+                            successCount.get(), failCount.get()
+                        ));
+                    });
+                } catch (InterruptedException ex) {
+                    Platform.runLater(() -> view.lblStatus.setText("Packet sending interrupted"));
+                }
+            }).start();
             
         } catch (Exception ex) {
             view.lblStatus.setText("Send failed: " + ex.getMessage());
             ex.printStackTrace();
         }
+    }
+
+    /**
+     * Clone a packet to create independent copies for RL and non-RL versions
+     */
+    private Packet clonePacket(Packet original) {
+        Packet clone = new Packet();
+        
+        // Copy all fields (packetId will be set separately)
+        clone.setSourceUserId(original.getSourceUserId());
+        clone.setDestinationUserId(original.getDestinationUserId());
+        clone.setStationSource(original.getStationSource());
+        clone.setStationDest(original.getStationDest());
+        clone.setTimeSentFromSourceMs(System.currentTimeMillis()); // Fresh timestamp
+        clone.setPayloadDataBase64(original.getPayloadDataBase64());
+        clone.setPayloadSizeByte(original.getPayloadSizeByte());
+        clone.setServiceQoS(original.getServiceQoS());
+        clone.setTTL(original.getTTL());
+        clone.setPriorityLevel(original.getPriorityLevel());
+        clone.setMaxAcceptableLatencyMs(original.getMaxAcceptableLatencyMs());
+        clone.setMaxAcceptableLossRate(original.getMaxAcceptableLossRate());
+        clone.setDropReason(null);
+        clone.setDropped(false);
+        clone.setCurrentHoldingNodeId(null);
+        clone.setNextHopNodeId(null);
+        
+        return clone;
     }
 
     private void onListenToggle() {
@@ -207,7 +254,7 @@ public class MainController {
                 int port = Integer.parseInt(view.tfListenPort.getText().trim());
                 receiver.start(port, this::onPacketReceived);
                 listening = true;
-                view.btnListen.setText("Stop");
+                view.btnListen.setText("Stop Listening");
                 view.lblStatus.setText("Listening on port " + port);
             } catch (IOException ex) {
                 view.lblStatus.setText("Failed to listen: " + ex.getMessage());
@@ -216,14 +263,18 @@ public class MainController {
         } else {
             receiver.stop();
             listening = false;
-            view.btnListen.setText("Listen");
+            view.btnListen.setText("Start Listening");
             view.lblStatus.setText("Stopped listening");
         }
     }
 
+    private void onClearLog() {
+        receivedItems.clear();
+        view.lblStatus.setText("Log cleared (" + java.time.LocalTime.now() + ")");
+    }
+
     /**
      * Load all usernames from the database and populate the ComboBoxes.
-     * This method queries all users and extracts their userId (username) to populate the dropdown.
      */
     private void loadUsernames() {
         if (userRepo == null || nodeRepo == null) {
@@ -274,8 +325,7 @@ public class MainController {
     }
 
     /**
-     * Called when sender username is selected. Fetches user info from DB,
-     * fills sourceUserId, sets listen port (where sender receives packets), and computes stationSource (nearest node).
+     * Called when sender username is selected.
      */
     private void onSenderUsernameSelected(String username) {
         if (userRepo == null || nodeService == null) {
@@ -290,14 +340,14 @@ public class MainController {
                 // Auto-fill sourceUserId
                 view.tfSourceUserId.setText(u.getUserId());
                 
-                // Set listen port based on sender's port (where this user listens for incoming packets)
+                // Set listen port based on sender's port
                 view.tfListenPort.setText(String.valueOf(u.getPort()));
 
-                // Compute nearest node (stationSource) based on user's city
+                // Compute nearest node (stationSource)
                 NodeInfo nearest = nodeService.getNearestNode(u.getUserId());
                 if (nearest != null) {
                     view.tfStationSource.setText(nearest.getNodeId());
-                    view.lblStatus.setText("Sender: " + u.getUserId() + " (listen on port " + u.getPort() + ") -> Station: " + nearest.getNodeId());
+                    view.lblStatus.setText("Sender: " + u.getUserId() + " (port " + u.getPort() + ") -> Station: " + nearest.getNodeId());
                 } else {
                     view.lblStatus.setText("No nearest node found for sender " + username);
                 }
@@ -311,8 +361,7 @@ public class MainController {
     }
 
     /**
-     * Called when destination username is selected. Fetches user info from DB,
-     * fills destinationUserId, sets send host/port (where to send the packet), and computes stationDest (nearest node).
+     * Called when destination username is selected.
      */
     private void onDestinationUsernameSelected(String username) {
         if (userRepo == null || nodeService == null) {
@@ -327,17 +376,17 @@ public class MainController {
                 // Auto-fill destinationUserId
                 view.tfDestinationUserId.setText(u.getUserId());
                 
-                // Set send host/port to destination user's IP and port (where to send the packet)
+                // Set send host/port to destination user's IP and port
                 if (u.getIpAddress() != null) {
                     view.tfSendHost.setText(u.getIpAddress());
                 }
                 view.tfSendPort.setText(String.valueOf(u.getPort()));
 
-                // Compute nearest node (stationDest) based on user's city
+                // Compute nearest node (stationDest)
                 NodeInfo nearest = nodeService.getNearestNode(u.getUserId());
                 if (nearest != null) {
                     view.tfStationDest.setText(nearest.getNodeId());
-                    view.lblStatus.setText("Destination: " + u.getUserId() + " (send to " + u.getIpAddress() + ":" + u.getPort() + ") -> Station: " + nearest.getNodeId());
+                    view.lblStatus.setText("Destination: " + u.getUserId() + " (" + u.getIpAddress() + ":" + u.getPort() + ") -> Station: " + nearest.getNodeId());
                 } else {
                     view.lblStatus.setText("No nearest node found for destination " + username);
                 }
@@ -351,18 +400,21 @@ public class MainController {
     }
 
     private void onPacketReceived(Packet p) {
+        // Debug log
+        System.out.println("📥 CLIENT RECEIVED: ID=" + p.getPacketId() + ", useRL=" + p.isUseRL() + 
+            " (from " + p.getSourceUserId() + " to " + p.getDestinationUserId() + ")");
+        
         // Update UI on JavaFX thread
         Platform.runLater(() -> {
             receivedItems.add(0, p); // newest first
-            view.lblStatus.setText("Received " + p.getPacketId());
+            view.lblStatus.setText("Received " + p.getPacketId() + (p.isUseRL() ? " (RL)" : " (non-RL)"));
         });
     }
 
     private Packet buildPacketFromForm() {
         Packet p = new Packet();
         
-        // Auto-generate UUID for packetId
-        p.setPacketId(java.util.UUID.randomUUID().toString());
+        // PacketId will be set during sending (same for each pair)
         
         // Auto-filled from username selection
         p.setSourceUserId(view.tfSourceUserId.getText());
@@ -370,8 +422,7 @@ public class MainController {
         p.setStationSource(view.tfStationSource.getText());
         p.setStationDest(view.tfStationDest.getText());
         
-        // Set timestamp to current time
-        p.setTimeSentFromSourceMs(System.currentTimeMillis());
+        // Timestamp will be set during cloning
         
         // Encode payload to base64
         String payload = view.taPayload.getText();
@@ -417,21 +468,10 @@ public class MainController {
             }
         }
 
-        // TTL default is 30 (field removed from UI)
+        // TTL default is 30
         p.setTTL(30);
         
-        // Optional priority override
-        try { 
-            String prioStr = view.tfPriorityLevel.getText().trim();
-            if (!prioStr.isEmpty()) {
-                p.setPriorityLevel(Integer.parseInt(prioStr));
-            }
-        } catch (Exception ignored) {}
-        
-        // Use RL flag
-        p.setUseRL(view.cbUseRL.isSelected());
-        
-        // dropReason is null by default (packet not dropped when created)
+        // dropReason is null by default
         p.setDropReason(null);
         p.setDropped(false);
         
