@@ -92,10 +92,24 @@ public class MainController {
 
     private void onSend() {
         try {
-            Packet p = buildPacketFromForm();
+            // Get number of packets to send
+            int packetCount = 1;
+            try {
+                String countStr = view.tfPacketCount.getText().trim();
+                if (!countStr.isEmpty()) {
+                    packetCount = Integer.parseInt(countStr);
+                    if (packetCount < 1) packetCount = 1;
+                    if (packetCount > 1000) packetCount = 1000; // safety limit
+                }
+            } catch (Exception ex) {
+                packetCount = 1;
+            }
+            
+            // Build base packet template
+            Packet basePacket = buildPacketFromForm();
             
             // Send to stationSource node (not directly to destination user)
-            String stationSourceId = p.getStationSource();
+            String stationSourceId = basePacket.getStationSource();
             if (stationSourceId == null || stationSourceId.trim().isEmpty()) {
                 view.lblStatus.setText("Station source not set. Please select sender username.");
                 return;
@@ -128,9 +142,58 @@ public class MainController {
                 return;
             }
             
-            // Send packet to station source node
-            sender.send(host, port, p);
-            view.lblStatus.setText("Sent packet " + p.getPacketId() + " to station " + stationSourceId + " (" + host + ":" + port + ")");
+            final String finalHost = host;
+            final int finalPort = port;
+            final int finalPacketCount = packetCount;
+            
+            // Send multiple packets using the same packetId (multi-threaded)
+            if (packetCount == 1) {
+                // Single packet - send directly
+                sender.send(finalHost, finalPort, basePacket);
+                view.lblStatus.setText("Sent packet " + basePacket.getPacketId() + " to station " + stationSourceId + " (" + finalHost + ":" + finalPort + ")");
+            } else {
+                // Multiple packets with same packetId - use multi-threading with separate sockets
+                view.lblStatus.setText("Sending " + finalPacketCount + " packets with ID " + basePacket.getPacketId() + "...");
+                
+                // Create a thread pool for parallel sending
+                java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(
+                    Math.min(finalPacketCount, 10) // max 10 concurrent threads
+                );
+                
+                java.util.concurrent.atomic.AtomicInteger successCount = new java.util.concurrent.atomic.AtomicInteger(0);
+                java.util.concurrent.atomic.AtomicInteger failCount = new java.util.concurrent.atomic.AtomicInteger(0);
+                
+                for (int i = 0; i < finalPacketCount; i++) {
+                    executor.submit(() -> {
+                        try {
+                            // Each thread creates its own PacketSender with separate socket
+                            PacketSender threadSender = new PacketSender();
+                            threadSender.send(finalHost, finalPort, basePacket);
+                            successCount.incrementAndGet();
+                        } catch (Exception ex) {
+                            failCount.incrementAndGet();
+                            ex.printStackTrace();
+                        }
+                    });
+                }
+                
+                // Shutdown executor and wait for completion in background
+                executor.shutdown();
+                new Thread(() -> {
+                    try {
+                        executor.awaitTermination(30, java.util.concurrent.TimeUnit.SECONDS);
+                        Platform.runLater(() -> {
+                            view.lblStatus.setText(String.format(
+                                "Sent %d packets (ID: %s) to station %s - Success: %d, Failed: %d",
+                                finalPacketCount, basePacket.getPacketId(), stationSourceId, 
+                                successCount.get(), failCount.get()
+                            ));
+                        });
+                    } catch (InterruptedException ex) {
+                        Platform.runLater(() -> view.lblStatus.setText("Packet sending interrupted"));
+                    }
+                }).start();
+            }
             
         } catch (Exception ex) {
             view.lblStatus.setText("Send failed: " + ex.getMessage());
@@ -354,17 +417,8 @@ public class MainController {
             }
         }
 
-        // Optional TTL (default to 64 if not specified)
-        try { 
-            String ttlStr = view.tfTTL.getText().trim();
-            if (!ttlStr.isEmpty()) {
-                p.setTTL(Integer.parseInt(ttlStr));
-            } else {
-                p.setTTL(64); // default TTL
-            }
-        } catch (Exception ignored) {
-            p.setTTL(64);
-        }
+        // TTL default is 30 (field removed from UI)
+        p.setTTL(30);
         
         // Optional priority override
         try { 

@@ -39,6 +39,7 @@ public class MainView {
     public TextField tfNextHopNodeId = new TextField();
     public TextField tfPathHistory = new TextField();
     public TextField tfPriorityLevel = new TextField();
+    public TextField tfPacketCount = new TextField("1");
     public CheckBox cbUseRL = new CheckBox("Use RL");
     public TextField tfMaxAcceptableLatencyMs = new TextField();
     public TextField tfMaxAcceptableLossRate = new TextField();
@@ -111,13 +112,16 @@ public class MainView {
     lblQoSDetail.setStyle("-fx-font-size: 11px; -fx-text-fill: #333; -fx-padding: 5;");
     senderGrid.add(lblQoSDetail, 1, r++);
     
-    // Optional fields
-    senderGrid.add(new Label("TTL (optional)"), 0, r); 
-    tfTTL.setPromptText("Time to live (default: auto)");
-    senderGrid.add(tfTTL, 1, r++);
+    // Separator
+    senderGrid.add(new Separator(), 0, r, 2, 1); r++;
+    
+    // Sending options
+    senderGrid.add(new Label("Number of Packets"), 0, r); 
+    tfPacketCount.setPromptText("Enter number of packets (default: 1)");
+    senderGrid.add(tfPacketCount, 1, r++);
     
     senderGrid.add(new Label("Priority Level (optional)"), 0, r); 
-    tfPriorityLevel.setPromptText("1-5, default: 1");
+    tfPriorityLevel.setPromptText("1-5, default from QoS");
     senderGrid.add(tfPriorityLevel, 1, r++);
     
     senderGrid.add(cbUseRL, 1, r++);
