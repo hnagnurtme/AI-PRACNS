@@ -31,9 +31,9 @@ public class SimulationClient {
         packet.setPayloadDataBase64("SGVsbG8gV29ybGQ="); // "Hello World" base64
         packet.setPayloadSizeByte(12012);
         packet.setSourceUserId("user-01");
-        packet.setDestinationUserId("user-02");
+        packet.setDestinationUserId("user-Singapore");
         packet.setStationSource("GS_HANOI");
-        packet.setStationDest("GS_DANANG");
+        packet.setStationDest("GS_SINGAPORE");
         packet.setTTL(40);
         packet.setPriorityLevel(1);
         packet.setMaxAcceptableLatencyMs(500);

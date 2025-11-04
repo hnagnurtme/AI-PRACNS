@@ -21,8 +21,8 @@ export interface HopRecord {
     latencyMs: number;
     timestampMs: number;
     distanceKm: number;
-    fromNodePosition: Position;
-    toNodePosition: Position;
+    fromNodePosition: Position | null;
+    toNodePosition: Position | null;
     fromNodeBufferState: BufferState;
     routingDecisionInfo: RoutingDecisionInfo;
 }
@@ -72,35 +72,8 @@ export interface Packet {
 }
 
 export interface ComparisonData {
-    dijkstraPacket: Packet;
-    rlpacket: Packet;
-}
-
-export interface NetworkBatch {
-    batchId: string;
-    totalPairPackets: number;
-    packets: ComparisonData[];
-}
-
-
-
-export interface BufferState {
-    queueSize: number;
-    bandwidthUtilization: number;
-}
-
-export interface RoutingDecisionInfo {
-    algorithm: "Dijkstra" | "ReinforcementLearning";
-    metric?: string;
-    reward?: number;
-}
-
-
-
-
-export interface ComparisonData {
-    dijkstraPacket: Packet;
-    rlpacket: Packet;
+    dijkstraPacket: Packet | null;
+    rlPacket: Packet | null;  // ✅ Fixed: Match server response (capital P)
 }
 
 export interface NetworkBatch {

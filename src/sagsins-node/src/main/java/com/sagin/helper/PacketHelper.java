@@ -38,9 +38,9 @@ public class PacketHelper {
      * 
      * @param packet Packet đã gửi thành công
      * @param currentNode Node gửi
-     * @param nextNode Node nhận
+     * @param nextNode Node nhận (có thể null nếu đích là user)
      * @param actualDelayMs Delay THỰC TẾ vừa tính (queuing + processing + transmission + propagation)
-     * @param routeInfo Thông tin routing để lấy metric
+     * @param routeInfo Thông tin routing để lấy metric (có thể null cho hop cuối đến user)
      */
     public static void createHopRecordWithActualDelay(
             Packet packet, 
@@ -60,15 +60,22 @@ public class PacketHelper {
             actualDelayMs  // ✅ Sử dụng delay THỰC TẾ
         );
         
+        // --- Xử lý nextNode (có thể null nếu gửi đến user) ---
+        String nextNodeId = (nextNode != null) ? nextNode.getNodeId() : "USER:" + packet.getDestinationUserId();
+        com.sagin.model.Position nextPosition = (nextNode != null) ? nextNode.getPosition() : null;
+        
+        // Tính khoảng cách (0 nếu gửi đến user vì không có position)
+        double distanceKm = (nextNode != null) ? calculateDistanceKm(currentNode, nextNode) : 0.0;
+        
         // --- Tạo hop record với delay THỰC TẾ ---
         HopRecord hop = new HopRecord(
                 currentNode.getNodeId(),
-                nextNode.getNodeId(),
+                nextNodeId,  // ✅ Có thể là nodeId hoặc "USER:userId"
                 actualDelayMs,  // ✅ Delay thực tế đã được tính toán chính xác
                 System.currentTimeMillis(),
                 currentNode.getPosition(),
-                nextNode.getPosition(),
-                calculateDistanceKm(currentNode, nextNode),
+                nextPosition,  // ✅ Có thể null nếu đích là user
+                distanceKm,  // ✅ 0 nếu đích là user
                 bufferState,
                 routingDecisionInfo
         );
@@ -91,5 +98,56 @@ public class PacketHelper {
                         Math.sin(dLon / 2) * Math.sin(dLon / 2);
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return R * c;
+    }
+
+    /**
+     * Tính toán AnalysisData từ danh sách HopRecords của packet.
+     * Được gọi khi packet đến đích để phân tích hiệu suất tuyến đường.
+     * 
+     * @param packet Packet cần phân tích
+     */
+    public static void calculateAnalysisData(Packet packet) {
+        if (packet == null || packet.getHopRecords() == null || packet.getHopRecords().isEmpty()) {
+            // Không có hop records, không thể phân tích
+            return;
+        }
+
+        var hopRecords = packet.getHopRecords();
+        int hopCount = hopRecords.size();
+        
+        // Tính tổng distance và latency
+        double totalDistanceKm = hopRecords.stream()
+                .mapToDouble(com.sagin.model.HopRecord::distanceKm)
+                .sum();
+        
+        double totalLatencyMs = hopRecords.stream()
+                .mapToDouble(com.sagin.model.HopRecord::latencyMs)
+                .sum();
+        
+        // Tính trung bình
+        double avgLatency = totalLatencyMs / hopCount;
+        double avgDistanceKm = totalDistanceKm / hopCount;
+        
+        // Route success rate: 1.0 nếu packet đến đích, 0.0 nếu bị drop
+        double routeSuccessRate = packet.isDropped() ? 0.0 : 1.0;
+        
+        // ✅ Đồng bộ totalLatencyMs với accumulatedDelayMs
+        // Đảm bảo tổng delay từ HopRecords khớp với delay tích lũy của packet
+        if (Math.abs(totalLatencyMs - packet.getAccumulatedDelayMs()) > 0.01) {
+            // Nếu có sai lệch, sử dụng giá trị từ packet (đã được cập nhật liên tục)
+            totalLatencyMs = packet.getAccumulatedDelayMs();
+            avgLatency = totalLatencyMs / hopCount;
+        }
+        
+        // Tạo AnalysisData
+        com.sagin.model.AnalysisData analysisData = new com.sagin.model.AnalysisData(
+                avgLatency,
+                avgDistanceKm,
+                routeSuccessRate,
+                totalDistanceKm,
+                totalLatencyMs
+        );
+        
+        packet.setAnalysisData(analysisData);
     }
 }

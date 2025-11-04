@@ -30,6 +30,11 @@ public class SimulationMain {
         IUserRepository userRepository = new MongoUserRepository();
         INodeService nodeService = new NodeService(nodeRepository);
         DynamicRoutingService routingService = new DynamicRoutingService(nodeRepository, nodeService);
+        
+        // ✅ BatchPacket service cho 2 collections (TwoPacket + BatchPacket)
+        com.sagin.repository.ITwoPacketRepository twoPacketRepository = new com.sagin.repository.MongoTwoPacketRepository();
+        com.sagin.repository.IBatchPacketRepository batchPacketRepository = new com.sagin.repository.MongoBatchPacketRepository();
+        com.sagin.service.BatchPacketService batchPacketService = new com.sagin.service.BatchPacketService(batchPacketRepository, twoPacketRepository);
 
         Map<String, NodeInfo> nodeInfoMap = nodeRepository.loadAllNodeConfigs();
         logger.info("Loaded {} node configurations from repository.", nodeInfoMap.size());
@@ -38,7 +43,7 @@ public class SimulationMain {
         nodeInfoMap.values().forEach(nodeInfo -> {
             nodeService.updateNodeIpAddress(nodeInfo.getNodeId(), envHost);
             nodeService.flushToDatabase();
-            TCP_Service tcpService = new TCP_Service(nodeRepository, nodeService, userRepository, routingService);
+            TCP_Service tcpService = new TCP_Service(nodeRepository, nodeService, userRepository, routingService, batchPacketService);
             NodeGateway nodeGateway = new NodeGateway(tcpService);
 
             new Thread(() -> {

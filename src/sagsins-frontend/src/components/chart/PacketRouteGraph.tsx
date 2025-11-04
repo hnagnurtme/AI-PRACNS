@@ -24,8 +24,8 @@ interface HopRecord {
     latencyMs: number;
     timestampMs: number;
     distanceKm: number;
-    fromNodePosition: Position;
-    toNodePosition: Position;
+    fromNodePosition: Position | null;
+    toNodePosition: Position | null;
     fromNodeBufferState: BufferState;
     routingDecisionInfo: RoutingDecisionInfo;
 }
@@ -76,8 +76,8 @@ interface Packet {
 }
 
 interface ComparisonData {
-    dijkstraPacket: Packet;
-    rlpacket: Packet;
+    dijkstraPacket: Packet | null;
+    rlPacket: Packet | null;  // ✅ Fixed: Match server response (capital P)
 }
 
 interface Props {
@@ -107,8 +107,12 @@ const normalizePositions = (
 ): NormalizedNode[] => {
     if (positions.length === 0) return [];
     
-    const lats = positions.map(p => p.latitude);
-    const lons = positions.map(p => p.longitude);
+    // Filter out null/undefined positions
+    const validPositions = positions.filter(p => p != null);
+    if (validPositions.length === 0) return [];
+    
+    const lats = validPositions.map(p => p.latitude);
+    const lons = validPositions.map(p => p.longitude);
     const minLat = Math.min(...lats);
     const maxLat = Math.max(...lats);
     const minLon = Math.min(...lons);
@@ -119,7 +123,7 @@ const normalizePositions = (
     const padding = 60;
 
     if (rangeLat === 0 && rangeLon === 0) {
-        return positions.map((p, i) => ({
+        return validPositions.map((p, i) => ({
             x: width / 2,
             y: height / 2,
             id: `${p.latitude}_${p.longitude}`,
@@ -127,7 +131,7 @@ const normalizePositions = (
         }));
     }
 
-    return positions.map((p, i) => ({
+    return validPositions.map((p, i) => ({
         // Đã thêm kiểm tra chia cho 0 để an toàn hơn
         x: padding + ((p.longitude - minLon) / (rangeLon || 1)) * (width - 2 * padding),
         y: height - padding - ((p.latitude - minLat) / (rangeLat || 1)) * (height - 2 * padding),
@@ -168,7 +172,7 @@ export const PacketRouteGraph: React.FC<Props> = ({ data }) => {
         const nodeDataMap = new Map<string, { position: Position, bufferState: BufferState | null }>();
 
         // Thêm currentHoldingNodeId (node cuối cùng trước khi drop) vào map nếu bị drop
-        const allPackets = [data?.dijkstraPacket, data?.rlpacket];
+        const allPackets = [data?.dijkstraPacket, data?.rlPacket];  // ✅ Fixed: rlPacket (capital P)
 
         allPackets.forEach(packet => {
             if (packet?.dropped && packet.currentHoldingNodeId) {
@@ -180,27 +184,27 @@ export const PacketRouteGraph: React.FC<Props> = ({ data }) => {
 
         const allHopRecords = [
             ...(data?.dijkstraPacket?.hopRecords || []),
-            ...(data?.rlpacket?.hopRecords || [])
+            ...(data?.rlPacket?.hopRecords || [])  // ✅ Fixed: rlPacket (capital P)
         ];
 
         allHopRecords.forEach(hop => {
             if (!hop) return;
             
-            // Lấy dữ liệu Buffer State và Position từ FromNode
-            nodeDataMap.set(hop.fromNodeId, {
-                position: hop.fromNodePosition,
-                bufferState: hop.fromNodeBufferState,
-            });
+            // Lấy dữ liệu Buffer State và Position từ FromNode (chỉ nếu position hợp lệ)
+            if (hop.fromNodePosition) {
+                nodeDataMap.set(hop.fromNodeId, {
+                    position: hop.fromNodePosition,
+                    bufferState: hop.fromNodeBufferState,
+                });
+            }
 
-            // Lấy dữ liệu Position từ ToNode
+            // Lấy dữ liệu Position từ ToNode (chỉ nếu position hợp lệ)
             // *Lưu ý: bufferState của ToNode sẽ được giả định hoặc lấy từ FromNode tiếp theo*
-            if (!nodeDataMap.has(hop.toNodeId)) {
+            if (hop.toNodePosition && !nodeDataMap.has(hop.toNodeId)) {
                 nodeDataMap.set(hop.toNodeId, {
                     position: hop.toNodePosition,
                     bufferState: { queueSize: 0, bandwidthUtilization: 0 }, // Giả định cho node nhận cuối
                 });
-            } else {
-                 // Nếu node đã tồn tại (là fromNode của hop khác), không ghi đè bufferState
             }
         });
 
@@ -314,16 +318,16 @@ export const PacketRouteGraph: React.FC<Props> = ({ data }) => {
         return { lines, dropNode };
     };
 
-    const dijkstraRoute = renderRoute(data.dijkstraPacket, DIJKSTRA_COLOR, "Dijkstra", showDijkstra);
-    const rlRoute = renderRoute(data.rlpacket, RL_COLOR, "RL", showRL);
-
-    if (!data || !data.dijkstraPacket || !data.rlpacket) {
+    if (!data || (!data.dijkstraPacket && !data.rlPacket)) {  // ✅ Fixed: rlPacket (capital P)
         return (
             <div className="p-6 bg-white rounded-2xl shadow-lg col-span-3 border border-gray-200">
                 <p className="text-center text-gray-500">No route data available</p>
             </div>
         );
     }
+
+    const dijkstraRoute = data.dijkstraPacket ? renderRoute(data.dijkstraPacket, DIJKSTRA_COLOR, "Dijkstra", showDijkstra) : { lines: null, dropNode: null };
+    const rlRoute = data.rlPacket ? renderRoute(data.rlPacket, RL_COLOR, "RL", showRL) : { lines: null, dropNode: null };  // ✅ Fixed: rlPacket (capital P)
 
     return (
         <div className="p-6 bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-lg col-span-3 border border-gray-200">
@@ -407,8 +411,8 @@ export const PacketRouteGraph: React.FC<Props> = ({ data }) => {
                         const isHovered = hoveredNode === node.nodeId;
                         
                         // Kiểm tra xem node này có phải là điểm drop không
-                        const isDropNode = (data.dijkstraPacket.dropped && data.dijkstraPacket.currentHoldingNodeId === node.nodeId) ||
-                                           (data.rlpacket.dropped && data.rlpacket.currentHoldingNodeId === node.nodeId);
+                        const isDropNode = (data.dijkstraPacket?.dropped && data.dijkstraPacket?.currentHoldingNodeId === node.nodeId) ||
+                                           (data.rlPacket?.dropped && data.rlPacket?.currentHoldingNodeId === node.nodeId);  // ✅ Fixed: rlPacket (capital P)
 
                         return (
                             <g 
@@ -548,32 +552,40 @@ export const PacketRouteGraph: React.FC<Props> = ({ data }) => {
             {/* THÔNG SỐ TỔNG (Overall Stats) */}
             <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
                 {/* Dijkstra Stats */}
-                <div className={`p-3 rounded-lg border ${data.dijkstraPacket.dropped ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
-                    <p className="text-xs text-gray-600 mb-1 font-medium">Dijkstra Total Latency</p>
-                    <p className={`text-lg font-bold ${data.dijkstraPacket.dropped ? 'text-red-700' : 'text-blue-700'}`}>
-                        {data.dijkstraPacket.dropped ? '❌ DROPPED' : (data.dijkstraPacket.accumulatedDelayMs).toFixed(2) + ' ms'}
-                    </p>
-                </div>
-                <div className={`p-3 rounded-lg border ${data.dijkstraPacket.dropped ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
-                    <p className="text-xs text-gray-600 mb-1 font-medium">Dijkstra Drop Reason</p>
-                    <p className="text-sm font-bold text-gray-700 truncate" title={data.dijkstraPacket.dropReason || 'N/A'}>
-                        {data.dijkstraPacket.dropped ? data.dijkstraPacket.dropReason || 'Unknown Reason' : 'N/A'}
-                    </p>
-                </div>
+                {data.dijkstraPacket && (
+                    <>
+                        <div className={`p-3 rounded-lg border ${data.dijkstraPacket.dropped ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
+                            <p className="text-xs text-gray-600 mb-1 font-medium">Dijkstra Total Latency</p>
+                            <p className={`text-lg font-bold ${data.dijkstraPacket.dropped ? 'text-red-700' : 'text-blue-700'}`}>
+                                {data.dijkstraPacket.dropped ? '❌ DROPPED' : (data.dijkstraPacket.accumulatedDelayMs).toFixed(2) + ' ms'}
+                            </p>
+                        </div>
+                        <div className={`p-3 rounded-lg border ${data.dijkstraPacket.dropped ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200'}`}>
+                            <p className="text-xs text-gray-600 mb-1 font-medium">Dijkstra Drop Reason</p>
+                            <p className="text-sm font-bold text-gray-700 truncate" title={data.dijkstraPacket.dropReason || 'N/A'}>
+                                {data.dijkstraPacket.dropped ? data.dijkstraPacket.dropReason || 'Unknown Reason' : 'N/A'}
+                            </p>
+                        </div>
+                    </>
+                )}
 
                 {/* RL Stats */}
-                <div className={`p-3 rounded-lg border ${data.rlpacket.dropped ? 'bg-red-50 border-red-200' : 'bg-orange-50 border-orange-200'}`}>
-                    <p className="text-xs text-gray-600 mb-1 font-medium">RL Total Latency</p>
-                    <p className={`text-lg font-bold ${data.rlpacket.dropped ? 'text-red-700' : 'text-orange-700'}`}>
-                        {data.rlpacket.dropped ? '❌ DROPPED' : (data.rlpacket.accumulatedDelayMs).toFixed(2) + ' ms'}
-                    </p>
-                </div>
-                <div className={`p-3 rounded-lg border ${data.rlpacket.dropped ? 'bg-red-50 border-red-200' : 'bg-orange-50 border-orange-200'}`}>
-                    <p className="text-xs text-gray-600 mb-1 font-medium">RL Drop Reason</p>
-                     <p className="text-sm font-bold text-gray-700 truncate" title={data.rlpacket.dropReason || 'N/A'}>
-                        {data.rlpacket.dropped ? data.rlpacket.dropReason || 'Unknown Reason' : 'N/A'}
-                    </p>
-                </div>
+                {data.rlPacket && (  // ✅ Fixed: rlPacket (capital P)
+                    <>
+                        <div className={`p-3 rounded-lg border ${data.rlPacket.dropped ? 'bg-red-50 border-red-200' : 'bg-orange-50 border-orange-200'}`}>
+                            <p className="text-xs text-gray-600 mb-1 font-medium">RL Total Latency</p>
+                            <p className={`text-lg font-bold ${data.rlPacket.dropped ? 'text-red-700' : 'text-orange-700'}`}>
+                                {data.rlPacket.dropped ? '❌ DROPPED' : (data.rlPacket.accumulatedDelayMs).toFixed(2) + ' ms'}
+                            </p>
+                        </div>
+                        <div className={`p-3 rounded-lg border ${data.rlPacket.dropped ? 'bg-red-50 border-red-200' : 'bg-orange-50 border-orange-200'}`}>
+                            <p className="text-xs text-gray-600 mb-1 font-medium">RL Drop Reason</p>
+                            <p className="text-sm font-bold text-gray-700 truncate" title={data.rlPacket.dropReason || 'N/A'}>
+                                {data.rlPacket.dropped ? data.rlPacket.dropReason || 'Unknown Reason' : 'N/A'}
+                            </p>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );

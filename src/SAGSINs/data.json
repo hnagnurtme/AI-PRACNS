@@ -1,0 +1,140 @@
+[{
+  "_id": {
+    "$oid": "6909eb522da482615c553345"
+  },
+  "comparisonId": "user-DaNang_user-Hue_1762257744",
+  "createdAt": {
+    "$date": "2025-11-04T12:02:25.943Z"
+  },
+  "destinationUserId": "user-Hue",
+  "dijkstraPacket": {
+    "accumulatedDelayMs": 7.6312565262791505,
+    "analysisData": {
+      "avgDistanceKm": 0,
+      "avgLatency": 7.6312565262791505,
+      "routeSuccessRate": 1,
+      "totalDistanceKm": 0,
+      "totalLatencyMs": 7.6312565262791505
+    },
+    "currentHoldingNodeId": "GS_DANANG",
+    "decodedPayload": "XIN CHAO HUE",
+    "destinationUserId": "user-Hue",
+    "dropped": false,
+    "hopRecords": [
+      {
+        "fromNodeId": "GS_DANANG",
+        "toNodeId": "USER:user-Hue",
+        "latencyMs": 7.6312565262791505,
+        "timestampMs": {
+          "$numberLong": "1762257745548"
+        },
+        "fromNodePosition": {
+          "altitude": 0,
+          "latitude": 16.0544,
+          "longitude": 108.2022
+        },
+        "distanceKm": 0,
+        "fromNodeBufferState": {
+          "bandwidthUtilization": 156,
+          "queueSize": 2873
+        },
+        "routingDecisionInfo": {
+          "algorithm": "Dijkstra",
+          "metric": "latency",
+          "reward": 7.6312565262791505
+        }
+      }
+    ],
+    "maxAcceptableLatencyMs": 2000,
+    "maxAcceptableLossRate": 0.05,
+    "packetId": "72522965-8833-4a86-96a8-70060eff5697",
+    "pathHistory": [
+      "GS_DANANG"
+    ],
+    "payloadDataBase64": "WElOIENIQU8gSFVF",
+    "payloadSizeByte": 120000,
+    "priorityLevel": 4,
+    "serviceQoS": {
+      "serviceType": "FILE_TRANSFER",
+      "defaultPriority": 4,
+      "maxLatencyMs": 2000,
+      "maxJitterMs": 500,
+      "minBandwidthMbps": 2,
+      "maxLossRate": 0.05
+    },
+    "sourceUserId": "user-DaNang",
+    "stationDest": "GS_DANANG",
+    "stationSource": "GS_DANANG",
+    "tTL": 29,
+    "timeSentFromSourceMs": {
+      "$numberLong": "1762257744339"
+    },
+    "useRL": false
+  },
+  "rlPacket": {
+    "accumulatedDelayMs": 9.931256526279151,
+    "analysisData": {
+      "avgDistanceKm": 0,
+      "avgLatency": 9.931256526279151,
+      "routeSuccessRate": 1,
+      "totalDistanceKm": 0,
+      "totalLatencyMs": 9.931256526279151
+    },
+    "currentHoldingNodeId": "GS_DANANG",
+    "decodedPayload": "XIN CHAO HUE",
+    "destinationUserId": "user-Hue",
+    "dropped": false,
+    "hopRecords": [
+      {
+        "fromNodeId": "GS_DANANG",
+        "toNodeId": "USER:user-Hue",
+        "latencyMs": 9.931256526279151,
+        "timestampMs": {
+          "$numberLong": "1762257746079"
+        },
+        "fromNodePosition": {
+          "altitude": 0,
+          "latitude": 16.0544,
+          "longitude": 108.2022
+        },
+        "distanceKm": 0,
+        "fromNodeBufferState": {
+          "bandwidthUtilization": 156,
+          "queueSize": 2873
+        },
+        "routingDecisionInfo": {
+          "algorithm": "ReinforcementLearning",
+          "metric": "latency",
+          "reward": 9.931256526279151
+        }
+      }
+    ],
+    "maxAcceptableLatencyMs": 2000,
+    "maxAcceptableLossRate": 0.05,
+    "packetId": "72522965-8833-4a86-96a8-70060eff5697",
+    "pathHistory": [
+      "GS_DANANG"
+    ],
+    "payloadDataBase64": "WElOIENIQU8gSFVF",
+    "payloadSizeByte": 120000,
+    "priorityLevel": 4,
+    "serviceQoS": {
+      "serviceType": "FILE_TRANSFER",
+      "defaultPriority": 4,
+      "maxLatencyMs": 2000,
+      "maxJitterMs": 500,
+      "minBandwidthMbps": 2,
+      "maxLossRate": 0.05
+    },
+    "sourceUserId": "user-DaNang",
+    "stationDest": "GS_DANANG",
+    "stationSource": "GS_DANANG",
+    "tTL": 29,
+    "timeSentFromSourceMs": {
+      "$numberLong": "1762257744339"
+    },
+    "useRL": true
+  },
+  "sourceUserId": "user-DaNang",
+  "status": "complete"
+}]

@@ -57,7 +57,7 @@ export const BatchStatistics = ({ batch, congestionMap }: { batch: NetworkBatch;
 
         batch.packets.forEach(pair => {
             const dijkstraLatency = pair.dijkstraPacket?.analysisData?.totalLatencyMs;
-            const rlLatency = pair.rlpacket?.analysisData?.totalLatencyMs;
+            const rlLatency = pair.rlPacket?.analysisData?.totalLatencyMs;  // ✅ Fixed: rlPacket (capital P)
 
             if (dijkstraLatency !== undefined && !isNaN(dijkstraLatency)) {
                 dijkstraTotal += dijkstraLatency;
