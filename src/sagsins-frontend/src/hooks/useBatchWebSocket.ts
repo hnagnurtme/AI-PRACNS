@@ -27,6 +27,7 @@ export const useBatchWebSocket = ( url: string ): UseBatchWebSocketResult => {
             try {
                 const body: NetworkBatch = JSON.parse( msg.body );
                 // Sử dụng hàm cập nhật trạng thái (setReceivedBatches) để tránh dependency phức tạp
+                console.log( "📩 Message received:", body );
                 setReceivedBatches( ( prev ) => [ body, ...prev ] );
                 console.log( "✅ Received new batch:", body.batchId );
             } catch ( error ) {

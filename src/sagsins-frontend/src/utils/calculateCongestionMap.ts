@@ -49,6 +49,9 @@ const accumulateHopData = (nodeId: string, hop: HopRecord, accumulator: Map<stri
 };
 
 const processPacket = (packet: Packet, accumulator: Map<string, NodeAccumulator>) => {
+    // Guard against undefined packet
+    if (!packet || !packet.hopRecords) return;
+    
     const isRL = packet.useRL;
 
     for (const hop of packet.hopRecords) {
@@ -74,7 +77,10 @@ export const calculateCongestionMap = (batches: NetworkBatch[]): NodeCongestion[
     const accumulator = new Map<string, NodeAccumulator>();
 
     for (const batch of batches) {
+        if (!batch || !batch.packets) continue;
+        
         for (const comparison of batch.packets) {
+            if (!comparison) continue;
             processPacket(comparison.dijkstraPacket, accumulator);
             processPacket(comparison.rlpacket, accumulator);
         }

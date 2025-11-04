@@ -271,6 +271,7 @@ const CesiumViewer: React.FC<CesiumViewerProps> = ({ nodes }) => {
         const firstSat = nodes.find(n => n.nodeType.includes("SATELLITE"));
         if (firstSat) {
             setTimeout(() => {
+                if (!viewer || viewer.isDestroyed() || !viewer.entities) return;
                 const entity = viewer.entities.getById(firstSat.nodeId);
                 if (entity) {
                     viewer.flyTo(entity, { duration: 2 });

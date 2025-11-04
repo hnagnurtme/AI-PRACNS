@@ -1,3 +1,5 @@
+# python/utils/state_builder.py
+
 import numpy as np
 import math
 import time
@@ -9,31 +11,42 @@ from .db_connector import MongoConnector
 # I. CÁC HẰNG SỐ & THIẾT LẬP CHUẨN HÓA
 # ==============================================================
 
+# --- Hằng số vật lý ---
 SPEED_OF_LIGHT_KM_PER_S = 299792.458
+
+# --- Hằng số Trái Đất (WGS-84) ---
+EARTH_RADIUS_KM = 6378.137
+EARTH_FLATTENING = 1 / 298.257223563
+EARTH_ECCEN_SQUARED = 2 * EARTH_FLATTENING - EARTH_FLATTENING**2
+
+# --- Hằng số chuẩn hóa hệ thống (Normalization ceilings) ---
 MAX_SYSTEM_DISTANCE_KM = 50000.0
 MAX_SYSTEM_LATENCY_MS = 2000.0
 MAX_LINK_BANDWIDTH_MBPS = 500.0
 MAX_PROCESSING_DELAY_MS = 250.0
 MAX_STALENESS_SEC = 30.0
+MAX_TTL_NORMALIZATION = 20.0
+MAX_FSPL_DB_NORMALIZATION = 300.0
 
-MAX_NEIGHBORS = 4
+# --- Hằng số cấu hình mô hình ---
+MAX_NEIGHBORS = 10         # (NOTE) ĐÃ NÂNG TỪ 4 LÊN 10
 NUM_SERVICE_TYPES = 5
 NUM_NODE_TYPES = 4
-NEIGHBOR_SLOT_SIZE = 7   # mỗi neighbor gồm 7 thông số
+NEIGHBOR_SLOT_SIZE = 7     # mỗi neighbor gồm 7 thông số
 
+# (NOTE) KÍCH THƯỚC STATE VECTOR MỚI
+# V_G (10) + V_P (8) + V_C (6) = 24
+# V_N (10 neighbors * 7 features) = 70
+# TỔNG CỘNG = 94 CHIỀU
+
+# --- Mappings ---
 SERVICE_TYPE_MAP = {
-    "VIDEO_STREAM": 0,
-    "AUDIO_CALL": 1,
-    "IMAGE_TRANSFER": 2,
-    "FILE_TRANSFER": 3,
-    "TEXT_MESSAGE": 4
+    "VIDEO_STREAM": 0, "AUDIO_CALL": 1, "IMAGE_TRANSFER": 2,
+    "FILE_TRANSFER": 3, "TEXT_MESSAGE": 4
 }
-
 NODE_TYPE_MAP = {
-    "GROUND_STATION": 0,
-    "LEO_SATELLITE": 1,
-    "MEO_SATELLITE": 2,
-    "GEO_SATELLITE": 3
+    "GROUND_STATION": 0, "LEO_SATELLITE": 1,
+    "MEO_SATELLITE": 2, "GEO_SATELLITE": 3
 }
 
 
@@ -42,15 +55,35 @@ NODE_TYPE_MAP = {
 # ==============================================================
 
 def convert_to_ecef(pos: Dict[str, float]) -> Tuple[float, float, float]:
-    """Giả lập chuyển đổi Lat/Lon/Alt → tọa độ ECEF (km)."""
-    return pos.get("longitude", 0.0), pos.get("latitude", 0.0), pos.get("altitude", 0.0)
+    """
+    (TỐI ƯU) Chuyển đổi tọa độ (Lat, Lon, Alt) sang tọa độ ECEF (x, y, z).
+    - Lat/Lon phải tính bằng ĐỘ (degrees).
+    - Altitude phải tính bằng KM.
+    """
+    lat = pos.get("latitude", 0.0)
+    lon = pos.get("longitude", 0.0)
+    alt_km = pos.get("altitude", 0.0) # Giả định altitude là km
+
+    lat_rad = math.radians(lat)
+    lon_rad = math.radians(lon)
+
+    sin_lat = math.sin(lat_rad)
+    n_lat = EARTH_RADIUS_KM / math.sqrt(1 - EARTH_ECCEN_SQUARED * sin_lat * sin_lat)
+
+    cos_lat = math.cos(lat_rad)
+    x = (n_lat + alt_km) * cos_lat * math.cos(lon_rad)
+    y = (n_lat + alt_km) * cos_lat * math.sin(lon_rad)
+    z = ((1 - EARTH_ECCEN_SQUARED) * n_lat + alt_km) * sin_lat
+
+    return (x, y, z)
 
 def calculate_distance_km(p1: Tuple[float, float, float], p2: Tuple[float, float, float]) -> float:
+    """Tính khoảng cách Euclidean (km) từ tọa độ ECEF (x,y,z)."""
     dx, dy, dz = p2[0]-p1[0], p2[1]-p1[1], p2[2]-p1[2]
     return math.sqrt(dx*dx + dy*dy + dz*dz)
 
 def calculate_direction_vector(p1: Tuple[float, float, float], p2: Tuple[float, float, float]) -> List[float]:
-    """Vector hướng (chuẩn hóa)."""
+    """Vector hướng (chuẩn hóa) từ tọa độ ECEF (x,y,z)."""
     dist = calculate_distance_km(p1, p2)
     if dist == 0:
         return [0.0, 0.0, 0.0]
@@ -72,7 +105,7 @@ def get_ohe_vector(value: str, mapping: Dict[str, int], size: int) -> List[float
 
 
 # ==============================================================
-# III. STATE BUILDER – Sinh vector trạng thái (52 chiều)
+# III. STATE BUILDER – Sinh vector trạng thái (94 chiều)
 # ==============================================================
 
 class StateBuilder:
@@ -81,21 +114,16 @@ class StateBuilder:
     def __init__(self, mongo_connector: MongoConnector):
         self.db = mongo_connector
 
-    # ---------------------------
-    # Helper: tính độ lỗi thời (staleness)
-    # ---------------------------
     def _staleness_ratio(self, last_updated: Any) -> float:
         now_ms = time.time() * 1000
         if isinstance(last_updated, datetime):
             last_ms = last_updated.timestamp() * 1000
         else:
             last_ms = now_ms
-        staleness = (now_ms - last_ms) / 1000.0
-        return min(staleness / MAX_STALENESS_SEC, 1.0)
+        
+        staleness_sec = (now_ms - last_ms) / 1000.0
+        return min(staleness_sec / MAX_STALENESS_SEC, 1.0)
 
-    # ---------------------------
-    # Hàm chính sinh state vector
-    # ---------------------------
     def get_state_vector(self, packet_data: Dict[str, Any]) -> np.ndarray:
         S = []
 
@@ -110,8 +138,13 @@ class StateBuilder:
         if not current_node or not dest_node:
             raise ValueError("Không tìm thấy node hiện tại hoặc node đích.")
 
+        # (NOTE) Lấy neighbor IDs, DB có thể trả về nhiều hơn 10
+        # nhưng chúng ta chỉ xử lý 10
         neighbor_ids = current_node.get("neighbors", [])
-        neighbors_data = self.db.get_neighbor_status_batch(neighbor_ids)
+        
+        # (NOTE) Chỉ lấy thông tin của MAX_NEIGHBORS đầu tiên
+        neighbors_to_fetch = neighbor_ids[:MAX_NEIGHBORS]
+        neighbors_data = self.db.get_neighbor_status_batch(neighbors_to_fetch)
 
         cur_pos = convert_to_ecef(current_node.get("position", {}))
         dest_pos = convert_to_ecef(dest_node.get("position", {}))
@@ -124,7 +157,7 @@ class StateBuilder:
         capacity = max(current_node.get("packetBufferCapacity", 1), 1)
 
         # ==========================================================
-        # A. QoS + Progress (V_G)
+        # A. QoS + Progress (V_G) - 10 chiều
         # ==========================================================
         S.extend(get_ohe_vector(qos.get("serviceType", "UNKNOWN"), SERVICE_TYPE_MAP, NUM_SERVICE_TYPES))
         S.extend([
@@ -132,11 +165,11 @@ class StateBuilder:
             min(qos.get("minBandwidthMbps", 0.0) / MAX_LINK_BANDWIDTH_MBPS, 1.0),
             min(qos.get("maxLossRate", 0.0), 1.0),
             min(acc_delay / max_lat, 1.0) if max_lat > 0 else 0.0,
-            min(packet_data.get("ttl", 10) / 20.0, 1.0)
+            min(packet_data.get("ttl", 10) / MAX_TTL_NORMALIZATION, 1.0)
         ])
 
         # ==========================================================
-        # B. Position + Direction (V_P)
+        # B. Position + Direction (V_P) - 8 chiều
         # ==========================================================
         dist_to_dest = calculate_distance_km(cur_pos, dest_pos)
         dir_vec = calculate_direction_vector(cur_pos, dest_pos)
@@ -144,11 +177,11 @@ class StateBuilder:
         S.extend(get_ohe_vector(current_node.get("nodeType", "UNKNOWN"), NODE_TYPE_MAP, NUM_NODE_TYPES))
         S.extend([
             min(dist_to_dest / MAX_SYSTEM_DISTANCE_KM, 1.0),
-            *dir_vec
+            *dir_vec # 3 chiều, giá trị trong [-1, 1]
         ])
 
         # ==========================================================
-        # C. Current Node Status (V_C)
+        # C. Current Node Status (V_C) - 6 chiều
         # ==========================================================
         S.extend([
             min(current_node.get("resourceUtilization", 0.0), 1.0),
@@ -160,11 +193,11 @@ class StateBuilder:
         ])
 
         # ==========================================================
-        # D. Neighbor Slots (V_N)
+        # D. Neighbor Slots (V_N) - 70 chiều (10 * 7)
         # ==========================================================
-        for i in range(MAX_NEIGHBORS):
-            if i < len(neighbor_ids):
-                nid = neighbor_ids[i]
+        for i in range(MAX_NEIGHBORS): # (NOTE) Vòng lặp 10 lần
+            if i < len(neighbors_to_fetch):
+                nid = neighbors_to_fetch[i]
                 n_data = neighbors_data.get(nid, {})
                 if not n_data:
                     S.extend([0.0] * NEIGHBOR_SLOT_SIZE)
@@ -188,27 +221,17 @@ class StateBuilder:
                     min(utilization, 1.0),
                     min(n_data.get("packetLossRate", 0.0), 1.0),
                     min(calculate_distance_km(n_pos, dest_pos) / MAX_SYSTEM_DISTANCE_KM, 1.0),
-                    min(fspl / 300.0, 1.0)
+                    min(fspl / MAX_FSPL_DB_NORMALIZATION, 1.0)
                 ])
             else:
+                # (NOTE) Thêm padding 0.0 nếu không đủ 10 neighbor
                 S.extend([0.0] * NEIGHBOR_SLOT_SIZE)
 
         # ==========================================================
-        # E. Chuẩn hóa & Xuất kết quả
+        # E. Xuất kết quả
         # ==========================================================
-        state_vector = np.clip(np.array(S, dtype=np.float32), 0.0, 1.0)
+        # (NOTE) Kích thước S phải là 24 + 70 = 94
+        state_vector = np.array(S, dtype=np.float32)
+        
+        # (NOTE) Xóa np.clip, giữ lại giá trị [-1, 1] của dir_vec
         return state_vector
-    def get_distance(self, node_a_id: str, node_b_id: str) -> float:
-        """Tính khoảng cách Euclidean giữa hai node theo lat, lon, alt."""
-        node_a = self.db.get_node(node_a_id, projection={"position": 1})
-        node_b = self.db.get_node(node_b_id, projection={"position": 1})
-        if not node_a or not node_b:
-            return float("inf")
-        pos_a = node_a["position"]
-        pos_b = node_b["position"]
-
-        # Euclidean distance 3D
-        dx = pos_a["latitude"] - pos_b["latitude"]
-        dy = pos_a["longitude"] - pos_b["longitude"]
-        dz = pos_a["altitude"] - pos_b["altitude"]
-        return math.sqrt(dx * dx + dy * dy + dz * dz)

@@ -2,36 +2,42 @@
 
 import logging
 import random
+import os
+import torch
 from tqdm import tqdm
 import numpy as np
-from typing import Dict, Any, List, Tuple
+import matplotlib.pyplot as plt
+from typing import Dict, Any, List
 
-# Imports từ các module đã hoàn thiện
+# === Imports từ các module của bạn ===
 from python.utils.db_connector import MongoConnector
 from python.utils.state_builder import StateBuilder
 from python.env.satellite_simulator import SatelliteEnv
-from python.rl_agent.trainer import DQNAgent, TARGET_UPDATE_INTERVAL
-from python.rl_agent.policy import get_epsilon # Cần cho logging
+from python.rl_agent.trainer import DQNAgent
+from python.rl_agent.policy import get_epsilon
 
 # --- CẤU HÌNH VÀ HẰNG SỐ ---
-NUM_EPISODES = 1000
-MAX_HOPS_PER_EPISODE = 50 # Giới hạn vòng lặp mô phỏng
-CHECKPOINT_PATH = "models/checkpoints/dqn_checkpoint_fullpath.pth"
+# (NOTE) Tăng số episode để agent có thời gian học
+NUM_EPISODES = 20000 
+MAX_HOPS_PER_EPISODE = 50
+SAVE_INTERVAL = 500
+
+CHECKPOINT_BASE_PATH = "models/checkpoints/dqn_checkpoint_fullpath"
+RESUME_FILE_PATH = f"{CHECKPOINT_BASE_PATH}_latest.pth"
+CHART_SAVE_PATH = "training_charts.png"
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
 # ----------------- MOCK PACKET GENERATOR -----------------
-
 def generate_packet(node_list: List[str]) -> Dict[str, Any]:
-    """Tạo packet từ 1 node ngẫu nhiên đến 1 destination khác."""
-    
+    """Tạo packet ngẫu nhiên từ 1 node đến 1 destination khác."""
     if len(node_list) < 2:
-        raise ValueError("Cannot generate packet: Need at least two nodes.")
-        
+        raise ValueError("Không đủ node để tạo packet.")
+
     src = random.choice(node_list)
     dest = random.choice([n for n in node_list if n != src])
-    
+
     packet = {
         "currentHoldingNodeId": src,
         "stationDest": dest,
@@ -48,149 +54,186 @@ def generate_packet(node_list: List[str]) -> Dict[str, Any]:
     }
     return packet
 
-def simulate_full_path(
-    env: SatelliteEnv,
-    agent: DQNAgent,
-    state_builder: StateBuilder,
-    packet: Dict[str, Any],
-    max_hops: int = MAX_HOPS_PER_EPISODE
-) -> Tuple[List[Tuple], float]:
-    """
-    Mô phỏng hành trình của 1 packet qua nhiều hop đến đích.
-    Trả về (transitions, total_reward)
-    """
-    state = env.reset(packet)
-    transitions = []
-    total_reward = 0.0
-    hops = 0
-
-    current_packet = packet.copy()
-
-    while True:
-        current_node_id = current_packet["currentHoldingNodeId"]
-        dest_node_id = current_packet["stationDest"]
-
-        # ---- Điều kiện kết thúc ----
-        if (
-            current_packet.get("dropped")
-            or current_packet.get("ttl", 0) <= 0
-            or current_node_id == dest_node_id
-            or hops >= max_hops
-        ):
-            done = True
-            # Phạt nhẹ nếu TTL cạn hoặc bị drop
-            if current_packet.get("dropped", False):
-                total_reward += -150.0
-            elif current_packet.get("ttl", 0) <= 0:
-                total_reward += -50.0
-            elif current_node_id == dest_node_id:
-                total_reward += 200.0  # Thưởng đến đích
-            break
-
-        # ---- Lấy neighbors hiện tại ----
-        node_data = state_builder.db.get_node(current_node_id, projection={"neighbors": 1})
-        neighbor_ids = node_data.get("neighbors", []) if node_data else []
-
-        if not neighbor_ids:
-            current_packet["dropped"] = True
-            continue
-
-        # ---- Agent chọn hành động ----
-        action_index = agent.select_action(state)
-
-        # Xử lý nếu action_index vượt quá số neighbor thực tế
-        if action_index < len(neighbor_ids):
-            next_hop_id = neighbor_ids[action_index]
-        else:
-            next_hop_id = random.choice(neighbor_ids)
-
-        # ---- Mô phỏng chuyển tiếp ----
-        next_packet = current_packet.copy()
-        next_packet["currentHoldingNodeId"] = next_hop_id
-        next_packet["ttl"] = max(current_packet.get("ttl", 10) - 1, 0)
-        next_packet["accumulatedDelayMs"] += random.uniform(5.0, 20.0)
-        next_packet["path"] = current_packet["path"] + [next_hop_id]
-
-        # ---- Step trong môi trường ----
-        next_state, reward, done = env.step(action_index, next_hop_id, next_packet)
-
-        # ---- Ghi nhận ----
-        total_reward += reward
-        transitions.append((state, action_index, reward, next_state, done))
-
-        # ---- Cập nhật cho vòng tiếp theo ----
-        state = next_state
-        current_packet = next_packet
-        hops += 1
-
-        if done:
-            break
-
-    # ---- Logging chi tiết ----
-    logger.info(
-        f"[Episode Path] {packet['path'][0]} → {current_packet['currentHoldingNodeId']} "
-        f"| TotalReward={total_reward:.2f} | Hops={hops} | TTL={current_packet.get('ttl',0)}"
-    )
-
-    return transitions, total_reward
 
 # ----------------- TRAINING LOOP -----------------
-
 def train_agent():
-    logger.info("=== KHỞI TẠO HỆ THỐNG DQN ROUTER FULLPATH ===")
-    # MongoConnector will resolve the MongoDB URI from environment variables (.env) or use a default
+    logger.info("=== KHỞI TẠO HỆ THỐNG DQN ROUTER ===")
     mongo_conn = MongoConnector()
     state_builder = StateBuilder(mongo_conn)
-
-    # Weights cho Reward (Đã thêm hop_cost để giải quyết lỗi lang thang)
-    reward_weights = {
-        'goal': 200.0,
-        'drop': -150.0,
-        'latency': -10.0,
-        'latency_violation': -50.0,
-        'utilization': 2.0,
-        'bandwidth': 1.0,
-        'reliability': 3.0,
-        'fspl': -0.1,
-        'hop_cost': -1.0 # 💡 PHẠT MỚI
-    }
-    env = SatelliteEnv(state_builder, weights=reward_weights)
+    env = SatelliteEnv(state_builder)
     agent = DQNAgent(env)
-    
-    # SỬA LỖI: Lấy tất cả Node ID cho generator
+
     all_nodes_data = state_builder.db.get_all_nodes(projection={"nodeId": 1})
     all_nodes = [n["nodeId"] for n in all_nodes_data]
 
-    if len(all_nodes) < 2:
-        logger.error("Không đủ Node để huấn luyện. Vui lòng kiểm tra MongoDB.")
+    total_possible_pairs = 0
+    if len(all_nodes) >= 2:
+        total_possible_pairs = len(all_nodes) * (len(all_nodes) - 1)
+    else:
+        logger.error("Không đủ Node để huấn luyện. Kiểm tra MongoDB.")
         return
 
-    pbar = tqdm(range(NUM_EPISODES), desc="DQN Fullpath Training")
-    for episode in pbar:
-        packet = generate_packet(all_nodes)
+    logger.info(f"Đang huấn luyện với {len(all_nodes)} nodes ({total_possible_pairs} cặp src-dest khả thi)...")
+
+    # --- Thống kê ---
+    rewards = []
+    avg_rewards = []
+    trained_pairs = set()
+    coverage_percent_history = [] 
+
+    # --- (NOTE) LOGIC RESUME TRAINING ---
+    start_episode = 0
+    if os.path.exists(RESUME_FILE_PATH):
+        try:
+            logger.info(f"Phát hiện checkpoint. Đang tải từ: {RESUME_FILE_PATH}")
+            
+            # (SỬA) Thêm `weights_only=False` để cho phép tải file
+            # checkpoint chứa dữ liệu (pickle) không phải trọng số.
+            checkpoint = torch.load(
+                RESUME_FILE_PATH, 
+                map_location=torch.device('cpu'),
+                weights_only=False 
+            )
+            
+            agent.q_network.load_state_dict(checkpoint['model_state_dict'])
+            agent.target_network.load_state_dict(checkpoint['target_network_state_dict'])
+            agent.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+            agent.steps_done = checkpoint['steps_done']
+            start_episode = checkpoint['episode'] + 1
+            
+            # Khôi phục lịch sử thống kê
+            rewards = checkpoint.get('rewards_history', [])
+            avg_rewards = checkpoint.get('avg_rewards_history', [])
+            trained_pairs = checkpoint.get('trained_pairs_set', set())
+            coverage_percent_history = checkpoint.get('coverage_history', [])
+            
+            logger.info(f"Tải thành công. Huấn luyện tiếp từ Episode {start_episode}")
+        except Exception as e:
+            logger.error(f"Lỗi khi tải checkpoint: {e}. Bắt đầu lại từ đầu.")
+            start_episode = 0
+            rewards, avg_rewards, trained_pairs, coverage_percent_history = [], [], set(), [] # Reset
+    else:
+        logger.info("Không tìm thấy checkpoint. Bắt đầu huấn luyện mới.")
+
+
+    pbar = tqdm(range(start_episode, NUM_EPISODES), desc="DQN Training", initial=start_episode, total=NUM_EPISODES)
+
+    try: # (NOTE) Thêm try...except để bắt lỗi runtime
+        for episode in pbar:
+            packet = generate_packet(all_nodes)
+            trained_pairs.add((packet["currentHoldingNodeId"], packet["stationDest"]))
+
+            episode_reward = env.simulate_episode(agent, packet, max_hops=MAX_HOPS_PER_EPISODE)
+
+            # --- Cập nhật thống kê ---
+            rewards.append(episode_reward)
+            current_coverage_pct = (len(trained_pairs) / total_possible_pairs) * 100
+            coverage_percent_history.append(current_coverage_pct)
+
+            current_avg_50 = np.mean(rewards[-50:]) if len(rewards) >= 50 else np.mean(rewards) if rewards else 0
+            if len(rewards) >= 50:
+                avg_rewards.append(current_avg_50)
+
+            epsilon = get_epsilon(agent.steps_done)
+            pbar.set_postfix({
+                'Reward': f"{episode_reward:.2f}",
+                'Avg50': f"{current_avg_50:.2f}",
+                'Steps': agent.steps_done,
+                'Eps': f"{epsilon:.3f}",
+                'Coverage': f"{current_coverage_pct:.2f}%"
+            })
+
+            # --- LOGIC LƯU CHECKPOINT ---
+            if (episode + 1) % SAVE_INTERVAL == 0 or (episode + 1) == NUM_EPISODES:
+                checkpoint_data = {
+                    'episode': episode,
+                    'model_state_dict': agent.q_network.state_dict(),
+                    'target_network_state_dict': agent.target_network.state_dict(),
+                    'optimizer_state_dict': agent.optimizer.state_dict(),
+                    'steps_done': agent.steps_done,
+                    'rewards_history': rewards,
+                    'avg_rewards_history': avg_rewards,
+                    'trained_pairs_set': trained_pairs,
+                    'coverage_history': coverage_percent_history
+                }
+                
+                if (episode + 1) % SAVE_INTERVAL == 0:
+                    save_path_milestone = f"{CHECKPOINT_BASE_PATH}_ep{episode+1}.pth"
+                    torch.save(checkpoint_data, save_path_milestone)
+                    logger.info(f"Đã lưu checkpoint mốc tại {save_path_milestone}")
+                
+                torch.save(checkpoint_data, RESUME_FILE_PATH)
+                if (episode + 1) == NUM_EPISODES:
+                    logger.info("=== HUẤN LUYỆN HOÀN TẤT ===")
+                    final_path = f"{CHECKPOINT_BASE_PATH}_final.pth"
+                    torch.save(checkpoint_data, final_path)
+                    logger.info(f"Model cuối cùng: {final_path}")
+
+    except KeyboardInterrupt:
+        logger.warning("\nPhát hiện (Ctrl+C). Đang dừng và lưu checkpoint...")
+        # (NOTE) Vẫn lưu checkpoint cuối cùng khi bị ngắt
+        checkpoint_data = {
+            'episode': episode, # Lưu episode hiện tại
+            'model_state_dict': agent.q_network.state_dict(),
+            'target_network_state_dict': agent.target_network.state_dict(),
+            'optimizer_state_dict': agent.optimizer.state_dict(),
+            'steps_done': agent.steps_done,
+            'rewards_history': rewards,
+            'avg_rewards_history': avg_rewards,
+            'trained_pairs_set': trained_pairs,
+            'coverage_history': coverage_percent_history
+        }
+        torch.save(checkpoint_data, RESUME_FILE_PATH)
+        logger.info(f"Đã lưu tiến trình resume tại {RESUME_FILE_PATH}. Chạy lại để tiếp tục.")
+    
+    except Exception as e:
+        # (NOTE) Đây là nơi sẽ bắt lỗi runtime (lỗi 198)
+        logger.error(f"LỖI NGHIÊM TRỌNG ở episode {episode}: {e}", exc_info=True)
+        # Vẫn cố gắng lưu checkpoint
+        checkpoint_data = {
+            'episode': episode,
+            'model_state_dict': agent.q_network.state_dict(),
+            # ... (lưu tương tự như trên)
+        }
+        torch.save(checkpoint_data, f"{CHECKPOINT_BASE_PATH}_CRASH.pth")
+        logger.info(f"Đã lưu checkpoint CRASH tại {CHECKPOINT_BASE_PATH}_CRASH.pth")
+        # Ném lỗi ra ngoài
+        raise e
+
+    
+    # --- In thống kê cuối ---
+    final_coverage_pct = (len(trained_pairs) / total_possible_pairs) * 100
+    logger.info(f"Tổng số cặp (src,dest) đã train: {len(trained_pairs)} (coverage ≈ {final_coverage_pct:.2f}%)")
+
+    # --- VẼ BIỂU ĐỒ ---
+    try:
+        fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(12, 10), sharex=True)
+        fig.suptitle('Kết quả Huấn luyện DQN', fontsize=16)
+
+        ax1.plot(rewards, label='Reward mỗi episode', alpha=0.3)
+        if avg_rewards:
+            # (SỬA) Tính toán trục X cho avg_rewards
+            avg_reward_x_axis = np.linspace(50, len(rewards), len(avg_rewards))
+            ax1.plot(avg_reward_x_axis, avg_rewards, label='Reward TB (50 ep)', linewidth=2, color='orange')
+        ax1.set_ylabel('Tổng Reward')
+        ax1.legend()
+        ax1.grid(True)
+        ax1.set_title('Biểu đồ Reward')
+
+        ax2.plot(coverage_percent_history, label='Độ bao phủ (Src-Dest)', color='green')
+        ax2.set_xlabel('Episode')
+        ax2.set_ylabel('Độ bao phủ (%)')
+        ax2.set_ylim(0, 100) 
+        ax2.legend()
+        ax2.grid(True)
+        ax2.set_title('Biểu đồ Độ bao phủ (Src-Dest)')
         
-        # Simulate full path and get all transitions
-        transitions, episode_reward = simulate_full_path(env, agent, state_builder, packet)
+        plt.tight_layout(rect=(0, 0.03, 1, 0.95))
+        plt.savefig(CHART_SAVE_PATH)
+        logger.info(f"Đã lưu biểu đồ (Reward & Coverage) tại {CHART_SAVE_PATH}")
+    except Exception as e:
+        logger.warning(f"Không thể vẽ biểu đồ: {e}")
 
-        # Lưu transitions vào replay buffer và tối ưu hóa
-        for s, a, r, s_next, done in transitions:
-            if a is not None:
-                agent.memory.push(s, a, r, s_next, done)
-                agent.optimize_model()
-
-        # Cập nhật Target Network
-        if episode % TARGET_UPDATE_INTERVAL == 0:
-            agent.update_target_network()
-
-        # Logging và Checkpoint
-        epsilon = get_epsilon(agent.steps_done)
-        pbar.set_postfix({'Reward': f"{episode_reward:.2f}", 'Hops': len(transitions), 'Epsilon': f"{epsilon:.4f}"})
-
-        if (episode + 1) % 100 == 0:
-            agent.save_checkpoint(CHECKPOINT_PATH.replace(".pth", f"_ep{episode+1}.pth"))
-
-    agent.save_checkpoint(CHECKPOINT_PATH.replace(".pth", "_final.pth"))
-    logger.info("=== HUẤN LUYỆN DQN FULLPATH HOÀN TẤT ===")
 
 if __name__ == "__main__":
     train_agent()

@@ -67,6 +67,13 @@ public final class SimulationConstants { // Thêm 'final' để ngăn kế thừ
     public static final double MAX_QUEUING_DELAY_MS = 10.0;
 
     /**
+     * ✅ FIXED Queuing Delay (ms) - CHO TESTING.
+     * Độ trễ hàng đợi cố định, không phụ thuộc vào buffer load.
+     * Dùng để loại bỏ tính ngẫu nhiên khi so sánh thuật toán.
+     */
+    public static final double FIXED_QUEUING_DELAY_MS = 1.0;
+
+    /**
      * Độ dài của một "time slot" mô phỏng (ms).
      * Dùng để tính toán utilization (% thời gian bận rộn trong 1 slot).
      */
@@ -167,5 +174,15 @@ public final class SimulationConstants { // Thêm 'final' để ngăn kế thừ
     public static final int RL_ROUTING_SERVER_PORT = 65000;
 
     public static final String RL_ROUTING_SERVER_HOST = "localhost";
+
+    // ===========================================
+    // 📡 ĐỘ TRỄ GIAO HÀNG (DELIVERY DELAY)
+    // ===========================================
+
+    /**
+     * Độ trễ cố định khi gửi packet từ Node đến User cuối (ms).
+     * Đây là hop cuối cùng trong quá trình giao packet.
+     */
+    public static final double NODE_TO_USER_DELIVERY_DELAY_MS = 5.0;
 
 }
