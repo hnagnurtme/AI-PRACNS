@@ -13,6 +13,7 @@ import com.sagin.network.interfaces.ITCP_Service;
 import com.sagin.repository.INodeRepository;
 import com.sagin.repository.IUserRepository;
 import com.sagin.service.INodeService;
+import com.sagin.service.PacketComparisonService;
 import com.sagin.routing.IRoutingService;
 import com.sagin.routing.RLRoutingService;
 import com.sagin.routing.RouteInfo;
@@ -44,6 +45,7 @@ public class TCP_Service implements ITCP_Service {
     private final INodeService nodeService;
     private final IRoutingService routingService;
     private final ObjectMapper objectMapper;
+    private final PacketComparisonService packetComparisonService;
 
     private final RLRoutingService rlRoutingService;
     // --- Hàng đợi Gửi lại (Retry Queue) ---
@@ -84,11 +86,13 @@ public class TCP_Service implements ITCP_Service {
     public TCP_Service(INodeRepository nodeRepository,
             INodeService nodeService,
             IUserRepository userRepository,
-            IRoutingService routingService) {
+            IRoutingService routingService,
+            PacketComparisonService packetComparisonService) {
         this.nodeRepository = nodeRepository;
         this.nodeService = nodeService;
         this.userRepository = userRepository;
         this.routingService = routingService;
+        this.packetComparisonService = packetComparisonService;
         this.rlRoutingService = new RLRoutingService(
                 SimulationConstants.RL_ROUTING_SERVER_HOST,
                 SimulationConstants.RL_ROUTING_SERVER_PORT);
@@ -436,14 +440,23 @@ public class TCP_Service implements ITCP_Service {
                         String.format("%.2f", txDelay));
             }
             
-            // ✅ NẾU GỬI ĐẾN USER, TÍNH ANALYSIS DATA
+            // ✅ NẾU GỬI ĐẾN USER, TÍNH ANALYSIS DATA VÀ LƯU VÀO DATABASE
             if (job.destinationDesc().startsWith("USER:")) {
+                // Tính toán AnalysisData
                 PacketHelper.calculateAnalysisData(job.packet());
                 logger.info("[TCP_Service] 📊 AnalysisData calculated for Packet {} | Total Hops: {} | Total Distance: {} km | Total Latency: {} ms",
                         job.packet().getPacketId(),
                         job.packet().getHopRecords() != null ? job.packet().getHopRecords().size() : 0,
                         job.packet().getAnalysisData() != null ? String.format("%.2f", job.packet().getAnalysisData().getTotalDistanceKm()) : "N/A",
                         job.packet().getAnalysisData() != null ? String.format("%.2f", job.packet().getAnalysisData().getTotalLatencyMs()) : "N/A");
+                
+                // ✅ LƯU VÀO DATABASE để so sánh Dijkstra vs RL
+                try {
+                    packetComparisonService.saveSuccessfulPacket(job.packet());
+                    logger.info("[TCP_Service] 💾 Saved packet {} to database for comparison", job.packet().getPacketId());
+                } catch (Exception e) {
+                    logger.error("[TCP_Service] ❌ Failed to save packet to database: {}", e.getMessage(), e);
+                }
             }
             
             // ✅ LOG PACKET THÀNH CÔNG RA FILE

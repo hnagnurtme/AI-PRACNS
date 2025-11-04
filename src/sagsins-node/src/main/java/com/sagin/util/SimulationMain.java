@@ -4,12 +4,15 @@ import com.sagin.model.NodeInfo;
 import com.sagin.network.implement.NodeGateway;
 import com.sagin.network.implement.TCP_Service;
 import com.sagin.repository.INodeRepository;
+import com.sagin.repository.IPacketComparisonRepository;
 import com.sagin.repository.IUserRepository;
 import com.sagin.repository.MongoNodeRepository;
+import com.sagin.repository.MongoPacketComparisonRepository;
 import com.sagin.repository.MongoUserRepository;
 import com.sagin.routing.DynamicRoutingService;
 import com.sagin.service.INodeService;
 import com.sagin.service.NodeService;
+import com.sagin.service.PacketComparisonService;
 
 import org.slf4j.Logger;
 
@@ -28,8 +31,10 @@ public class SimulationMain {
 
         INodeRepository nodeRepository = new MongoNodeRepository();
         IUserRepository userRepository = new MongoUserRepository();
+        IPacketComparisonRepository packetComparisonRepository = new MongoPacketComparisonRepository();
         INodeService nodeService = new NodeService(nodeRepository);
         DynamicRoutingService routingService = new DynamicRoutingService(nodeRepository, nodeService);
+        PacketComparisonService packetComparisonService = new PacketComparisonService(packetComparisonRepository);
 
         Map<String, NodeInfo> nodeInfoMap = nodeRepository.loadAllNodeConfigs();
         logger.info("Loaded {} node configurations from repository.", nodeInfoMap.size());
@@ -38,7 +43,7 @@ public class SimulationMain {
         nodeInfoMap.values().forEach(nodeInfo -> {
             nodeService.updateNodeIpAddress(nodeInfo.getNodeId(), envHost);
             nodeService.flushToDatabase();
-            TCP_Service tcpService = new TCP_Service(nodeRepository, nodeService, userRepository, routingService);
+            TCP_Service tcpService = new TCP_Service(nodeRepository, nodeService, userRepository, routingService, packetComparisonService);
             NodeGateway nodeGateway = new NodeGateway(tcpService);
 
             new Thread(() -> {
