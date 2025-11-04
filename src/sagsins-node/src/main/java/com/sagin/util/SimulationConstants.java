@@ -168,4 +168,14 @@ public final class SimulationConstants { // Thêm 'final' để ngăn kế thừ
 
     public static final String RL_ROUTING_SERVER_HOST = "localhost";
 
+    // ===========================================
+    // 📡 ĐỘ TRỄ GIAO HÀNG (DELIVERY DELAY)
+    // ===========================================
+
+    /**
+     * Độ trễ cố định khi gửi packet từ Node đến User cuối (ms).
+     * Đây là hop cuối cùng trong quá trình giao packet.
+     */
+    public static final double NODE_TO_USER_DELIVERY_DELAY_MS = 5.0;
+
 }
