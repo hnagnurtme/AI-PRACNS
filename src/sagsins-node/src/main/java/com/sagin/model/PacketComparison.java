@@ -30,6 +30,12 @@ public class PacketComparison {
     private String comparisonId;
     
     /**
+     * ID của batch chứa cặp packet này (optional)
+     */
+    @BsonProperty("batchId")
+    private String batchId;
+    
+    /**
      * Packet sử dụng thuật toán Dijkstra
      */
     @BsonProperty("dijkstraPacket")

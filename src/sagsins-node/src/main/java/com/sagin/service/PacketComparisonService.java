@@ -28,9 +28,25 @@ public class PacketComparisonService {
      * @param packet Packet đã đến đích thành công
      */
     public void saveSuccessfulPacket(Packet packet) {
-        if (packet == null || packet.isDropped()) {
-            logger.warn("[PacketComparisonService] Cannot save dropped or null packet");
+        saveSuccessfulPacket(packet, null);
+    }
+    
+    /**
+     * Lưu packet với batchId (bao gồm cả packet bị drop)
+     * 
+     * @param packet Packet (có thể bị drop hoặc thành công)
+     * @param batchId ID của batch (optional)
+     */
+    public void saveSuccessfulPacket(Packet packet, String batchId) {
+        if (packet == null) {
+            logger.warn("[PacketComparisonService] Cannot save null packet");
             return;
+        }
+        
+        // ✅ LƯU CẢ PACKET BỊ DROP để phân tích performance
+        if (packet.isDropped()) {
+            logger.info("[PacketComparisonService] Saving DROPPED packet {} | Reason: {}", 
+                    packet.getPacketId(), packet.getDropReason());
         }
         
         // Tạo comparisonId từ source và destination
@@ -52,7 +68,7 @@ public class PacketComparisonService {
                     comparisonId, comparison.getStatus());
         } else {
             // Chưa có → Tạo mới
-            comparison = createNewComparison(comparisonId, packet);
+            comparison = createNewComparison(comparisonId, packet, batchId);
             logger.info("[PacketComparisonService] Created new comparison: {} | Algorithm: {}", 
                     comparisonId, packet.isUseRL() ? "RL" : "Dijkstra");
         }
@@ -69,18 +85,26 @@ public class PacketComparisonService {
     /**
      * Tạo comparisonId duy nhất cho mỗi cặp packet
      */
-    private String generateComparisonId(String sourceUserId, String destinationUserId, long timestamp) {
+    public String generateComparisonId(String sourceUserId, String destinationUserId, long timestamp) {
         // Format: source_dest_timestamp
         // Timestamp để phân biệt các lần gửi khác nhau
         return String.format("%s_%s_%d", sourceUserId, destinationUserId, timestamp / 1000); // Làm tròn đến giây
     }
     
     /**
+     * Tìm PacketComparison theo comparisonId
+     */
+    public Optional<PacketComparison> findByComparisonId(String comparisonId) {
+        return repository.findByComparisonId(comparisonId);
+    }
+    
+    /**
      * Tạo PacketComparison mới với packet đầu tiên
      */
-    private PacketComparison createNewComparison(String comparisonId, Packet packet) {
+    private PacketComparison createNewComparison(String comparisonId, Packet packet, String batchId) {
         PacketComparison comparison = new PacketComparison();
         comparison.setComparisonId(comparisonId);
+        comparison.setBatchId(batchId);
         comparison.setSourceUserId(packet.getSourceUserId());
         comparison.setDestinationUserId(packet.getDestinationUserId());
         comparison.setCreatedAt(Instant.now());

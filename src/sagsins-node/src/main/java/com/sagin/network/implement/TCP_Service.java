@@ -51,8 +51,8 @@ public class TCP_Service implements ITCP_Service {
     // --- Hàng đợi Gửi lại (Retry Queue) ---
     private final BlockingQueue<RetryablePacket> sendQueue;
     private final ScheduledExecutorService retryScheduler;
-    private static final int MAX_RETRIES = 5; // Số lần thử lại tối đa
-    private static final long RETRY_POLL_INTERVAL_MS = 500; // Nửa giây quét hàng đợi 1 lần
+    private static final int MAX_RETRIES = 3;
+    private static final long RETRY_POLL_INTERVAL_MS = 50; // 50ms quét hàng đợi 1 lần (xử lý nhanh hơn)
     
 
     /**
@@ -400,12 +400,33 @@ public class TCP_Service implements ITCP_Service {
      * (Consumer Logic)
      * Hàm này được gọi định kỳ bởi `retryScheduler` để xử lý hàng đợi.
      * Sẽ gọi hạch toán `processSuccessfulSend` sau khi gửi thành công.
+     * 
+     * ✅ XỬ LÝ TẤT CẢ PACKETS có trong queue (không chỉ 1 packet)
      */
     private void processSendQueue() {
-        RetryablePacket job = sendQueue.poll(); // Lấy 1 item (không block)
-        if (job == null)
-            return; // Hàng đợi trống, nghỉ
-
+        // Xử lý tất cả packets trong queue (tối đa 100 để tránh block quá lâu)
+        int processedCount = 0;
+        int maxBatchSize = 100;
+        
+        while (processedCount < maxBatchSize) {
+            RetryablePacket job = sendQueue.poll(); // Lấy 1 item (không block)
+            if (job == null) {
+                break; // Hàng đợi trống, dừng
+            }
+            
+            processedCount++;
+            processSinglePacket(job);
+        }
+        
+        if (processedCount > 0) {
+            logger.debug("[TCP_Service] 📦 Processed {} packets from send queue", processedCount);
+        }
+    }
+    
+    /**
+     * Xử lý 1 packet từ queue
+     */
+    private void processSinglePacket(RetryablePacket job) {
         // Cố gắng gửi qua socket
         boolean success = attemptSendInternal(job);
 
@@ -503,13 +524,29 @@ public class TCP_Service implements ITCP_Service {
                         job.packet().getTTL(), 
                         String.format("%.2f", job.packet().getAccumulatedDelayMs()));
 
-                if (job.destinationDesc().startsWith("NODE:")) {
-                    job.packet().setDropped(true);
-                    job.packet().setDropReason("TCP_SEND_FAILED_MAX_RETRIES");
+                // Đánh dấu packet bị drop
+                job.packet().setDropped(true);
+                job.packet().setDropReason("TCP_SEND_FAILED_MAX_RETRIES");
+                
+                // ✅ LƯU CẢ PACKET BỊ DROP VÀO DATABASE để phân tích
+                if (job.destinationDesc().startsWith("USER:")) {
+                    try {
+                        // Tính AnalysisData trước khi lưu (nếu chưa có)
+                        if (job.packet().getAnalysisData() == null) {
+                            PacketHelper.calculateAnalysisData(job.packet());
+                        }
+                        
+                        packetComparisonService.saveSuccessfulPacket(job.packet());
+                        logger.info("[TCP_Service] 💾 Saved DROPPED packet {} to database for comparison", 
+                                job.packet().getPacketId());
+                    } catch (Exception e) {
+                        logger.error("[TCP_Service] ❌ Failed to save dropped packet to database: {}", 
+                                e.getMessage(), e);
+                    }
                 }
             }
         }
-    }
+    } // Kết thúc processSinglePacket()
 
     /**
      * Xử lý packet khi gửi thất bại - Cập nhật trạng thái giống như trong thực tế.
