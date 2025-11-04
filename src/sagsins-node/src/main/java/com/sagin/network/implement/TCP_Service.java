@@ -368,6 +368,7 @@ public class TCP_Service implements ITCP_Service {
         RetryablePacket job = new RetryablePacket(originalNodeId, packet, host, port, destinationDesc, 1, context);
         try {
             sendQueue.put(job);
+            logger.debug("Client host , port", host, port);
             logger.debug("[TCP_Service] ✈️ Đã thêm Packet {} (từ {}) vào hàng đợi gửi → {}.",
                     packet.getPacketId(), originalNodeId, destinationDesc);
         } catch (InterruptedException e) {

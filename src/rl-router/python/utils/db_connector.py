@@ -39,7 +39,7 @@ class MongoConnector:
             uri
             or os.getenv("MONGODB_URI")
             or os.getenv("MONGO_URI")
-            or "mongodb://user:password123@localhost:27017/?authSource=admin"
+            or "mongodb://user:password123@mongodb:27017/"
         )
 
         self.client = MongoClient(resolved_uri)
