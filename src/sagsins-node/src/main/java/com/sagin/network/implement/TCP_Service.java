@@ -13,7 +13,6 @@ import com.sagin.network.interfaces.ITCP_Service;
 import com.sagin.repository.INodeRepository;
 import com.sagin.repository.IUserRepository;
 import com.sagin.service.INodeService;
-import com.sagin.service.PacketComparisonService;
 import com.sagin.routing.IRoutingService;
 import com.sagin.routing.RLRoutingService;
 import com.sagin.routing.RouteInfo;
@@ -45,7 +44,7 @@ public class TCP_Service implements ITCP_Service {
     private final INodeService nodeService;
     private final IRoutingService routingService;
     private final ObjectMapper objectMapper;
-    private final PacketComparisonService packetComparisonService;
+    private final com.sagin.service.BatchPacketService batchPacketService; // ✅ New service
 
     private final RLRoutingService rlRoutingService;
     // --- Hàng đợi Gửi lại (Retry Queue) ---
@@ -87,12 +86,12 @@ public class TCP_Service implements ITCP_Service {
             INodeService nodeService,
             IUserRepository userRepository,
             IRoutingService routingService,
-            PacketComparisonService packetComparisonService) {
+            com.sagin.service.BatchPacketService batchPacketService) {
         this.nodeRepository = nodeRepository;
         this.nodeService = nodeService;
         this.userRepository = userRepository;
         this.routingService = routingService;
-        this.packetComparisonService = packetComparisonService;
+        this.batchPacketService = batchPacketService;
         this.rlRoutingService = new RLRoutingService(
                 SimulationConstants.RL_ROUTING_SERVER_HOST,
                 SimulationConstants.RL_ROUTING_SERVER_PORT);
@@ -471,12 +470,12 @@ public class TCP_Service implements ITCP_Service {
                         job.packet().getAnalysisData() != null ? String.format("%.2f", job.packet().getAnalysisData().getTotalDistanceKm()) : "N/A",
                         job.packet().getAnalysisData() != null ? String.format("%.2f", job.packet().getAnalysisData().getTotalLatencyMs()) : "N/A");
                 
-                // ✅ LƯU VÀO DATABASE để so sánh Dijkstra vs RL
+                // ✅ LƯU VÀO 2 COLLECTIONS: TwoPacket + BatchPacket
                 try {
-                    packetComparisonService.saveSuccessfulPacket(job.packet());
-                    logger.info("[TCP_Service] 💾 Saved packet {} to database for comparison", job.packet().getPacketId());
+                    batchPacketService.savePacket(job.packet());
+                    logger.info("[TCP_Service] 💾 Saved packet {} to TwoPacket + BatchPacket collections", job.packet().getPacketId());
                 } catch (Exception e) {
-                    logger.error("[TCP_Service] ❌ Failed to save packet to database: {}", e.getMessage(), e);
+                    logger.error("[TCP_Service] ❌ Failed to save packet to BatchPacket: {}", e.getMessage(), e);
                 }
             }
             
@@ -536,8 +535,9 @@ public class TCP_Service implements ITCP_Service {
                             PacketHelper.calculateAnalysisData(job.packet());
                         }
                         
-                        packetComparisonService.saveSuccessfulPacket(job.packet());
-                        logger.info("[TCP_Service] 💾 Saved DROPPED packet {} to database for comparison", 
+                        // ✅ Lưu vào TwoPacket + BatchPacket
+                        batchPacketService.savePacket(job.packet());
+                        logger.info("[TCP_Service] 💾 Saved DROPPED packet {} to BatchPacket collections", 
                                 job.packet().getPacketId());
                     } catch (Exception e) {
                         logger.error("[TCP_Service] ❌ Failed to save dropped packet to database: {}", 

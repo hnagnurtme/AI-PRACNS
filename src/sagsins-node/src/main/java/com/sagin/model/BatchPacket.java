@@ -1,23 +1,26 @@
-package com.sagsins.core.DTOs.request;
+package com.sagin.model;
+
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.bson.codecs.pojo.annotations.BsonId;
-import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.core.mapping.Document;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
+/**
+ * Model đại diện cho 1 LÔ gói tin chứa nhiều CẶP (Dijkstra + RL)
+ * Lưu trong collection: batch_packets
+ * ✅ BatchId format: sourceUserId_destinationUserId
+ * ✅ Nếu trùng batchId → xóa document cũ, tạo mới
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(collection = "batch_packets")
 public class BatchPacket {
+    
     @BsonId
     @JsonProperty("_id")
     private ObjectId id;

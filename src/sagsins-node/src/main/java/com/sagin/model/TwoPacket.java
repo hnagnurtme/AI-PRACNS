@@ -1,20 +1,21 @@
-package com.sagsins.core.DTOs.request;
-
-import org.bson.codecs.pojo.annotations.BsonId;
-import org.bson.types.ObjectId;
-import org.springframework.data.mongodb.core.mapping.Document;
+package com.sagin.model;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sagsins.core.model.Packet;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.bson.codecs.pojo.annotations.BsonId;
+import org.bson.types.ObjectId;
 
+/**
+ * Model đại diện cho 1 CẶP gói tin (Dijkstra + RL)
+ * Lưu trong collection: two_packets
+ * ✅ Mỗi cặp user CHỈ có 1 document (xóa và ghi đè mỗi lần)
+ * ✅ PairId format: sourceUserId_destinationUserId
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Document(collection = "two_packets")
 public class TwoPacket {
     
     @BsonId

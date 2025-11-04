@@ -14,7 +14,10 @@ export const usePacketWebSocket = ( url: string ) => {
             onConnect: () => {
                 console.log( "✅ Connected to WebSocket" );
                 client.subscribe( "/topic/packets", ( msg ) => {
+                    console.log( "📩 Message received", msg );
                     const body: ComparisonData = JSON.parse( msg.body );
+
+                    
                     setMessages( ( prev ) => [ ...prev, body ] );
                 } );
             },

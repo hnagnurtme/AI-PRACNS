@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -27,6 +27,16 @@ public class NodeService implements INodeService {
 
     private final Map<String, NodeInfo> nodeStateCache = new ConcurrentHashMap<>();
     private final Set<String> dirtyNodeIds = ConcurrentHashMap.newKeySet();
+    
+    // ✅ Scheduler để flush TX changes sau một khoảng thời gian
+    private final ScheduledExecutorService txFlushScheduler = Executors.newSingleThreadScheduledExecutor(
+        r -> {
+            Thread t = new Thread(r, "TX-Flush-Scheduler");
+            t.setDaemon(true);
+            return t;
+        }
+    );
+    private ScheduledFuture<?> pendingTxFlush = null;
 
     /**
      * DTO nội bộ cho độ trễ Xử lý (RX/CPU).
@@ -134,10 +144,11 @@ public class NodeService implements INodeService {
         node.setLastUpdated(Instant.now());
         dirtyNodeIds.add(nodeId);
 
+        // ✅ RX/CPU: Lưu NGAY LẬP TỨC vào database
         flushToDatabase();
         
         double rxCpuDelay = delays.queuingMs() + delays.processingMs();
-        logger.info("[NodeService] ✅ RX/CPU Packet {} on Node {} | Delay: +{:.2f}ms (Q:{:.2f} + P:{:.2f}) | Battery: {:.2f}% | Util: {:.2f}%", 
+        logger.info("[NodeService] ✅ RX/CPU Packet {} on Node {} | Delay: +{:.2f}ms (Q:{:.2f} + P:{:.2f}) | Battery: {:.2f}% | Util: {:.2f}% | [DB: IMMEDIATE]", 
                     packet.getPacketId(), nodeId,
                     rxCpuDelay,
                     delays.queuingMs(), delays.processingMs(),
@@ -212,11 +223,14 @@ public class NodeService implements INodeService {
         
         dirtyNodeIds.add(nodeId);
         
-        logger.info("[NodeService] ✅ TX Packet {} on Node {} | Delay: +{:.2f}ms (Tx:{:.2f} + Prop:{:.2f}) | Total: {:.2f}ms | Battery: {:.2f}%", 
+        // ✅ TX: Schedule flush sau một khoảng thời gian (mô phỏng thời gian truyền)
+        scheduleTxFlush(txDelayMs);
+        
+        logger.info("[NodeService] ✅ TX Packet {} on Node {} | Delay: +{:.2f}ms (Tx:{:.2f} + Prop:{:.2f}) | Total: {:.2f}ms | Battery: {:.2f}% | [DB: DELAYED ~{:.0f}ms]", 
                     packet.getPacketId(), nodeId,
                     txDelayMs, delays.transmissionMs(), delays.propagationMs(),
                     packet.getAccumulatedDelayMs(),
-                    newBattery);
+                    newBattery, txDelayMs);
         
         return txDelayMs; // ✅ Trả về delay thực tế của hop này
     }
@@ -241,14 +255,36 @@ public class NodeService implements INodeService {
                 continue;
             }
             
+            // ✅ updateNodeStatus đã flush ngay lập tức (RX/CPU), không cần flush lại
             updateNodeStatus(packet.getCurrentHoldingNodeId(), packet);
         }
 
-        flushToDatabase();
         logger.debug("[NodeService] Kết thúc xử lý tick.");
     }
 
 
+
+    /**
+     * Schedule một flush cho TX changes sau một khoảng thời gian (mô phỏng thời gian truyền).
+     * Nếu đã có pending flush, cancel và schedule lại.
+     */
+    private synchronized void scheduleTxFlush(double delayMs) {
+        // Cancel pending flush nếu có
+        if (pendingTxFlush != null && !pendingTxFlush.isDone()) {
+            pendingTxFlush.cancel(false);
+        }
+        
+        // Schedule flush mới sau delayMs
+        long delayMillis = Math.max(1, (long) delayMs); // Tối thiểu 1ms
+        pendingTxFlush = txFlushScheduler.schedule(() -> {
+            try {
+                logger.debug("[NodeService] ⏰ TX flush triggered after {}ms delay", delayMillis);
+                flushToDatabase();
+            } catch (Exception e) {
+                logger.error("[NodeService] ❌ Error during scheduled TX flush: {}", e.getMessage(), e);
+            }
+        }, delayMillis, TimeUnit.MILLISECONDS);
+    }
 
     @Override
     public void flushToDatabase() {
@@ -465,6 +501,32 @@ public class NodeService implements INodeService {
         }
         node.getCommunication().setIpAddress(newIpAddress);
         dirtyNodeIds.add(nodeId);
+    }
+
+    /**
+     * Cleanup method - gọi khi shutdown service
+     */
+    public void shutdown() {
+        logger.info("[NodeService] Shutting down TX flush scheduler...");
+        
+        // Flush any pending changes immediately
+        if (!dirtyNodeIds.isEmpty()) {
+            logger.info("[NodeService] Flushing {} pending node changes before shutdown", dirtyNodeIds.size());
+            flushToDatabase();
+        }
+        
+        // Shutdown scheduler
+        txFlushScheduler.shutdown();
+        try {
+            if (!txFlushScheduler.awaitTermination(5, TimeUnit.SECONDS)) {
+                txFlushScheduler.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            txFlushScheduler.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
+        
+        logger.info("[NodeService] Shutdown complete");
     }
 
 }

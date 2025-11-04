@@ -72,7 +72,9 @@ export const PacketFlowDetail = ( { node, batch }: { node: NodeCongestion; batch
         const packets: Array<{ packet: Packet; algorithm: string; pairIndex: number }> = [];
 
         batch.packets.forEach( ( pair, pairIdx ) => {
-            [ pair.dijkstraPacket, pair.rlpacket ].forEach( packet => {
+            [ pair.dijkstraPacket, pair.rlPacket ].forEach( packet => {  // ✅ Fixed: rlPacket (capital P)
+                if (!packet) return;  // ✅ Null check
+                
                 const hasNode = packet.hopRecords.some(
                     hop => hop.fromNodeId === node.nodeId || hop.toNodeId === node.nodeId
                 );

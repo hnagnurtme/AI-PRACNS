@@ -9,10 +9,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sagsins.core.DTOs.request.BatchPacket;
-import com.sagsins.core.DTOs.request.TwoPacket;
 import com.sagsins.core.model.Packet;
 
+/**
+ * Controller để xử lý single packets
+ * TwoPacket và BatchPacket đã được chuyển sang cơ chế scheduled tự động
+ * @see com.sagsins.core.service.PacketSchedulerService
+ */
 @RestController
 @RequestMapping("/api/v1")
 public class PacketController {
@@ -30,20 +33,5 @@ public class PacketController {
         messagingTemplate.convertAndSend("/topic/packets", packet);
         logger.info("Sent packet: {}", packet);
         return ResponseEntity.ok(packet);
-    }
-
-    @PostMapping("/packets/double")
-    public ResponseEntity<TwoPacket> sendDoublePacket(@RequestBody TwoPacket packet) {
-        messagingTemplate.convertAndSend("/topic/packets", packet);
-        logger.info("Sent packet twice: {}", packet);
-        return ResponseEntity.ok(packet);   
-    }
-
-
-    @PostMapping("/packets/batch")
-    public ResponseEntity<BatchPacket> sendBatchPackets(@RequestBody BatchPacket packets) {
-        messagingTemplate.convertAndSend("/topic/batchpacket", packets);
-        logger.info("Sent batch packets: {}", packets);
-        return ResponseEntity.ok(packets);
     }
 }

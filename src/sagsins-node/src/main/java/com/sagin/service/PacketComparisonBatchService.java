@@ -10,7 +10,6 @@ import org.slf4j.LoggerFactory;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Service quản lý PacketComparisonBatch
@@ -31,6 +30,8 @@ public class PacketComparisonBatchService {
     
     /**
      * Tạo batch mới
+     * ✅ BatchId = sourceUserId_destinationUserId
+     * ✅ Nếu trùng ID thì xóa document cũ (upsert)
      */
     public PacketComparisonBatch createBatch(
             String sourceUserId, 
@@ -39,7 +40,15 @@ public class PacketComparisonBatchService {
             String testScenario,
             String description) {
         
-        String batchId = generateBatchId();
+        // ✅ BatchId = sourceUserId + "_" + destinationUserId
+        String batchId = generateBatchId(sourceUserId, destinationUserId);
+        
+        // ✅ Kiểm tra xem batch cũ có tồn tại không
+        Optional<PacketComparisonBatch> existingBatch = batchRepository.findByBatchId(batchId);
+        if (existingBatch.isPresent()) {
+            logger.info("[PacketComparisonBatchService] Batch {} already exists. Deleting old batch...", batchId);
+            batchRepository.deleteByBatchId(batchId);
+        }
         
         PacketComparisonBatch batch = new PacketComparisonBatch();
         batch.setBatchId(batchId);
@@ -317,10 +326,11 @@ public class PacketComparisonBatchService {
     }
     
     /**
-     * Tạo batchId duy nhất
+     * Tạo batchId từ sourceUserId và destinationUserId
+     * ✅ Format: sourceUserId_destinationUserId
      */
-    private String generateBatchId() {
-        return "batch_" + System.currentTimeMillis() + "_" + UUID.randomUUID().toString().substring(0, 8);
+    private String generateBatchId(String sourceUserId, String destinationUserId) {
+        return sourceUserId + "_" + destinationUserId;
     }
     
     /**
