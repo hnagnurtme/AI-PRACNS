@@ -67,6 +67,13 @@ public final class SimulationConstants { // Thêm 'final' để ngăn kế thừ
     public static final double MAX_QUEUING_DELAY_MS = 10.0;
 
     /**
+     * ✅ FIXED Queuing Delay (ms) - CHO TESTING.
+     * Độ trễ hàng đợi cố định, không phụ thuộc vào buffer load.
+     * Dùng để loại bỏ tính ngẫu nhiên khi so sánh thuật toán.
+     */
+    public static final double FIXED_QUEUING_DELAY_MS = 1.0;
+
+    /**
      * Độ dài của một "time slot" mô phỏng (ms).
      * Dùng để tính toán utilization (% thời gian bận rộn trong 1 slot).
      */

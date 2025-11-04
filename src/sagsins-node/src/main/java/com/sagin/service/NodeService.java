@@ -333,16 +333,20 @@ public class NodeService implements INodeService {
 
     /**
      * CHỈ tính độ trễ Hàng đợi (Queuing) và Xử lý (Processing).
+     * ✅ Lấy processing delay thực tế từ NodeInfo.
      */
     private ProcessingDelayProfile computeProcessingDelay(NodeInfo node, Packet packet) {
-        double bufferLoadRatio = (node.getPacketBufferCapacity() > 0)
-                ? (double) node.getCurrentPacketCount() / node.getPacketBufferCapacity()
-                : 0.0;
-        double queuingDelayMs = bufferLoadRatio * SimulationConstants.MAX_QUEUING_DELAY_MS;
+        // ✅ Lấy queuing delay cố định (không phụ thuộc buffer load)
+        double queuingDelayMs = SimulationConstants.FIXED_QUEUING_DELAY_MS;
 
-        double processingDelayMs = packet.isUseRL()
-                ? SimulationConstants.RL_PROCESSING_DELAY_MS
-                : SimulationConstants.DATA_PROCESSING_DELAY_MS;
+        // ✅ Lấy processing delay thực tế từ node (đã được cập nhật/lưu trữ)
+        // Nếu chưa có giá trị, dùng giá trị mặc định dựa trên thuật toán
+        double processingDelayMs = node.getNodeProcessingDelayMs();
+        if (processingDelayMs <= 0) {
+            processingDelayMs = packet.isUseRL()
+                    ? SimulationConstants.RL_PROCESSING_DELAY_MS
+                    : SimulationConstants.DATA_PROCESSING_DELAY_MS;
+        }
             
         return new ProcessingDelayProfile(queuingDelayMs, processingDelayMs);
     }

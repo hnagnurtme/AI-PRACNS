@@ -43,6 +43,16 @@ public class PacketComparisonService {
             return;
         }
         
+        // ✅ TÁI TẠO PACKET ID với prefix RL/Dijkstra để phân biệt
+        String originalPacketId = packet.getPacketId();
+        String prefixedPacketId = packet.isUseRL() 
+            ? "RL-" + originalPacketId 
+            : "Dijkstra-" + originalPacketId;
+        packet.setPacketId(prefixedPacketId);
+        
+        logger.debug("[PacketComparisonService] Original PacketId: {} → Prefixed: {}", 
+                originalPacketId, prefixedPacketId);
+        
         // ✅ LƯU CẢ PACKET BỊ DROP để phân tích performance
         if (packet.isDropped()) {
             logger.info("[PacketComparisonService] Saving DROPPED packet {} | Reason: {}", 
@@ -84,11 +94,14 @@ public class PacketComparisonService {
     
     /**
      * Tạo comparisonId duy nhất cho mỗi cặp packet
+     * 
+     * ✅ Dựa vào source_dest_timestamp để group các packets gửi cùng lúc
+     * (bất kể packetId có giống nhau hay không)
      */
     public String generateComparisonId(String sourceUserId, String destinationUserId, long timestamp) {
         // Format: source_dest_timestamp
-        // Timestamp để phân biệt các lần gửi khác nhau
-        return String.format("%s_%s_%d", sourceUserId, destinationUserId, timestamp / 1000); // Làm tròn đến giây
+        // Timestamp làm tròn đến giây để group các packets gửi cùng khoảng thời gian
+        return String.format("%s_%s_%d", sourceUserId, destinationUserId, timestamp / 1000);
     }
     
     /**
@@ -157,28 +170,67 @@ public class PacketComparisonService {
             return;
         }
         
+        // Lấy latency từ AnalysisData (latency thực tế của route)
+        double dijkstraLatency = dijkstra.getAnalysisData() != null 
+            ? dijkstra.getAnalysisData().getTotalLatencyMs() 
+            : dijkstra.getAccumulatedDelayMs();
+        double rlLatency = rl.getAnalysisData() != null 
+            ? rl.getAnalysisData().getTotalLatencyMs() 
+            : rl.getAccumulatedDelayMs();
+        
+        // Lấy distance từ AnalysisData
+        double dijkstraDistance = dijkstra.getAnalysisData() != null 
+            ? dijkstra.getAnalysisData().getTotalDistanceKm() 
+            : 0.0;
+        double rlDistance = rl.getAnalysisData() != null 
+            ? rl.getAnalysisData().getTotalDistanceKm() 
+            : 0.0;
+        
         logger.info("═══════════════════════════════════════════════════════════════");
         logger.info("🏁 PACKET COMPARISON COMPLETE: {}", comparison.getComparisonId());
         logger.info("───────────────────────────────────────────────────────────────");
         logger.info("📍 Route: {} → {}", comparison.getSourceUserId(), comparison.getDestinationUserId());
         logger.info("");
         logger.info("📊 DIJKSTRA:");
-        logger.info("   • Total Latency:  {} ms", String.format("%.2f", dijkstra.getAccumulatedDelayMs()));
+        logger.info("   • Route Latency:  {} ms (from AnalysisData)", String.format("%.2f", dijkstraLatency));
+        logger.info("   • Route Distance: {} km", String.format("%.2f", dijkstraDistance));
         logger.info("   • Hops:           {}", dijkstra.getHopRecords() != null ? dijkstra.getHopRecords().size() : 0);
         logger.info("   • Path:           {}", dijkstra.getPathHistory());
+        logger.info("   • Dropped:        {}", dijkstra.isDropped() ? "YES (" + dijkstra.getDropReason() + ")" : "NO");
         logger.info("");
         logger.info("🤖 REINFORCEMENT LEARNING:");
-        logger.info("   • Total Latency:  {} ms", String.format("%.2f", rl.getAccumulatedDelayMs()));
+        logger.info("   • Route Latency:  {} ms (from AnalysisData)", String.format("%.2f", rlLatency));
+        logger.info("   • Route Distance: {} km", String.format("%.2f", rlDistance));
         logger.info("   • Hops:           {}", rl.getHopRecords() != null ? rl.getHopRecords().size() : 0);
         logger.info("   • Path:           {}", rl.getPathHistory());
+        logger.info("   • Dropped:        {}", rl.isDropped() ? "YES (" + rl.getDropReason() + ")" : "NO");
         logger.info("");
         
-        // So sánh hiệu suất
-        double latencyDiff = dijkstra.getAccumulatedDelayMs() - rl.getAccumulatedDelayMs();
-        String winner = latencyDiff > 0 ? "RL" : "Dijkstra";
-        double improvement = Math.abs(latencyDiff / dijkstra.getAccumulatedDelayMs() * 100);
-        
-        logger.info("🏆 Winner: {} ({}% faster)", winner, String.format("%.2f", improvement));
+        // So sánh hiệu suất (chỉ nếu cả 2 đều không bị drop)
+        if (!dijkstra.isDropped() && !rl.isDropped()) {
+            double latencyDiff = dijkstraLatency - rlLatency;
+            String winner = latencyDiff > 0 ? "RL" : "Dijkstra";
+            double improvement = (dijkstraLatency != 0) 
+                ? Math.abs(latencyDiff / dijkstraLatency * 100) 
+                : 0;
+            
+            logger.info("🏆 Winner: {} ({}% faster)", winner, String.format("%.2f", improvement));
+            
+            // So sánh distance
+            double distanceDiff = dijkstraDistance - rlDistance;
+            String shorterPath = distanceDiff > 0 ? "RL" : "Dijkstra";
+            logger.info("📏 Shorter Path: {} ({}% shorter)", shorterPath, 
+                String.format("%.2f", dijkstraDistance != 0 ? Math.abs(distanceDiff / dijkstraDistance * 100) : 0));
+        } else {
+            logger.info("⚠️  Comparison: One or both packets were dropped");
+            if (dijkstra.isDropped() && !rl.isDropped()) {
+                logger.info("🏆 Winner: RL (Dijkstra packet was dropped)");
+            } else if (!dijkstra.isDropped() && rl.isDropped()) {
+                logger.info("🏆 Winner: Dijkstra (RL packet was dropped)");
+            } else {
+                logger.info("❌ Both packets were dropped");
+            }
+        }
         logger.info("═══════════════════════════════════════════════════════════════");
     }
 }
