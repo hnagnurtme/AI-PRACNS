@@ -24,8 +24,5 @@ public interface IUserRepository {
 
 
     void bulkUpdateUsers(List<UserInfo> users);
-    /**
-     * Đóng kết nối đến CSDL.
-     */
-    void close();
+
 }

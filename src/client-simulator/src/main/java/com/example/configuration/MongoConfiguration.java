@@ -23,8 +23,6 @@ public final class MongoConfiguration { // Thêm 'final' để ngăn kế thừa
     public static final String NODES_COLLECTION = "network_nodes";
     public static final String USERS_COLLECTION = "network_users";
 
-    // --- TẠO INSTANCE SINGLETON CHO MONGO CLIENT SETTINGS ---
-    // <<< CẢI TIẾN: Tạo một lần duy nhất để tối ưu hiệu suất
     private static final MongoClientSettings MONGO_CLIENT_SETTINGS = createMongoClientSettings();
 
     // Private constructor để ngăn việc tạo instance của lớp tiện ích này
