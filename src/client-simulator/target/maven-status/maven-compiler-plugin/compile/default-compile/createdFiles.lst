@@ -1,7 +1,6 @@
 com/example/configuration/MongoConfiguration.class
 com/example/model/ServiceType.class
 com/example/model/ServiceQoS.class
-com/example/App.class
 com/example/factory/PositionFactory.class
 com/example/model/RoutingDecisionInfo$Algorithm.class
 com/example/model/UserInfo.class
@@ -13,8 +12,6 @@ com/example/util/GeoUtils$1.class
 com/example/model/RouteInfo$RouteInfoBuilder.class
 com/example/model/NodeType.class
 com/example/service/PacketReceiver.class
-com/example/service/CreatePacket.class
-com/example/util/AppLogger.class
 com/example/repository/MongoUserRepository.class
 com/example/repository/IUserRepository.class
 com/example/controller/MainController.class
@@ -31,8 +28,6 @@ com/example/service/PacketSender.class
 com/example/model/NodeInfo.class
 com/example/model/Position.class
 com/example/model/AnalysisData.class
-com/example/seed/UserSeeder.class
-com/example/view/MainView$1.class
 com/example/util/SimulationConstants.class
 com/example/model/Orbit.class
 com/example/util/PacketSerializerHelper.class
