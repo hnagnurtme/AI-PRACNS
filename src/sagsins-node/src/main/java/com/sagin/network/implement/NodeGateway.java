@@ -23,7 +23,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Implements the INodeGateway interface.
- * This class opens a TCP server socket to listen for incoming Packets destined for this node.
+ * This class opens a TCP server socket to listen for incoming Packets destined
+ * for this node.
  * It uses a fixed thread pool to handle concurrent client connections and a
  * length-prefixing protocol for message framing.
  */
@@ -40,10 +41,11 @@ public class NodeGateway implements INodeGateway {
      * This prevents resource exhaustion (e.g., OutOfMemoryError).
      */
     private static final int MAX_WORKER_THREADS = 100;
-    
+
     /**
      * Maximum allowed size for an incoming packet (e.g., 16KB).
-     * This prevents OutOfMemoryError from a malicious client sending an invalid length.
+     * This prevents OutOfMemoryError from a malicious client sending an invalid
+     * length.
      */
     private static final int MAX_PACKET_SIZE = 16 * 1024; // 16 KB
 
@@ -74,38 +76,49 @@ public class NodeGateway implements INodeGateway {
 
     /**
      * Starts the TCP listener on a specific port.
-     * Initializes the ServerSocket and worker threads.
+     * This method is atomic and uses a "Fail-Fast" approach.
+     * If the port is busy, it will THROW an IOException, which is the
+     * desired behavior for SimulationMain to catch.
      *
      * @param info The info for the current node (primarily to get the nodeId).
      * @param port The port to listen on.
+     * @throws IOException if the socket cannot be bound (e.g., port in use).
      */
     @Override
-    public void startListening(NodeInfo info, int port) {
+    public void startListening(NodeInfo info, int port) throws IOException { 
         if (info == null || info.getNodeId() == null) {
             logger.error("[NodeGateway] Cannot start: NodeInfo or NodeId is null.");
             return;
         }
         this.nodeId = info.getNodeId();
 
-        // Atomically set isRunning to true only if it's currently false
+        // Use compareAndSet for a thread-safe, atomic check-then-act.
         if (isRunning.compareAndSet(false, true)) {
             try {
+                // --- Fail-Fast Logic ---
+                // If this port is in use, ServerSocket will throw a BindException.
                 serverSocket = new ServerSocket(port);
-                
-                // Use a bounded thread pool to prevent resource exhaustion
                 clientHandlerPool = Executors.newFixedThreadPool(MAX_WORKER_THREADS);
-                logger.info("[NodeGateway] Node {} listening on port {}...", nodeId, port);
-
-                // Create and start the main listener thread
                 listenerThread = new Thread(this::runListenerLoop, "NodeGateway-Listener-" + nodeId);
+
+                // Only start the thread *after* the socket is successfully bound.
                 listenerThread.start();
 
+                logger.info("[NodeGateway] Node {} listening on port {}...", nodeId, port);
+
             } catch (IOException e) {
-                logger.error("[NodeGateway] Node {}: Failed to open port {}: {}", nodeId, port, e.getMessage());
-                isRunning.set(false); // Rollback state if startup failed
+                // If we failed (e.g., BindException), roll back the state, log, and
+                // RE-THROW.
+                isRunning.set(false);
+                logger.error(
+                        "[NodeGateway] Node {}: FAILED to bind to port {}. Port is likely in use. Error: {}",
+                        nodeId, port, e.getMessage());
+                // ✅ TỐI ƯU 2: Ném lỗi ra ngoài để SimulationMain bắt
+                // (Let SimulationMain handle this failure)
+                throw e;
             }
         } else {
-            logger.warn("[NodeGateway] Node {} is already running on port {}.", nodeId, serverSocket.getLocalPort());
+            logger.warn("[NodeGateway] Node {} is already running or startListening() was called twice.", nodeId);
         }
     }
 
@@ -118,11 +131,12 @@ public class NodeGateway implements INodeGateway {
             try {
                 // Blocks until a new connection is made
                 Socket clientSocket = serverSocket.accept();
-                logger.debug("[NodeGateway] Node {}: Accepted connection from {}", nodeId, clientSocket.getRemoteSocketAddress());
-                
+                logger.debug("[NodeGateway] Node {}: Accepted connection from {}", nodeId,
+                        clientSocket.getRemoteSocketAddress());
+
                 // Submit the client handling task to the worker pool
                 clientHandlerPool.submit(() -> handleClient(clientSocket));
-                
+
             } catch (SocketException se) {
                 // This is expected when stopListening() closes the serverSocket
                 if (isRunning.get()) { // Log only if not an intentional stop
@@ -131,7 +145,7 @@ public class NodeGateway implements INodeGateway {
                     logger.info("[NodeGateway] Node {}: Listener loop stopping.", nodeId);
                 }
             } catch (IOException e) {
-                if (isRunning.get()){
+                if (isRunning.get()) {
                     logger.error("[NodeGateway] Node {}: I/O error on accept: {}", nodeId, e.getMessage());
                 }
             }
@@ -160,14 +174,16 @@ public class NodeGateway implements INodeGateway {
                     packetLength = dis.readInt();
                 } catch (EOFException eof) {
                     // Clean shutdown: client closed the connection.
-                    logger.debug("[NodeGateway] Node {}: Client {} closed the connection.", nodeId, clientSocket.getRemoteSocketAddress());
+                    logger.debug("[NodeGateway] Node {}: Client {} closed the connection.", nodeId,
+                            clientSocket.getRemoteSocketAddress());
                     break; // Exit the while loop
                 }
 
                 // 2. Sanity check the length
                 if (packetLength <= 0 || packetLength > MAX_PACKET_SIZE) {
-                    logger.warn("[NodeGateway] Node {}: Received invalid packet length {} from {}. Closing connection.", 
-                                nodeId, packetLength, clientSocket.getRemoteSocketAddress());
+                    logger.warn(
+                            "[NodeGateway] Node {}: Received invalid packet length {} from {}. Closing connection.",
+                            nodeId, packetLength, clientSocket.getRemoteSocketAddress());
                     break; // Invalid length, stop processing this client
                 }
 
@@ -176,8 +192,8 @@ public class NodeGateway implements INodeGateway {
                 dis.readFully(data); // This blocks until all 'packetLength' bytes are read
 
                 // 4. Deserialize and process the packet
-                logger.debug("[NodeGateway] Node {}: Received packet ({} bytes) from {}. Deserializing...", 
-                                nodeId, data.length, clientSocket.getRemoteSocketAddress());
+                logger.debug("[NodeGateway] Node {}: Received packet ({} bytes) from {}. Deserializing...",
+                        nodeId, data.length, clientSocket.getRemoteSocketAddress());
 
                 Packet receivedPacket = objectMapper.readValue(data, Packet.class);
 
@@ -189,17 +205,16 @@ public class NodeGateway implements INodeGateway {
             }
 
         } catch (JsonProcessingException jpe) {
-            logger.error("[NodeGateway] Node {}: Failed to deserialize JSON from {}: {}", 
-                            nodeId, clientSocket.getRemoteSocketAddress(), jpe.getMessage());
+            logger.error("[NodeGateway] Node {}: Failed to deserialize JSON from {}: {}",
+                    nodeId, clientSocket.getRemoteSocketAddress(), jpe.getMessage());
         } catch (IOException e) {
             if (isRunning.get()) { // Don't flood logs during a shutdown
-                logger.error("[NodeGateway] Node {}: I/O error handling client {}: {}", 
-                            nodeId, clientSocket.getRemoteSocketAddress(), e.getMessage());
+                logger.error("[NodeGateway] Node {}: I/O error handling client {}: {}",
+                        nodeId, clientSocket.getRemoteSocketAddress(), e.getMessage());
             }
         }
         // The socket is automatically closed here by the try-with-resources block.
     }
-
 
     /**
      * Stops the listener and performs a graceful shutdown.
@@ -209,7 +224,7 @@ public class NodeGateway implements INodeGateway {
     public void stopListening() {
         if (isRunning.compareAndSet(true, false)) {
             logger.info("[NodeGateway] Node {}: Shutting down...", nodeId);
-            
+
             // Close the server socket to interrupt the blocking accept() call
             try {
                 if (serverSocket != null && !serverSocket.isClosed()) {

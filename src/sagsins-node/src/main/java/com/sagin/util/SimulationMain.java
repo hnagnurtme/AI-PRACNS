@@ -36,27 +36,40 @@ public class SimulationMain {
 
     private static final Logger logger = AppLogger.getLogger(SimulationMain.class);
 
+    // Load configuration from Environment Variables, with safe defaults.
     private static final String NODE_HOST_IP = System.getenv().getOrDefault("NODE_HOST_IP", "127.0.0.1");
     private static final String RL_SERVICE_HOST_DEFAULT = "127.0.0.1";
     private static final int RL_SERVICE_PORT_DEFAULT = 6000;
 
     public static void main(String[] args) {
+        // Set up centralized logging for this simulation run
         String simulationId = String.valueOf(System.currentTimeMillis());
         AppLogger.putMdc("simulationId", simulationId);
 
+        logger.info("=== Starting full SAGIN network simulation ===");
+        logger.info("Simulation ID: {}", simulationId);
+
+        // --- 1. Initialize Core Singleton Services ---
+        // These services are created ONCE and shared by all nodes.
+        logger.info("Initializing core services (singletons)...");
         INodeRepository nodeRepository = new MongoNodeRepository();
         IUserRepository userRepository = new MongoUserRepository();
         INodeService nodeService = new NodeService(nodeRepository);
         DynamicRoutingService routingService = new DynamicRoutingService(nodeRepository, nodeService);
+
+        // Database repositories for packet analytics
         ITwoPacketRepository twoPacketRepository = new MongoTwoPacketRepository();
         IBatchPacketRepository batchPacketRepository = new MongoBatchPacketRepository();
         BatchPacketService batchPacketService = new BatchPacketService(batchPacketRepository, twoPacketRepository);
 
+        // Initialize RL Service with safe port parsing
         String rlHost = System.getenv().getOrDefault("RL_SERVICE_HOST", RL_SERVICE_HOST_DEFAULT);
         int rlPort = getPortFromEnv("RL_SERVICE_PORT", RL_SERVICE_PORT_DEFAULT);
         RLRoutingService rlRoutingService = new RLRoutingService(rlHost, rlPort);
         logger.info("RL Routing Service configured for {}:{}", rlHost, rlPort);
 
+        // Create ONE TCP_Service and inject it everywhere.
+        // This service manages the async send/retry queue for ALL nodes.
         TCP_Service tcpService = new TCP_Service(
                 nodeRepository,
                 nodeService,
@@ -65,63 +78,102 @@ public class SimulationMain {
                 batchPacketService,
                 rlRoutingService);
 
+        // --- 2. Load and Configure Node Settings ---
         Map<String, NodeInfo> nodeInfoMap = nodeRepository.loadAllNodeConfigs();
         logger.info("Loaded {} node configurations.", nodeInfoMap.size());
 
+        // Update IPs in memory first.
+        logger.info("Updating node IP addresses to {}...", NODE_HOST_IP);
         nodeInfoMap.values().forEach(nodeInfo -> {
             nodeService.updateNodeIpAddress(nodeInfo.getNodeId(), NODE_HOST_IP);
         });
 
+        // Flush all IP updates to the database in ONE operation.
         nodeService.flushToDatabase();
         logger.info("Node IP addresses flushed to database.");
 
+        // --- 3. Launch Node Gateways ---
+        // Use a Thread Pool to manage node threads.
         ExecutorService nodeLauncherPool = Executors.newFixedThreadPool(nodeInfoMap.size());
 
+        // Keep a list of gateways for a graceful shutdown.
         List<NodeGateway> runningGateways = new ArrayList<>();
 
         logger.info("Starting {} NodeGateways...", nodeInfoMap.size());
         for (NodeInfo nodeInfo : nodeInfoMap.values()) {
+            // Create ONE new gateway per node.
+            // Inject the SINGLETON tcpService into it.
             NodeGateway nodeGateway = new NodeGateway(tcpService);
             runningGateways.add(nodeGateway);
 
+            // Submit the node's main loop to the thread pool.
             nodeLauncherPool.submit(() -> {
                 try {
+                    // Set up MDC (Mapped Diagnostic Context) for this node's thread
                     AppLogger.putMdc("simulationId", simulationId);
                     AppLogger.putMdc("nodeId", nodeInfo.getNodeId());
 
+                    // Start the gateway. This will throw an IOException if the port is busy.
                     nodeGateway.startListening(nodeInfo, nodeInfo.getCommunication().getPort());
 
                     logger.info("Node Gateway started for node: {} ({}) on port {}",
                             nodeInfo.getNodeId(), nodeInfo.getNodeType(), nodeInfo.getCommunication().getPort());
+
+                    // This 'join' blocks the pool thread, keeping it alive indefinitely
+                    // until the application is interrupted.
                     Thread.currentThread().join();
+
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                     logger.warn("Node {} listener interrupted", nodeInfo.getNodeId(), e);
+
                 } catch (Exception e) {
-                    logger.error("Error starting node {}: {}", nodeInfo.getNodeId(), e.getMessage(), e);
+                    // ✅ --- LOGIC BẮT EXCEPTION VÀ CẬP NHẬT DATABASE --- ✅
+                    // If startListening fails (e.g., BindException from IOException),
+                    // log it and update the database.
+                    logger.error(
+                            "[SimulationMain] CRITICAL: Node {} failed to start, likely due to: {}. Marking as UNHEALTHY.",
+                            nodeInfo.getNodeId(), e.getMessage());
+
+                    try {
+                        nodeService.markNodeAsUnhealthy(nodeInfo.getNodeId());                        
+                        logger.warn(
+                                "[SimulationMain] Node {} successfully marked as UNHEALTHY in database (logic assumed).", // Sửa: "(logic assumed)" nghĩa là "giả định logic này đúng"
+                                nodeInfo.getNodeId());
+                    } catch (Exception dbError) {
+                        logger.error(
+                                "[SimulationMain] FAILED to update database for failed node {}: {}. Network state may be inconsistent.",
+                                nodeInfo.getNodeId(), dbError.getMessage(), dbError);
+                    }
+                    // ✅ --- KẾT THÚC LOGIC ---
                 } finally {
-                    AppLogger.clearMdc(); 
+                    AppLogger.clearMdc(); // Clean up thread-local logging info
                 }
             });
         }
 
+        // --- 4. Register Comprehensive Shutdown Hook ---
+        // This hook ensures all services are stopped gracefully.
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             logger.info("=== SHUTDOWN HOOK: Stopping all services... ===");
             try {
+                // 1. Stop Gateways: Refuse new connections
                 logger.info("Stopping all NodeGateways ({})...", runningGateways.size());
                 for (NodeGateway gateway : runningGateways) {
                     gateway.stopListening();
                 }
 
+                // 2. Stop Launcher Pool: Interrupt the 'join' and stop node threads
                 logger.info("Shutting down Node Launcher pool...");
                 nodeLauncherPool.shutdown();
                 if (!nodeLauncherPool.awaitTermination(5, TimeUnit.SECONDS)) {
-                    nodeLauncherPool.shutdownNow(); 
+                    nodeLauncherPool.shutdownNow(); // Force shutdown if threads are stuck
                 }
 
+                // 3. Stop Core Services: Stop background processing (e.g., retry scheduler)
                 logger.info("Stopping core services (Routing, TCP)...");
                 routingService.shutdown();
-                tcpService.stop(); 
+                tcpService.stop(); // Stops the TCP_Service retry scheduler
 
                 logger.info("=== All services stopped. Shutdown complete. ===");
                 AppLogger.clearMdc();
@@ -131,6 +183,7 @@ public class SimulationMain {
             }
         }));
 
+        // --- 5. Finalize Initialization ---
         routingService.forceUpdateRoutingTables();
         logger.info("Initial routing tables updated.");
 
