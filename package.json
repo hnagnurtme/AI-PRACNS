@@ -1,6 +1,7 @@
 {
   "name": "pbl4",
   "version": "1.0.0",
+  "type": "module",
   "description": "Optimization of Resource Allocation Using GenAI",
   "main": "index.js",
   "scripts": {
@@ -36,6 +37,7 @@
     "tailwindcss": "^4.1.13"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.19",
     "cesium": "^1.133.1"

@@ -7,7 +7,7 @@ from .dqn_model import DQN, OUTPUT_SIZE # Import OUTPUT_SIZE (4)
 # --- HYPERPARAMETERS CHO EPSILON-GREEDY ---
 EPS_START = 0.9      # Epsilon ban đầu (90% khám phá)
 EPS_END = 0.05       # Epsilon tối thiểu (5% khám phá)
-EPS_DECAY = 10000    # Tốc độ giảm epsilon (số bước để giảm)
+EPS_DECAY = 50000    # (SỬA) Tốc độ giảm epsilon (đồng bộ với trainer.py)
 
 def get_epsilon(steps_done: int) -> float:
     """

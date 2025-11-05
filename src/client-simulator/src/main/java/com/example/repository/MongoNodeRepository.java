@@ -15,22 +15,54 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-public class MongoNodeRepository implements INodeRepository, AutoCloseable {
+/**
+ * Triển khai INodeRepository sử dụng MongoDB (Singleton Pattern).
+ * Quản lý MỘT MongoClient duy nhất cho toàn bộ ứng dụng.
+ */
+public class MongoNodeRepository implements INodeRepository {
     private static final Logger logger = LoggerFactory.getLogger(MongoNodeRepository.class);
+
+    // === SỬA LỖI 1: Singleton Pattern ===
+    private static final MongoNodeRepository INSTANCE = new MongoNodeRepository();
 
     private final MongoClient mongoClient;
     private final MongoCollection<NodeInfo> nodesCollection;
 
-    private boolean isClosed = false;
+    /**
+     * Constructor private để đảm bảo Singleton.
+     */
+    private MongoNodeRepository() {
+        logger.info("Khởi tạo Singleton MongoNodeRepository, kết nối MongoDB...");
+        try {
+            this.mongoClient = MongoClients.create(MongoConfiguration.getMongoClientSettings());
+            MongoDatabase database = mongoClient.getDatabase(MongoConfiguration.getDatabaseName());
+            this.nodesCollection = database.getCollection(
+                MongoConfiguration.NODES_COLLECTION, NodeInfo.class
+            );
 
-    public MongoNodeRepository() {
-        logger.info("Khởi tạo MongoNodeRepository, kết nối MongoDB...");
-        this.mongoClient = MongoClients.create(MongoConfiguration.getMongoClientSettings());
-        MongoDatabase database = mongoClient.getDatabase(MongoConfiguration.getDatabaseName());
-        this.nodesCollection = database.getCollection(
-            MongoConfiguration.NODES_COLLECTION, NodeInfo.class
-        );
-        logger.info("Kết nối thành công tới '{}'.", MongoConfiguration.NODES_COLLECTION);
+            // === SỬA LỖI 2: Đăng ký Shutdown Hook ===
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    mongoClient.close();
+                    logger.info("Đã đóng kết nối MongoClient (thông qua Shutdown Hook).");
+                } catch (Exception e) {
+                    logger.error("Lỗi khi đóng MongoClient trong Shutdown Hook: {}", e.getMessage(), e);
+                }
+            }));
+            
+            logger.info("Kết nối thành công tới '{}'. Repository sẵn sàng.", MongoConfiguration.NODES_COLLECTION);
+            
+        } catch (Exception e) {
+            logger.error("KHỞI TẠO MONGOUSERREPOSITORY THẤT BẠI!", e);
+            throw new RuntimeException("Không thể khởi tạo kết nối MongoDB", e);
+        }
+    }
+
+    /**
+     * Lấy instance duy nhất của Repository.
+     */
+    public static MongoNodeRepository getInstance() {
+        return INSTANCE;
     }
 
     @Override
@@ -71,24 +103,22 @@ public class MongoNodeRepository implements INodeRepository, AutoCloseable {
         }
     }
 
-    /**
-     * 🚀 Cập nhật đồng loạt danh sách Node (Batch Update)
-     * Tối ưu cho mô phỏng tick-based, giảm I/O tới MongoDB ~10x
-     */
+    @Override
     public void bulkUpdateNodes(Collection<NodeInfo> nodes) {
         if (nodes == null || nodes.isEmpty()) return;
 
-        List<WriteModel<NodeInfo>> operations = new ArrayList<>();
+        List<WriteModel<NodeInfo>> operations = new ArrayList<>(nodes.size());
+        ReplaceOptions options = new ReplaceOptions().upsert(true);
 
         for (NodeInfo info : nodes) {
             info.setLastUpdated(Instant.now());
             Bson filter = Filters.eq("nodeId", info.getNodeId());
-            ReplaceOneModel<NodeInfo> replaceModel =
-                new ReplaceOneModel<>(filter, info, new ReplaceOptions().upsert(true));
+            ReplaceOneModel<NodeInfo> replaceModel = new ReplaceOneModel<>(filter, info, options);
             operations.add(replaceModel);
 
-
-            logger.info("Trang thai "+ info.toString());
+            // === SỬA LỖI 3: Chuyển sang DEBUG ===
+            // logger.info("Trang thai "+ info.toString()); // Gây spam
+            logger.debug("Chuẩn bị bulk update: {}", info.toString());
         }
 
         try {
@@ -98,18 +128,8 @@ public class MongoNodeRepository implements INodeRepository, AutoCloseable {
                 result.getUpserts().size(),
                 result.getMatchedCount()
             );
-
         } catch (Exception e) {
             logger.error("Lỗi bulk update Node batch: {}", e.getMessage(), e);
-        }
-    }
-
-    @Override
-    public void close() {
-        if (mongoClient != null && !isClosed) {
-            mongoClient.close();
-            isClosed = true;
-            logger.info("Đóng kết nối MongoClient.");
         }
     }
 }

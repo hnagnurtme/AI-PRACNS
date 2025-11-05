@@ -1,6 +1,7 @@
 package com.example.service;
 
 import java.util.Map;
+import java.util.Optional; 
 
 import com.example.factory.PositionFactory;
 import com.example.model.NodeInfo;
@@ -11,25 +12,26 @@ import com.example.util.GeoUtils;
 
 public class NodeService {
     private final IUserRepository userRepository;
-    private final INodeRepository nodeRepository;
+    Map<String, Position> cities = PositionFactory.createWorldCities();
+    private final Map<String, NodeInfo> allNodes;
+    
     public NodeService(IUserRepository userRepository , INodeRepository nodeRepository) {
         this.userRepository = userRepository;
-        this.nodeRepository = nodeRepository;
+        this.allNodes = nodeRepository.loadAllNodeConfigs();
     }
 
-    public NodeInfo getNearestNode(String userId) {
+    public Optional<NodeInfo> getNearestNode(String userId) { 
         var userOpt = userRepository.findByUserId(userId);
         if (userOpt.isEmpty()) {
-            return null;
+            return Optional.empty(); 
         }
         var user = userOpt.get();
-        
-        Map<String, Position> cities = PositionFactory.createWorldCities();
-        Position userPos = cities.get(user.getCityName());
+
+        Position userPos = this.cities.get(user.getCityName());
         if (userPos == null) {
-            return null;
+            return Optional.empty(); 
         }
-        Map<String, NodeInfo> allNodes = nodeRepository.loadAllNodeConfigs();
+
         NodeInfo nearestNode = null;
         double minDistance = Double.MAX_VALUE;
         for (NodeInfo node : allNodes.values()) {
@@ -41,6 +43,6 @@ public class NodeService {
                 nearestNode = node;
             }
         }
-        return nearestNode;
+        return Optional.ofNullable(nearestNode); 
     }
 }
