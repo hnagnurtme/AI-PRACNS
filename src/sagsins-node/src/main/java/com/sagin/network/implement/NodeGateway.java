@@ -2,7 +2,7 @@ package com.sagin.network.implement;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.fasterxml.jackson.core.JsonProcessingException; 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.sagin.model.NodeInfo;
@@ -10,173 +10,237 @@ import com.sagin.model.Packet;
 import com.sagin.network.interfaces.INodeGateway;
 import com.sagin.network.interfaces.ITCP_Service;
 
-import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException; 
+import java.net.SocketException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean; 
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Triển khai INodeGateway.
- * Mở một cổng TCP Server để lắng nghe các Packet đến node này.
+ * Implements the INodeGateway interface.
+ * This class opens a TCP server socket to listen for incoming Packets destined
+ * for this node.
+ * It uses a fixed thread pool to handle concurrent client connections and a
+ * length-prefixing protocol for message framing.
  */
 public class NodeGateway implements INodeGateway {
 
     private static final Logger logger = LoggerFactory.getLogger(NodeGateway.class);
+
+    // ObjectMapper is thread-safe, so we can create one static instance.
+    private static final ObjectMapper objectMapper = createObjectMapper();
+
+    // --- Constants ---
+    /**
+     * Maximum number of worker threads to handle client connections.
+     * This prevents resource exhaustion (e.g., OutOfMemoryError).
+     */
+    private static final int MAX_WORKER_THREADS = 100;
+
+    /**
+     * Maximum allowed size for an incoming packet (e.g., 16KB).
+     * This prevents OutOfMemoryError from a malicious client sending an invalid
+     * length.
+     */
+    private static final int MAX_PACKET_SIZE = 16 * 1024; // 16 KB
+
     private final ITCP_Service tcpService;
-    private final ObjectMapper objectMapper;
     private ServerSocket serverSocket;
     private Thread listenerThread;
-    private ExecutorService clientHandlerPool; 
-    private final AtomicBoolean isRunning = new AtomicBoolean(false); 
-    private String nodeId; 
-    public NodeGateway(ITCP_Service tcpService) {
-        this.tcpService = tcpService;
-        this.objectMapper = new ObjectMapper();
-        this.objectMapper.registerModule(new JavaTimeModule());
+    private ExecutorService clientHandlerPool;
+    private final AtomicBoolean isRunning = new AtomicBoolean(false);
+    private String nodeId;
+
+    /**
+     * Helper method to initialize the static ObjectMapper.
+     */
+    private static ObjectMapper createObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JavaTimeModule());
+        return mapper;
     }
 
     /**
-     * Bắt đầu lắng nghe trên một cổng TCP cụ thể.
-     * Mở ServerSocket và khởi động các luồng xử lý.
+     * Constructs a new NodeGateway.
      *
-     * @param info Thông tin của node hiện tại (chủ yếu để lấy nodeId).
-     * @param port Cổng để lắng nghe.
+     * @param tcpService The service responsible for processing received packets.
+     */
+    public NodeGateway(ITCP_Service tcpService) {
+        this.tcpService = tcpService;
+    }
+
+    /**
+     * Starts the TCP listener on a specific port.
+     * This method is atomic and uses a "Fail-Fast" approach.
+     * If the port is busy, it will THROW an IOException, which is the
+     * desired behavior for SimulationMain to catch.
+     *
+     * @param info The info for the current node (primarily to get the nodeId).
+     * @param port The port to listen on.
+     * @throws IOException if the socket cannot be bound (e.g., port in use).
      */
     @Override
-    public void startListening(NodeInfo info, int port) {
+    public void startListening(NodeInfo info, int port) throws IOException { 
         if (info == null || info.getNodeId() == null) {
-            logger.error("[NodeGateway] Không thể bắt đầu: NodeInfo hoặc NodeId bị null.");
+            logger.error("[NodeGateway] Cannot start: NodeInfo or NodeId is null.");
             return;
         }
         this.nodeId = info.getNodeId();
 
-        // Chỉ bắt đầu nếu chưa chạy
+        // Use compareAndSet for a thread-safe, atomic check-then-act.
         if (isRunning.compareAndSet(false, true)) {
             try {
+                // --- Fail-Fast Logic ---
+                // If this port is in use, ServerSocket will throw a BindException.
                 serverSocket = new ServerSocket(port);
-                // Tạo một thread pool với số luồng động (cached) để xử lý client
-                clientHandlerPool = Executors.newCachedThreadPool();
-                logger.info("[NodeGateway] Node {} đang lắng nghe trên cổng {}...", nodeId, port);
-
-                // Tạo và khởi động luồng lắng nghe chính
+                clientHandlerPool = Executors.newFixedThreadPool(MAX_WORKER_THREADS);
                 listenerThread = new Thread(this::runListenerLoop, "NodeGateway-Listener-" + nodeId);
+
+                // Only start the thread *after* the socket is successfully bound.
                 listenerThread.start();
 
+                logger.info("[NodeGateway] Node {} listening on port {}...", nodeId, port);
+
             } catch (IOException e) {
-                logger.error("[NodeGateway] Node {}: Không thể mở cổng {}: {}", nodeId, port, e.getMessage());
-                isRunning.set(false); // Đặt lại cờ nếu không khởi động được
+                // If we failed (e.g., BindException), roll back the state, log, and
+                // RE-THROW.
+                isRunning.set(false);
+                logger.error(
+                        "[NodeGateway] Node {}: FAILED to bind to port {}. Port is likely in use. Error: {}",
+                        nodeId, port, e.getMessage());
+                // ✅ TỐI ƯU 2: Ném lỗi ra ngoài để SimulationMain bắt
+                // (Let SimulationMain handle this failure)
+                throw e;
             }
         } else {
-            logger.warn("[NodeGateway] Node {} đã đang chạy trên cổng {}.", nodeId, serverSocket.getLocalPort());
+            logger.warn("[NodeGateway] Node {} is already running or startListening() was called twice.", nodeId);
         }
     }
 
     /**
-     * Vòng lặp chính của luồng lắng nghe.
-     * Chấp nhận kết nối mới và giao cho client handler.
+     * The main loop for the listener thread.
+     * Continuously accepts new connections and submits them to the worker pool.
      */
     private void runListenerLoop() {
         while (isRunning.get()) {
             try {
-                // Chấp nhận kết nối mới (blocking)
+                // Blocks until a new connection is made
                 Socket clientSocket = serverSocket.accept();
-                logger.debug("[NodeGateway] Node {}: Đã chấp nhận kết nối từ {}", nodeId, clientSocket.getRemoteSocketAddress());
-                
-                // Giao việc xử lý client này cho một thread trong pool
+                logger.debug("[NodeGateway] Node {}: Accepted connection from {}", nodeId,
+                        clientSocket.getRemoteSocketAddress());
+
+                // Submit the client handling task to the worker pool
                 clientHandlerPool.submit(() -> handleClient(clientSocket));
-                
+
             } catch (SocketException se) {
-                // Thường xảy ra khi serverSocket.close() được gọi từ stopListening()
-                if (isRunning.get()) { // Chỉ log lỗi nếu không phải do cố ý dừng
-                    logger.error("[NodeGateway] Node {}: Lỗi Socket khi chấp nhận kết nối: {}", nodeId, se.getMessage());
+                // This is expected when stopListening() closes the serverSocket
+                if (isRunning.get()) { // Log only if not an intentional stop
+                    logger.error("[NodeGateway] Node {}: SocketException on accept: {}", nodeId, se.getMessage());
                 } else {
-                    logger.info("[NodeGateway] Node {}: Đã dừng chấp nhận kết nối.", nodeId);
+                    logger.info("[NodeGateway] Node {}: Listener loop stopping.", nodeId);
                 }
             } catch (IOException e) {
-                if (isRunning.get()){
-                    logger.error("[NodeGateway] Node {}: Lỗi I/O khi chấp nhận kết nối: {}", nodeId, e.getMessage());
+                if (isRunning.get()) {
+                    logger.error("[NodeGateway] Node {}: I/O error on accept: {}", nodeId, e.getMessage());
                 }
             }
         }
-        logger.info("[NodeGateway] Node {}: Luồng lắng nghe đã kết thúc.", nodeId);
+        logger.info("[NodeGateway] Node {}: Listener thread terminated.", nodeId);
     }
 
     /**
-     * Xử lý dữ liệu từ một client socket cụ thể.
-     * Đọc dữ liệu, deserialize thành Packet, và gọi tcpService.receivePacket().
+     * Handles the entire lifecycle of a single client connection.
+     * This method reads packets using a length-prefixing protocol.
+     * It can read multiple packets from a single, persistent connection.
      *
-     * @param clientSocket Socket của client vừa kết nối.
+     * Protocol: [4-byte integer length N][N bytes of JSON data]
+     *
+     * @param clientSocket The connected client socket.
      */
     public void handleClient(Socket clientSocket) {
-        // Sử dụng try-with-resources để đảm bảo stream và socket được đóng
-        try (InputStream inputStream = clientSocket.getInputStream()) {
-            byte[] buffer = new byte[4096];
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            int read;
-            while ((read = inputStream.read(buffer)) != -1) {
-                baos.write(buffer, 0, read);
+        // Use try-with-resources to automatically close the socket and streams
+        try (clientSocket; DataInputStream dis = new DataInputStream(clientSocket.getInputStream())) {
+
+            // Keep reading packets from this connection as long as it's open
+            while (isRunning.get()) {
+                int packetLength;
+                try {
+                    // 1. Read the 4-byte integer length prefix
+                    packetLength = dis.readInt();
+                } catch (EOFException eof) {
+                    // Clean shutdown: client closed the connection.
+                    logger.debug("[NodeGateway] Node {}: Client {} closed the connection.", nodeId,
+                            clientSocket.getRemoteSocketAddress());
+                    break; // Exit the while loop
+                }
+
+                // 2. Sanity check the length
+                if (packetLength <= 0 || packetLength > MAX_PACKET_SIZE) {
+                    logger.warn(
+                            "[NodeGateway] Node {}: Received invalid packet length {} from {}. Closing connection.",
+                            nodeId, packetLength, clientSocket.getRemoteSocketAddress());
+                    break; // Invalid length, stop processing this client
+                }
+
+                // 3. Read exactly 'packetLength' bytes for the payload
+                byte[] data = new byte[packetLength];
+                dis.readFully(data); // This blocks until all 'packetLength' bytes are read
+
+                // 4. Deserialize and process the packet
+                logger.debug("[NodeGateway] Node {}: Received packet ({} bytes) from {}. Deserializing...",
+                        nodeId, data.length, clientSocket.getRemoteSocketAddress());
+
+                Packet receivedPacket = objectMapper.readValue(data, Packet.class);
+
+                // IMPORTANT: Set this node as the current holder
+                receivedPacket.setCurrentHoldingNodeId(this.nodeId);
+
+                // Pass the packet to the service layer
+                tcpService.receivePacket(receivedPacket);
             }
-            byte[] data = baos.toByteArray();
-
-            if (data.length == 0) {
-                logger.warn("[NodeGateway] Node {}: Nhận được kết nối trống từ {}. Đóng.", nodeId, clientSocket.getRemoteSocketAddress());
-                return;
-            }
-
-            logger.debug("[NodeGateway] Node {}: Đã nhận {} bytes từ {}. Đang deserialize...", nodeId, data.length, clientSocket.getRemoteSocketAddress());
-
-            // Deserialize byte array thành đối tượng Packet
-            Packet receivedPacket = objectMapper.readValue(data, Packet.class);
-
-            // **QUAN TRỌNG:** Ghi đè/Cập nhật node đang giữ packet này
-            receivedPacket.setCurrentHoldingNodeId(this.nodeId);
-
-            // Giao packet cho TCP_Service xử lý
-            tcpService.receivePacket(receivedPacket);
 
         } catch (JsonProcessingException jpe) {
-            logger.error("[NodeGateway] Node {}: Lỗi deserialize JSON từ {}: {}", nodeId, clientSocket.getRemoteSocketAddress(), jpe.getMessage());
+            logger.error("[NodeGateway] Node {}: Failed to deserialize JSON from {}: {}",
+                    nodeId, clientSocket.getRemoteSocketAddress(), jpe.getMessage());
         } catch (IOException e) {
-            logger.error("[NodeGateway] Node {}: Lỗi I/O khi đọc từ {}: {}", nodeId, clientSocket.getRemoteSocketAddress(), e.getMessage());
-        } finally {
-            try {
-                clientSocket.close(); // Đảm bảo đóng socket client
-            } catch (IOException e) {
-                logger.warn("[NodeGateway] Node {}: Lỗi khi đóng client socket: {}", nodeId, e.getMessage());
+            if (isRunning.get()) { // Don't flood logs during a shutdown
+                logger.error("[NodeGateway] Node {}: I/O error handling client {}: {}",
+                        nodeId, clientSocket.getRemoteSocketAddress(), e.getMessage());
             }
         }
+        // The socket is automatically closed here by the try-with-resources block.
     }
 
-
     /**
-     * Dừng lắng nghe và giải phóng tài nguyên.
-     * Đóng ServerSocket và shutdown các luồng.
+     * Stops the listener and performs a graceful shutdown.
+     * Closes the ServerSocket and terminates the worker pool.
      */
     @Override
     public void stopListening() {
         if (isRunning.compareAndSet(true, false)) {
-            logger.info("[NodeGateway] Node {}: Đang dừng lắng nghe...", nodeId);
+            logger.info("[NodeGateway] Node {}: Shutting down...", nodeId);
+
+            // Close the server socket to interrupt the blocking accept() call
             try {
                 if (serverSocket != null && !serverSocket.isClosed()) {
-                    serverSocket.close(); // Gây SocketException để ngắt accept()
+                    serverSocket.close();
                 }
             } catch (IOException e) {
-                logger.error("[NodeGateway] Node {}: Lỗi khi đóng ServerSocket: {}", nodeId, e.getMessage());
+                logger.error("[NodeGateway] Node {}: Error closing ServerSocket: {}", nodeId, e.getMessage());
             }
 
-            // Dừng thread pool xử lý client
+            // Perform a graceful shutdown of the worker pool
             if (clientHandlerPool != null) {
-                clientHandlerPool.shutdown(); // Ngừng nhận task mới
+                clientHandlerPool.shutdown(); // Disable new tasks
                 try {
-                    // Chờ tối đa 5 giây để các task đang chạy hoàn thành
+                    // Wait a bit for existing tasks to complete
                     if (!clientHandlerPool.awaitTermination(5, TimeUnit.SECONDS)) {
-                        clientHandlerPool.shutdownNow(); // Buộc dừng nếu quá lâu
+                        clientHandlerPool.shutdownNow(); // Forcefully stop pending tasks
                     }
                 } catch (InterruptedException ie) {
                     clientHandlerPool.shutdownNow();
@@ -184,17 +248,17 @@ public class NodeGateway implements INodeGateway {
                 }
             }
 
-            // Chờ luồng lắng nghe chính kết thúc
+            // Wait for the main listener thread to die
             if (listenerThread != null) {
                 try {
-                    listenerThread.join(1000); // Chờ tối đa 1 giây
+                    listenerThread.join(1000); // Wait max 1 second
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
             }
-            logger.info("[NodeGateway] Node {}: Đã dừng hoàn toàn.", nodeId);
+            logger.info("[NodeGateway] Node {}: Shutdown complete.", nodeId);
         } else {
-            logger.warn("[NodeGateway] Node {}: Gateway không đang chạy.", nodeId);
+            logger.warn("[NodeGateway] Node {}: Gateway was not running.", nodeId);
         }
     }
 }

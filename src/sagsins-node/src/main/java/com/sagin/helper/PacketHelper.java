@@ -61,7 +61,20 @@ public class PacketHelper {
         );
         
         // --- Xử lý nextNode (có thể null nếu gửi đến user) ---
-        String nextNodeId = (nextNode != null) ? nextNode.getNodeId() : "USER:" + packet.getDestinationUserId();
+        String nextNodeId;
+        if (nextNode != null) {
+            nextNodeId = nextNode.getNodeId();
+        } else {
+            // ✅ Kiểm tra destinationUserId trước khi dùng
+            String destUserId = packet.getDestinationUserId();
+            if (destUserId == null || destUserId.isBlank()) {
+                throw new IllegalStateException(
+                    "Cannot create HopRecord: destinationUserId is NULL for packet " + packet.getPacketId()
+                );
+            }
+            nextNodeId = "USER:" + destUserId;
+        }
+        
         com.sagin.model.Position nextPosition = (nextNode != null) ? nextNode.getPosition() : null;
         
         // Tính khoảng cách (0 nếu gửi đến user vì không có position)

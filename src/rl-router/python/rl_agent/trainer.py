@@ -8,6 +8,7 @@ import numpy as np
 # (NOTE) IMPORT KIẾN TRÚC MỚI
 from python.rl_agent.dqn_model import create_dqn_networks, INPUT_SIZE, OUTPUT_SIZE
 from python.rl_agent.replay_buffer import ReplayBuffer
+from python.rl_agent.policy import get_epsilon  # (SỬA) Import hàm epsilon từ policy
 
 # ======================== HYPERPARAMETERS ==========================
 # (NOTE) Cập nhật các hằng số này
@@ -15,11 +16,11 @@ INPUT_SIZE = INPUT_SIZE      # 94
 OUTPUT_SIZE = OUTPUT_SIZE    # 10
 
 GAMMA = 0.95
-LR = 5e-5
+LR = 5e-6
 BATCH_SIZE = 64
-BUFFER_CAPACITY = 10000
+BUFFER_CAPACITY = 100000
 TARGET_UPDATE_INTERVAL = 10
-EPSILON_DECAY_STEPS = 10000
+EPSILON_DECAY_STEPS = 50000  # (SỬA) Giảm từ 10M xuống 50k để epsilon giảm nhanh hơn
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -46,7 +47,8 @@ class DQNAgent:
     # ==============================================================
     def select_action(self, state_vector: np.ndarray) -> int:
         """Epsilon-Greedy Action Selection"""
-        epsilon = 0.05 + 0.85 * np.exp(-1.0 * self.steps_done / EPSILON_DECAY_STEPS)
+        # (SỬA) Sử dụng hàm get_epsilon từ policy.py (thống nhất logic)
+        epsilon = get_epsilon(self.steps_done)
         self.steps_done += 1
 
         if np.random.rand() < epsilon:

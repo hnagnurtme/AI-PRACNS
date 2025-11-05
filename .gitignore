@@ -24,6 +24,7 @@ out/
 *.ear
 
 
+
 #firebase
 src/satellite-service/src/main/resources/serviceAccountKey.json
 

@@ -18,7 +18,7 @@ from python.rl_agent.policy import get_epsilon
 
 # --- CẤU HÌNH VÀ HẰNG SỐ ---
 # (NOTE) Tăng số episode để agent có thời gian học
-NUM_EPISODES = 20000 
+NUM_EPISODES = 20000
 MAX_HOPS_PER_EPISODE = 50
 SAVE_INTERVAL = 500
 

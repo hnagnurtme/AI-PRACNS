@@ -18,41 +18,70 @@ import com.example.service.PacketSender;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.beans.value.ChangeListener; 
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.Optional;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * Controller with dual packet sending (RL + non-RL) for comparison
- */
 public class MainController {
 
     private final MainView view;
-    private final PacketSender sender = new PacketSender();
     private final PacketReceiver receiver = new PacketReceiver();
     private final ObservableList<Packet> receivedItems = FXCollections.observableArrayList();
 
     private volatile boolean listening = false;
+    
+    // === SỬA LỖI 2: Tạo Thread Pool MỘT LẦN ===
+    // Dùng chung thread pool này cho tất cả các tác vụ gửi
+    private final ExecutorService sendExecutor = Executors.newFixedThreadPool(20);
+
+    // Repositories and Services
+    private final IUserRepository userRepo;
+    private final INodeRepository nodeRepo;
+    private final NodeService nodeService;
+    
+    // Listeners (để có thể gỡ ra và gắn vào)
+    private final ChangeListener<String> senderListener;
+    private final ChangeListener<String> destListener;
 
     public MainController(MainView view) {
         this.view = view;
         this.view.lvReceived.setItems(receivedItems);
-        // initialize repositories (Mongo-backed). In production, inject these.
+
+        IUserRepository tempUserRepo = null;
+        INodeRepository tempNodeRepo = null;
+        
         try {
-            this.userRepo = new MongoUserRepository();
+            tempUserRepo = MongoUserRepository.getInstance(); 
         } catch (Exception ex) {
-            this.userRepo = null;
             System.err.println("Failed to initialize MongoUserRepository: " + ex.getMessage());
         }
+        
         try {
-            this.nodeRepo = new MongoNodeRepository();
+            tempNodeRepo = MongoNodeRepository.getInstance();
         } catch (Exception ex) {
-            this.nodeRepo = null;
             System.err.println("Failed to initialize MongoNodeRepository: " + ex.getMessage());
         }
+        
+        this.userRepo = tempUserRepo;
+        this.nodeRepo = tempNodeRepo;
+        
         if (this.userRepo != null && this.nodeRepo != null) {
             this.nodeService = new NodeService(this.userRepo, this.nodeRepo);
+        } else {
+            this.nodeService = null;
+            view.lblStatus.setText("FATAL: Could not load repositories. Check DB connection.");
         }
+        
+        // Khởi tạo listeners
+        this.senderListener = (obs, oldV, newV) -> onSenderUsernameSelected(newV);
+        this.destListener = (obs, oldV, newV) -> onDestinationUsernameSelected(newV);
+
         attachHandlers();
         loadUsernames();
     }
@@ -62,177 +91,151 @@ public class MainController {
         view.btnListen.setOnAction(e -> onListenToggle());
         view.btnClearLog.setOnAction(e -> onClearLog());
         
-        // When sender username is selected, fetch user info and compute stationSource
-        view.cbSenderUsername.valueProperty().addListener((obs, oldV, newV) -> {
-            if (newV != null && !newV.trim().isEmpty()) {
-                onSenderUsernameSelected(newV.trim());
-            }
-        });
+        view.cbSenderUsername.valueProperty().addListener(senderListener);
+        view.cbDestinationUsername.valueProperty().addListener(destListener);
         
-        // When destination username is selected, fetch user info and compute stationDest
-        view.cbDestinationUsername.valueProperty().addListener((obs, oldV, newV) -> {
-            if (newV != null && !newV.trim().isEmpty()) {
-                onDestinationUsernameSelected(newV.trim());
-            }
-        });
-        
-        // When service type is selected, display detailed QoS information
         view.cbServiceType.valueProperty().addListener((obs, oldV, newV) -> {
-            if (newV != null) {
-                onServiceTypeSelected(newV);
-            }
+            if (newV != null) onServiceTypeSelected(newV);
         });
     }
 
-    // repositories and nodeService (optional if Mongo not available)
-    private IUserRepository userRepo;
-    private INodeRepository nodeRepo;
-    private NodeService nodeService;
-
     private void onSend() {
         try {
-            // Get number of packets to send
-            int packetCount = 1;
+            int packetCount;
             try {
-                String countStr = view.tfPacketCount.getText().trim();
-                if (!countStr.isEmpty()) {
-                    packetCount = Integer.parseInt(countStr);
-                    if (packetCount < 1) packetCount = 1;
-                    if (packetCount > 1000) packetCount = 1000; // safety limit
-                }
+                packetCount = Integer.parseInt(view.tfPacketCount.getText().trim());
+                packetCount = Math.max(1, Math.min(1000, packetCount)); // Giới hạn 1-1000
             } catch (Exception ex) {
                 packetCount = 1;
             }
             
-            // Build base packet template
             Packet basePacket = buildPacketFromForm();
-            
-            // Send to stationSource node (not directly to destination user)
-            String stationSourceId = basePacket.getStationSource();
-            if (stationSourceId == null || stationSourceId.trim().isEmpty()) {
-                view.lblStatus.setText("Station source not set. Please select sender username.");
+
+            if (basePacket.getDestinationUserId() == null || basePacket.getDestinationUserId().isBlank()) {
+                view.lblStatus.setText("Lỗi: Vui lòng chọn người nhận");
                 return;
             }
             
-            // Load stationSource node from database to get its communication info
+            String stationSourceId = basePacket.getStationSource();
+            if (stationSourceId == null || stationSourceId.isBlank()) {
+                view.lblStatus.setText("Lỗi: Vui lòng chọn người gửi (để tìm trạm nguồn)");
+                return;
+            }
+            
             if (nodeRepo == null) {
-                view.lblStatus.setText("Node repository not available");
+                view.lblStatus.setText("Lỗi: Node repository không khả dụng");
                 return;
             }
             
             var nodeOpt = nodeRepo.getNodeInfo(stationSourceId);
             if (nodeOpt.isEmpty()) {
-                view.lblStatus.setText("Station source node not found: " + stationSourceId);
+                view.lblStatus.setText("Lỗi: Không tìm thấy trạm nguồn " + stationSourceId);
                 return;
             }
             
             NodeInfo stationNode = nodeOpt.get();
-            if (stationNode.getCommunication() == null) {
-                view.lblStatus.setText("Station node has no communication info: " + stationSourceId);
+            if (stationNode.getCommunication() == null || 
+                stationNode.getCommunication().getIpAddress() == null || 
+                stationNode.getCommunication().getIpAddress().isBlank()) {
+                view.lblStatus.setText("Lỗi: Trạm nguồn " + stationSourceId + " thiếu thông tin IP/Port");
                 return;
             }
             
-            // Get IP and port from station node's communication
             String host = stationNode.getCommunication().getIpAddress();
             int port = stationNode.getCommunication().getPort();
             
-            if (host == null || host.trim().isEmpty()) {
-                view.lblStatus.setText("Station node has no IP address: " + stationSourceId);
+            // === THÊM: Kiểm tra server có sẵn sàng không ===
+            System.out.println("🔍 Đang kiểm tra kết nối đến " + host + ":" + port + "...");
+            if (!com.example.util.NetworkUtils.isServiceAvailable(host, port, 2000)) {
+                view.lblStatus.setText("❌ Lỗi: Không thể kết nối đến server " + host + ":" + port + ". Server có đang chạy không?");
+                System.err.println("❌ Server " + host + ":" + port + " không phản hồi!");
                 return;
             }
+            System.out.println("✅ Server " + host + ":" + port + " đã sẵn sàng!");
             
-            final String finalHost = host;
-            final int finalPort = port;
-            final int finalPacketCount = packetCount;
-            final int totalPackets = packetCount * 2; // Each count = 2 packets (1 RL + 1 non-RL)
+            final int totalPackets = packetCount * 2;
             
-            view.lblStatus.setText("Sending " + finalPacketCount + " pairs (" + totalPackets + " packets total)...");
+            view.lblStatus.setText("Đang gửi " + packetCount + " cặp (" + totalPackets + " packets)...");
             
-            // Create a thread pool for parallel sending
-            java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newFixedThreadPool(
-                Math.min(totalPackets, 20) // max 20 concurrent threads
-            );
+            // === SỬA LỖI 1: Dùng Singleton MỘT LẦN ===
+            final PacketSender sender = PacketSender.getInstance();
             
-            java.util.concurrent.atomic.AtomicInteger successCount = new java.util.concurrent.atomic.AtomicInteger(0);
-            java.util.concurrent.atomic.AtomicInteger failCount = new java.util.concurrent.atomic.AtomicInteger(0);
+            AtomicInteger successCount = new AtomicInteger(0);
+            AtomicInteger failCount = new AtomicInteger(0);
             
-            // Send pairs of packets (each pair has same packetId, different useRL)
-            for (int i = 0; i < finalPacketCount; i++) {
-                // Generate ONE shared packetId for this PAIR
+            for (int i = 0; i < packetCount; i++) {
                 final String sharedPacketId = java.util.UUID.randomUUID().toString();
                 
-                // Send RL version
-                executor.submit(() -> {
+                
+                // Gửi RL version
+                sendExecutor.submit(() -> {
                     try {
                         Packet rlPacket = clonePacket(basePacket);
                         rlPacket.setPacketId(sharedPacketId);
                         rlPacket.setUseRL(true);
+                        rlPacket.setType("DATA"); // Thêm type field
                         
-                        System.out.println("🤖 Sending RL packet: ID=" + sharedPacketId + ", useRL=" + rlPacket.isUseRL());
-                        
-                        PacketSender threadSender = new PacketSender();
-                        threadSender.send(finalHost, finalPort, rlPacket);
+                        System.out.println("📤 Gửi RL packet: " + sharedPacketId + " -> " + host + ":" + port);
+                        sender.send(host, port, rlPacket); 
                         successCount.incrementAndGet();
+                        System.out.println("✅ Đã gửi RL packet: " + sharedPacketId);
                     } catch (Exception ex) {
                         failCount.incrementAndGet();
+                        System.err.println("❌ LỖI gửi RL packet " + sharedPacketId + ": " + ex.getMessage());
                         ex.printStackTrace();
                     }
                 });
                 
-                // Send non-RL version (same packetId, different useRL)
-                executor.submit(() -> {
+                // Gửi non-RL version
+                sendExecutor.submit(() -> {
                     try {
                         Packet nonRlPacket = clonePacket(basePacket);
                         nonRlPacket.setPacketId(sharedPacketId);
                         nonRlPacket.setUseRL(false);
+                        nonRlPacket.setType("DATA"); // Thêm type field
                         
-                        System.out.println("📍 Sending non-RL packet: ID=" + sharedPacketId + ", useRL=" + nonRlPacket.isUseRL());
-                        
-                        PacketSender threadSender = new PacketSender();
-                        threadSender.send(finalHost, finalPort, nonRlPacket);
+                        System.out.println("📤 Gửi non-RL packet: " + sharedPacketId + " -> " + host + ":" + port);
+                        sender.send(host, port, nonRlPacket); 
                         successCount.incrementAndGet();
+                        System.out.println("✅ Đã gửi non-RL packet: " + sharedPacketId);
                     } catch (Exception ex) {
                         failCount.incrementAndGet();
+                        System.err.println("❌ LỖI gửi non-RL packet " + sharedPacketId + ": " + ex.getMessage());
                         ex.printStackTrace();
                     }
                 });
             }
             
-            // Shutdown executor and wait for completion in background
-            executor.shutdown();
+            // Dùng một thread riêng để chờ kết quả (không block UI)
+            final int finalPacketCount = packetCount;
             new Thread(() -> {
-                try {
-                    executor.awaitTermination(60, java.util.concurrent.TimeUnit.SECONDS);
-                    Platform.runLater(() -> {
-                        view.lblStatus.setText(String.format(
-                            "Sent %d pairs (%d packets) to station %s - Success: %d, Failed: %d",
-                            finalPacketCount, totalPackets, stationSourceId, 
-                            successCount.get(), failCount.get()
-                        ));
-                    });
-                } catch (InterruptedException ex) {
-                    Platform.runLater(() -> view.lblStatus.setText("Packet sending interrupted"));
-                }
+                // Đợi 2 giây để các packet có thời gian được gửi đi
+                // (Không dùng awaitTermination vì pool là chung, không được shutdown)
+                try { Thread.sleep(2000); } catch (InterruptedException ignored) {}
+                
+                Platform.runLater(() -> {
+                    view.lblStatus.setText(String.format(
+                        "Đã gửi %d cặp (%d packets) đến %s - Thành công: %d, Thất bại: %d",
+                        finalPacketCount, totalPackets, stationSourceId, 
+                        successCount.get(), failCount.get()
+                    ));
+                });
             }).start();
             
         } catch (Exception ex) {
-            view.lblStatus.setText("Send failed: " + ex.getMessage());
+            view.lblStatus.setText("Gửi thất bại: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
 
-    /**
-     * Clone a packet to create independent copies for RL and non-RL versions
-     */
     private Packet clonePacket(Packet original) {
         Packet clone = new Packet();
         
-        // Copy all fields (packetId will be set separately)
         clone.setSourceUserId(original.getSourceUserId());
         clone.setDestinationUserId(original.getDestinationUserId());
         clone.setStationSource(original.getStationSource());
         clone.setStationDest(original.getStationDest());
-        clone.setTimeSentFromSourceMs(System.currentTimeMillis()); // Fresh timestamp
+        clone.setTimeSentFromSourceMs(System.currentTimeMillis()); 
         clone.setPayloadDataBase64(original.getPayloadDataBase64());
         clone.setPayloadSizeByte(original.getPayloadSizeByte());
         clone.setServiceQoS(original.getServiceQoS());
@@ -240,10 +243,6 @@ public class MainController {
         clone.setPriorityLevel(original.getPriorityLevel());
         clone.setMaxAcceptableLatencyMs(original.getMaxAcceptableLatencyMs());
         clone.setMaxAcceptableLossRate(original.getMaxAcceptableLossRate());
-        clone.setDropReason(null);
-        clone.setDropped(false);
-        clone.setCurrentHoldingNodeId(null);
-        clone.setNextHopNodeId(null);
         
         return clone;
     }
@@ -273,34 +272,46 @@ public class MainController {
         view.lblStatus.setText("Log cleared (" + java.time.LocalTime.now() + ")");
     }
 
-    /**
-     * Load all usernames from the database and populate the ComboBoxes.
-     */
     private void loadUsernames() {
         if (userRepo == null || nodeRepo == null) {
-            view.lblStatus.setText("MongoDB not available - username list not loaded");
+            view.lblStatus.setText("DB không khả dụng - không thể tải username");
             return;
         }
         try {
             var allUsers = userRepo.findAll();
+            
+            view.cbSenderUsername.valueProperty().removeListener(senderListener);
+            view.cbDestinationUsername.valueProperty().removeListener(destListener);
+            
+            view.cbSenderUsername.getItems().clear();
+            view.cbDestinationUsername.getItems().clear();
+            
             for (UserInfo u : allUsers) {
                 view.cbSenderUsername.getItems().add(u.getUserId());
                 view.cbDestinationUsername.getItems().add(u.getUserId());
             }
-            view.lblStatus.setText("Loaded " + allUsers.size() + " usernames from DB");
+
             view.cbSenderUsername.getSelectionModel().selectFirst();
             view.cbDestinationUsername.getSelectionModel().selectFirst();
-            view.lblStatus.setText("Ready");
+            
+            view.cbSenderUsername.valueProperty().addListener(senderListener);
+            view.cbDestinationUsername.valueProperty().addListener(destListener);
+            
+            if (!view.cbSenderUsername.getItems().isEmpty()) {
+                onSenderUsernameSelected(view.cbSenderUsername.getValue());
+            }
+            if (!view.cbDestinationUsername.getItems().isEmpty()) {
+                onDestinationUsernameSelected(view.cbDestinationUsername.getValue());
+            }
+
+            view.lblStatus.setText("Ready. Đã tải " + allUsers.size() + " users.");
 
         } catch (Exception ex) {
-            view.lblStatus.setText("Error loading usernames: " + ex.getMessage());
+            view.lblStatus.setText("Lỗi tải usernames: " + ex.getMessage());
             ex.printStackTrace();
         }
     }
 
-    /**
-     * Called when service type is selected. Displays detailed QoS information.
-     */
     private void onServiceTypeSelected(ServiceType serviceType) {
         try {
             ServiceQoS qos = QoSProfileFactory.getQosProfile(serviceType);
@@ -308,8 +319,6 @@ public class MainController {
                 "Service: %s\n" +
                 "Priority: %d\n" +
                 "Max Latency: %.1f ms\n" +
-                "Max Jitter: %.1f ms\n" +
-                "Min Bandwidth: %.1f Mbps\n" +
                 "Max Loss Rate: %.2f%%",
                 qos.serviceType(),
                 qos.defaultPriority(),
@@ -324,161 +333,141 @@ public class MainController {
         }
     }
 
-    /**
-     * Called when sender username is selected.
-     */
     private void onSenderUsernameSelected(String username) {
-        if (userRepo == null || nodeService == null) {
-            view.lblStatus.setText("User/Node repositories not available");
-            return;
-        }
+        if (username == null || username.isBlank()) return;
+        if (userRepo == null || nodeService == null) return;
+        
         try {
             var userOpt = userRepo.findByUserId(username);
             if (userOpt.isPresent()) {
                 UserInfo u = userOpt.get();
                 
-                // Auto-fill sourceUserId
-                view.tfSourceUserId.setText(u.getUserId());
-                
-                // Set listen port based on sender's port
                 view.tfListenPort.setText(String.valueOf(u.getPort()));
 
-                // Compute nearest node (stationSource)
-                NodeInfo nearest = nodeService.getNearestNode(u.getUserId());
+                if (listening) {
+                    try {
+                        int newPort = u.getPort();
+                        receiver.stop();
+                        receiver.start(newPort, this::onPacketReceived);
+                        view.lblStatus.setText("Đang nghe trên port mới " + newPort + " của " + u.getUserId());
+                        view.btnListen.setText("Stop Listening");
+                        listening = true;
+                    } catch (Exception ex) {
+                        listening = false;
+                        view.btnListen.setText("Start Listening");
+                        view.lblStatus.setText("Lỗi restart listener trên port " + u.getPort());
+                    }
+                }
+
+                Optional<NodeInfo> nearestOptional = nodeService.getNearestNode(u.getUserId());
+                NodeInfo nearest = nearestOptional.orElse(null);
+
                 if (nearest != null) {
-                    view.tfStationSource.setText(nearest.getNodeId());
-                    view.lblStatus.setText("Sender: " + u.getUserId() + " (port " + u.getPort() + ") -> Station: " + nearest.getNodeId());
+                    view.lblStatus.setText("Người gửi: " + u.getUserId() + " -> Trạm nguồn: " + nearest.getNodeId());
                 } else {
-                    view.lblStatus.setText("No nearest node found for sender " + username);
+                    view.lblStatus.setText("Không tìm thấy trạm nguồn cho " + username);
                 }
             } else {
-                view.lblStatus.setText("Sender user not found: " + username);
+                view.lblStatus.setText("Không tìm thấy user: " + username);
             }
         } catch (Exception ex) {
-            view.lblStatus.setText("Error fetching sender: " + ex.getMessage());
-            ex.printStackTrace();
+            view.lblStatus.setText("Lỗi tìm người gửi: " + ex.getMessage());
         }
     }
 
-    /**
-     * Called when destination username is selected.
-     */
     private void onDestinationUsernameSelected(String username) {
-        if (userRepo == null || nodeService == null) {
-            view.lblStatus.setText("User/Node repositories not available");
-            return;
-        }
+        if (username == null || username.isBlank()) return;
+        if (userRepo == null || nodeService == null) return;
+        
         try {
             var userOpt = userRepo.findByUserId(username);
             if (userOpt.isPresent()) {
                 UserInfo u = userOpt.get();
                 
-                // Auto-fill destinationUserId
-                view.tfDestinationUserId.setText(u.getUserId());
-                
-                // Set send host/port to destination user's IP and port
-                if (u.getIpAddress() != null) {
-                    view.tfSendHost.setText(u.getIpAddress());
-                }
-                view.tfSendPort.setText(String.valueOf(u.getPort()));
-
-                // Compute nearest node (stationDest)
-                NodeInfo nearest = nodeService.getNearestNode(u.getUserId());
+                Optional<NodeInfo> nearestOptional = nodeService.getNearestNode(u.getUserId());
+                NodeInfo nearest = nearestOptional.orElse(null);
                 if (nearest != null) {
-                    view.tfStationDest.setText(nearest.getNodeId());
-                    view.lblStatus.setText("Destination: " + u.getUserId() + " (" + u.getIpAddress() + ":" + u.getPort() + ") -> Station: " + nearest.getNodeId());
+                    view.lblStatus.setText("Người nhận: " + u.getUserId() + " -> Trạm đích: " + nearest.getNodeId());
                 } else {
-                    view.lblStatus.setText("No nearest node found for destination " + username);
+                    view.lblStatus.setText("Không tìm thấy trạm đích cho " + username);
                 }
             } else {
-                view.lblStatus.setText("Destination user not found: " + username);
+                view.lblStatus.setText("Không tìm thấy user: " + username);
             }
         } catch (Exception ex) {
-            view.lblStatus.setText("Error fetching destination: " + ex.getMessage());
-            ex.printStackTrace();
+            view.lblStatus.setText("Lỗi tìm người nhận: " + ex.getMessage());
         }
     }
 
     private void onPacketReceived(Packet p) {
-        // Debug log
-        System.out.println("📥 CLIENT RECEIVED: ID=" + p.getPacketId() + ", useRL=" + p.isUseRL() + 
-            " (from " + p.getSourceUserId() + " to " + p.getDestinationUserId() + ")");
+        System.out.println("📥 CLIENT RECEIVED: ID=" + p.getPacketId() + ", useRL=" + p.isUseRL());
         
-        // Update UI on JavaFX thread
         Platform.runLater(() -> {
-            receivedItems.add(0, p); // newest first
-            view.lblStatus.setText("Received " + p.getPacketId() + (p.isUseRL() ? " (RL)" : " (non-RL)"));
+            receivedItems.add(0, p);
+            view.lblStatus.setText("Đã nhận " + p.getPacketId() + (p.isUseRL() ? " (RL)" : " (non-RL)"));
         });
     }
 
     private Packet buildPacketFromForm() {
         Packet p = new Packet();
+
+        p.setSourceUserId(view.cbSenderUsername.getValue());
+        p.setDestinationUserId(view.cbDestinationUsername.getValue());
+
+        if (nodeService != null) {
+            if (p.getSourceUserId() != null) {
+                Optional<NodeInfo> sourceNodeOpt = nodeService.getNearestNode(p.getSourceUserId());
+                if (sourceNodeOpt.isEmpty()) {
+                    System.err.println("Warning: Could not find source node for user " + p.getSourceUserId());
+                }
+                else {
+                    NodeInfo sourceNode = sourceNodeOpt.get();
+                    p.setStationSource(sourceNode.getNodeId());
+                }
+            }
+            if (p.getDestinationUserId() != null) {
+                Optional<NodeInfo> destNodeOpt = nodeService.getNearestNode(p.getDestinationUserId());
+                if (destNodeOpt.isEmpty()) {
+                    System.err.println("Warning: Could not find destination node for user " + p.getDestinationUserId());
+                }
+                else {
+                    NodeInfo destNode = destNodeOpt.get();
+                    p.setStationDest(destNode.getNodeId());
+                }
+            }
+        }
+    
         
-        // PacketId will be set during sending (same for each pair)
-        
-        // Auto-filled from username selection
-        p.setSourceUserId(view.tfSourceUserId.getText());
-        p.setDestinationUserId(view.tfDestinationUserId.getText());
-        p.setStationSource(view.tfStationSource.getText());
-        p.setStationDest(view.tfStationDest.getText());
-        
-        // Timestamp will be set during cloning
-        
-        // Encode payload to base64
         String payload = view.taPayload.getText();
-        if (payload != null && !payload.trim().isEmpty()) {
-            byte[] bytes = payload.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        if (payload != null && !payload.isBlank()) {
+            byte[] bytes = payload.getBytes(StandardCharsets.UTF_8);
             String base64 = Base64.getEncoder().encodeToString(bytes);
             p.setPayloadDataBase64(base64);
             
-            // Use user-provided packet size if specified, otherwise use actual payload size
             try {
                 String sizeStr = view.tfPayloadSizeByte.getText().trim();
-                if (!sizeStr.isEmpty()) {
-                    p.setPayloadSizeByte(Integer.parseInt(sizeStr));
-                } else {
-                    p.setPayloadSizeByte(bytes.length);
-                }
+                p.setPayloadSizeByte(sizeStr.isEmpty() ? bytes.length : Integer.parseInt(sizeStr));
             } catch (Exception ex) {
                 p.setPayloadSizeByte(bytes.length);
             }
         } else {
-            // If no payload but size is specified, use the specified size
             try {
-                String sizeStr = view.tfPayloadSizeByte.getText().trim();
-                if (!sizeStr.isEmpty()) {
-                    p.setPayloadSizeByte(Integer.parseInt(sizeStr));
-                }
+                p.setPayloadSizeByte(Integer.parseInt(view.tfPayloadSizeByte.getText().trim()));
             } catch (Exception ignored) {}
         }
 
-        // Use selected ServiceType to fill ServiceQoS via QoSProfileFactory
         ServiceType selected = view.cbServiceType.getValue();
         if (selected != null) {
             try {
                 ServiceQoS qosProfile = QoSProfileFactory.getQosProfile(selected);
                 p.setServiceQoS(qosProfile);
-                // Set priority from QoS profile default
                 p.setPriorityLevel(qosProfile.defaultPriority());
-                // Set QoS constraints
                 p.setMaxAcceptableLatencyMs(qosProfile.maxLatencyMs());
                 p.setMaxAcceptableLossRate(qosProfile.maxLossRate());
-            } catch (Exception ex) {
-                // ignore and leave serviceQoS null
-            }
+            } catch (Exception ignored) {}
         }
 
-        // TTL default is 30
         p.setTTL(30);
-        
-        // dropReason is null by default
-        p.setDropReason(null);
-        p.setDropped(false);
-        
-        // currentHoldingNodeId and nextHopNodeId are auto-managed by network layer
-        p.setCurrentHoldingNodeId(null);
-        p.setNextHopNodeId(null);
-
         return p;
     }
-}
+} 

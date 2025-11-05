@@ -1,10 +1,7 @@
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/model/HopRecord.java
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/model/WeatherCondition.java
-/Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/App.java
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/service/NodeService.java
-/Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/util/AppLogger.java
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/repository/INodeRepository.java
-/Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/seed/UserSeeder.java
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/controller/MainController.java
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/util/NetworkUtils.java
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/factory/PositionFactory.java
@@ -15,7 +12,6 @@
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/model/BufferState.java
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/model/RoutingDecisionInfo.java
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/service/PacketSender.java
-/Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/service/CreatePacket.java
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/model/ServiceType.java
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/model/Orbit.java
 /Users/anhnon/PBL4/src/client-simulator/src/main/java/com/example/service/PacketReceiver.java

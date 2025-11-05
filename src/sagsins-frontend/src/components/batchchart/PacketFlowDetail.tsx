@@ -15,8 +15,11 @@ export const PacketFlowDetail = ({ node, batch }: { node: NodeCongestion; batch:
         const packets: Array<{ packet: Packet; algorithm: string; pairIndex: number }> = [];
 
         batch.packets.forEach((pair, pairIdx) => {
-            [pair.dijkstraPacket, pair.rlpacket].forEach(packet => {
-                const hasNode = packet.hopRecords.some(
+            // Use rlPacket to match server naming and guard against null packets
+            [pair.dijkstraPacket, pair.rlPacket].forEach(packet => {
+                if (!packet) return; // packet can be null when one side is absent
+
+                const hasNode = (packet.hopRecords || []).some(
                     hop => hop.fromNodeId === node.nodeId || hop.toNodeId === node.nodeId
                 );
                 if (hasNode) {
