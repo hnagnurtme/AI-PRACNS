@@ -1,6 +1,7 @@
 {
   "name": "pbl4",
   "version": "1.0.0",
+  "type": "module",
   "description": "Optimization of Resource Allocation Using GenAI",
   "main": "index.js",
   "scripts": {
