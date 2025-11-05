@@ -106,6 +106,12 @@ public class MainController {
             
             // Build base packet template
             Packet basePacket = buildPacketFromForm();
+
+            // Validate destination user is set
+            if (basePacket.getDestinationUserId() == null || basePacket.getDestinationUserId().trim().isEmpty()) {
+                view.lblStatus.setText("Destination user not set. Please select destination username.");
+                return;
+            }
             
             // Send to stationSource node (not directly to destination user)
             String stationSourceId = basePacket.getStationSource();
@@ -343,6 +349,24 @@ public class MainController {
                 // Set listen port based on sender's port
                 view.tfListenPort.setText(String.valueOf(u.getPort()));
 
+                // If currently listening, restart receiver on new port
+                if (listening) {
+                    try {
+                        int newPort = Integer.parseInt(view.tfListenPort.getText().trim());
+                        receiver.stop();
+                        receiver.start(newPort, this::onPacketReceived);
+                        view.lblStatus.setText("Listening restarted on port " + newPort + " for sender " + u.getUserId());
+                        view.btnListen.setText("Stop Listening");
+                        listening = true;
+                    } catch (Exception ex) {
+                        // Could not restart listener - report and set listening=false so user can retry
+                        listening = false;
+                        view.btnListen.setText("Start Listening");
+                        view.lblStatus.setText("Failed to restart listener on new port: " + ex.getMessage());
+                        ex.printStackTrace();
+                    }
+                }
+
                 // Compute nearest node (stationSource)
                 NodeInfo nearest = nodeService.getNearestNode(u.getUserId());
                 if (nearest != null) {
@@ -375,7 +399,7 @@ public class MainController {
                 
                 // Auto-fill destinationUserId
                 view.tfDestinationUserId.setText(u.getUserId());
-                
+
                 // Set send host/port to destination user's IP and port
                 if (u.getIpAddress() != null) {
                     view.tfSendHost.setText(u.getIpAddress());

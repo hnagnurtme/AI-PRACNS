@@ -10,27 +10,24 @@ import numpy as np
 import random # Dùng thư viện 'random' chuẩn
 
 # ======================== TRỌNG SỐ REWARD (ĐÃ TỐI ƯU) ==========================
-# (NOTE) Đây là trái tim của việc tối ưu, sửa lỗi "lang thang"
 DEFAULT_WEIGHTS = {
     # --- Trọng số Mục tiêu ---
-    'goal': 10.0,             # Thưởng khi đến đích
-    'drop': 100.0,            # Phạt NẶNG khi rớt gói (do hết TTL, kẹt, v.v.)
+    'goal': 100.0,             # Thưởng LỚN khi đến đích
+    'drop': 200.0,             #  Phải là SỐ DƯƠNG (để -w['drop'] là -200)
 
-    # --- Trọng số Định hình Hướng đi (Chống lang thang) ---
-    'hop_cost': -15.0,        # (TỐI ƯU) Phạt nặng mỗi hop. 
-    # Ép agent tìm đường đi ngắn nhất.
-    'progress_penalty': -20.0, # (TỐI ƯU) Phạt nặng nếu chọn neighbor ở XA đích.
-    # Dạy agent "hướng về" đích đến.
-
-    'latency': -5.0,          # Phạt nếu độ trễ dự kiến cao
-    'latency_violation': -50.0, # Phạt NẶNG nếu vượt ngưỡng QoS
-    'bandwidth': 1.0,         # Thưởng nếu băng thông khả dụng cao
-    'utilization': 2.0,       # Thưởng nếu utilization của neighbor THẤP
-    'reliability': 3.0,       # Thưởng nếu độ tin cậy (1 - loss) cao
-    'fspl': -0.1,             # Phạt nhẹ nếu suy hao tín hiệu cao
-    'operational': 5.0        # Thưởng nếu node neighbor đang hoạt động
+    # --- Trọng số Định hình Hướng đi (PHẠT NẶNG NHẤT) ---
+    'hop_cost': -100.0,        # Phạt 100 điểm cho MỖI HOP
+    'progress_penalty': -200.0, # Phạt 200 điểm nếu đi xa đích
+    
+    # --- Trọng số QoS (RẤT NHỎ - chỉ để phân thắng bại) ---
+    'latency': -5.0,           # Phạt nếu độ trễ dự kiến cao
+    'latency_violation': -50.0,  # Phạt NẶNG nếu vượt ngưỡng QoS
+    'bandwidth': 1.0,          # (SỬA) Thưởng RẤT NHỎ (chỉ 1 điểm)
+    'utilization': 2.0,        # (SỬA) Thưởng RẤT NHỎ (chỉ 2 điểm)
+    'reliability': 3.0,        # Thưởng 3 điểm
+    'fspl': -0.1,              # Phạt RẤT NHỎ
+    'operational': 5.0         # Thưởng 5 điểm
 }
-
 
 # ======================== ENVIRONMENT ==============================
 class SatelliteEnv:
@@ -41,7 +38,6 @@ class SatelliteEnv:
 
     def __init__(self, state_builder: StateBuilder, weights: Optional[Dict[str, float]] = None):
         self.state_builder = state_builder
-        # (TỐI ƯU) Sử dụng hàm reward mặc định (đã tối ưu) nếu không được cung cấp
         self.weights = DEFAULT_WEIGHTS.copy()
         if weights:
             self.weights.update(weights)
