@@ -529,4 +529,16 @@ public class NodeService implements INodeService {
         logger.info("[NodeService] Shutdown complete");
     }
 
+
+    public void markNodeAsUnhealthy(String nodeId){
+        NodeInfo node = nodeStateCache.get(nodeId);
+        if (node != null) {
+            node.setHealthy(false);
+            dirtyNodeIds.add(nodeId);
+            flushToDatabase();
+            logger.info("[NodeService] Node {} marked as unhealthy.", nodeId);
+        } else {
+            logger.warn("[NodeService] Cannot mark Node {} as unhealthy: not found in cache.", nodeId);
+        }
+    }
 }

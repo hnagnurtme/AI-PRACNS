@@ -32,3 +32,5 @@ src/main/resources/sagin-service-account-key.json
 /src/test/java/com/sagin/AppTest.java
 
 /target
+.env
+target

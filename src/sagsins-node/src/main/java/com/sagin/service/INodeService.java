@@ -18,6 +18,10 @@ public interface INodeService {
      */
     double updateNodeStatus(String nodeId, Packet packet);
 
+
+    public void markNodeAsUnhealthy(String nodeId);
+
+
     /**
      * Hạch toán chi phí GỬI (TX) cho một lần truyền thành công.
      * <p>
