@@ -1,4 +1,4 @@
-import 'dotenv/config'; // ✅ Tự động load GOOGLE_API_KEY từ .env
+import 'dotenv/config'; 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { execSync } from "child_process";
 import readline from "readline";
