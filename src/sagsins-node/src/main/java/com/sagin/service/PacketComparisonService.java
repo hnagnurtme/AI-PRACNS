@@ -38,8 +38,16 @@ public class PacketComparisonService {
      * @param batchId ID của batch (optional)
      */
     public void saveSuccessfulPacket(Packet packet, String batchId) {
+        // ✅ OPTIMIZATION: Early return with null check
         if (packet == null) {
             logger.warn("[PacketComparisonService] Cannot save null packet");
+            return;
+        }
+        
+        // ✅ OPTIMIZATION: Validate required fields early
+        if (packet.getSourceUserId() == null || packet.getDestinationUserId() == null) {
+            logger.warn("[PacketComparisonService] Cannot save packet {} with null source or destination", 
+                    packet.getPacketId());
             return;
         }
         
@@ -50,8 +58,11 @@ public class PacketComparisonService {
             : "Dijkstra-" + originalPacketId;
         packet.setPacketId(prefixedPacketId);
         
-        logger.debug("[PacketComparisonService] Original PacketId: {} → Prefixed: {}", 
-                originalPacketId, prefixedPacketId);
+        // ✅ OPTIMIZATION: Use debug level for non-critical logs
+        if (logger.isDebugEnabled()) {
+            logger.debug("[PacketComparisonService] Original PacketId: {} → Prefixed: {}", 
+                    originalPacketId, prefixedPacketId);
+        }
         
         // ✅ LƯU CẢ PACKET BỊ DROP để phân tích performance
         if (packet.isDropped()) {
