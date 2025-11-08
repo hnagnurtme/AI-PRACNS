@@ -10,17 +10,17 @@ from python.rl_agent.dqn_model import create_dqn_networks, INPUT_SIZE, OUTPUT_SI
 from python.rl_agent.replay_buffer import ReplayBuffer
 from python.rl_agent.policy import get_epsilon  # (SỬA) Import hàm epsilon từ policy
 
-# ======================== HYPERPARAMETERS ==========================
+# ======================== HYPERPARAMETERS (TỐI ƯU HÓA) ==========================
 # (NOTE) Cập nhật các hằng số này
 INPUT_SIZE = INPUT_SIZE      # 94
 OUTPUT_SIZE = OUTPUT_SIZE    # 10
 
-GAMMA = 0.95
-LR = 5e-6
-BATCH_SIZE = 64
-BUFFER_CAPACITY = 100000
-TARGET_UPDATE_INTERVAL = 10
-EPSILON_DECAY_STEPS = 50000  # (SỬA) Giảm từ 10M xuống 50k để epsilon giảm nhanh hơn
+GAMMA = 0.97                 # Discount factor (tăng từ 0.95 để coi trọng future rewards)
+LR = 3e-6                    # Learning rate (giảm từ 5e-6 để stable hơn)
+BATCH_SIZE = 128             # Batch size (tăng từ 64 để generalize tốt hơn)
+BUFFER_CAPACITY = 200000     # Buffer capacity (tăng từ 100k để lưu nhiều experience hơn)
+TARGET_UPDATE_INTERVAL = 20  # Update target network (tăng từ 10 để stable hơn)
+EPSILON_DECAY_STEPS = 100000 # Epsilon decay (tăng từ 50k để explore nhiều hơn)
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 

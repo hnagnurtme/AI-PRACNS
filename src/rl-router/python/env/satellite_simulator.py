@@ -9,24 +9,28 @@ from typing import Dict, Any, Tuple, Optional
 import numpy as np
 import random # Dùng thư viện 'random' chuẩn
 
-# ======================== TRỌNG SỐ REWARD (ĐÃ TỐI ƯU) ==========================
+# ======================== TRỌNG SỐ REWARD (TỐI ƯU HÓA MỚI) ==========================
 DEFAULT_WEIGHTS = {
     # --- Trọng số Mục tiêu ---
-    'goal': 100.0,             # Thưởng LỚN khi đến đích
-    'drop': 200.0,             #  Phải là SỐ DƯƠNG (để -w['drop'] là -200)
+    'goal': 150.0,             # Thưởng LỚN khi đến đích (tăng từ 100)
+    'drop': 200.0,             # Phạt NẶNG khi drop (giữ nguyên)
 
-    # --- Trọng số Định hình Hướng đi (PHẠT NẶNG NHẤT) ---
-    'hop_cost': -100.0,        # Phạt 100 điểm cho MỖI HOP
-    'progress_penalty': -200.0, # Phạt 200 điểm nếu đi xa đích
+    # --- Trọng số Định hình Hướng đi (ƯU TIÊN LATENCY THẤP & ĐƯỜNG NGẮN) ---
+    'hop_cost': -80.0,         # Phạt cho mỗi hop (giảm từ -100 để khuyến khích đa dạng)
+    'progress_penalty': -150.0, # Phạt nếu đi xa đích (giảm từ -200)
     
-    # --- Trọng số QoS (RẤT NHỎ - chỉ để phân thắng bại) ---
-    'latency': -5.0,           # Phạt nếu độ trễ dự kiến cao
-    'latency_violation': -50.0,  # Phạt NẶNG nếu vượt ngưỡng QoS
-    'bandwidth': 1.0,          # (SỬA) Thưởng RẤT NHỎ (chỉ 1 điểm)
-    'utilization': 2.0,        # (SỬA) Thưởng RẤT NHỎ (chỉ 2 điểm)
-    'reliability': 3.0,        # Thưởng 3 điểm
-    'fspl': -0.1,              # Phạt RẤT NHỎ
-    'operational': 5.0         # Thưởng 5 điểm
+    # --- Trọng số QoS & Resource (TĂNG CƯỜNG ĐỂ CÂN BẰNG) ---
+    'latency': -8.0,           # Phạt độ trễ cao (tăng từ -5 để ưu tiên latency thấp)
+    'latency_violation': -100.0, # Phạt RẤT NẶNG nếu vượt QoS (tăng từ -50)
+    'bandwidth': 3.0,          # Thưởng băng thông khả dụng cao (tăng từ 1)
+    'utilization': 8.0,        # Thưởng node utilization thấp (tăng từ 2)
+    'reliability': 5.0,        # Thưởng packet loss thấp (tăng từ 3)
+    'fspl': -0.2,              # Phạt FSPL cao (tăng từ -0.1)
+    'operational': 10.0,       # Thưởng node hoạt động tốt (tăng từ 5)
+    
+    # --- Trọng số Resource mới (THEO DÕI TÀI NGUYÊN NODE) ---
+    'node_load': -10.0,        # Phạt node có load cao (tỷ lệ packet/capacity)
+    'resource_balance': 5.0,   # Thưởng nếu resource utilization cân bằng
 }
 
 # ======================== ENVIRONMENT ==============================
@@ -166,8 +170,8 @@ class SatelliteEnv:
 
     def _calculate_reward(self, prev_state_vector: np.ndarray, action_index: int, packet_data: Dict[str, Any]) -> float:
         """
-        (TỐI ƯU) Tính reward cho (state, action) -> next_state.
-        Kết hợp mục tiêu, QoS, và định hướng.
+        (TỐI ƯU HÓA MỚI) Tính reward cho (state, action) -> next_state.
+        Cân bằng giữa: Mục tiêu, Latency thấp, Resource optimization, và QoS.
         """
         w = self.weights
 
@@ -190,27 +194,56 @@ class SatelliteEnv:
         avail_bw_ratio = slot_metrics[2]
         dest_util_ratio = slot_metrics[3]
         loss_rate_neighbor = slot_metrics[4]
-        dist_to_dest_neighbor_ratio = slot_metrics[5] # (TỐI ƯU) Đặc trưng khoảng cách
+        dist_to_dest_neighbor_ratio = slot_metrics[5] # Đặc trưng khoảng cách
         fspl_ratio = slot_metrics[6]
 
-        # 3️⃣ Tính toán Reward chi tiết (Shaping)
+        # 3️⃣ Tính toán Reward chi tiết (Improved Shaping)
         reward = 0.0
         
-        # (TỐI ƯU) Phạt để đi đúng hướng
+        # A. Định hướng đường đi (Progress towards destination)
         reward += w['hop_cost'] 
         reward += w['progress_penalty'] * dist_to_dest_neighbor_ratio
 
-        # Phạt vi phạm QoS
+        # B. Ưu tiên Latency thấp
+        # Phạt vi phạm QoS nghiêm trọng
         max_lat = packet_data.get('serviceQoS', {}).get('maxLatencyMs', MAX_SYSTEM_LATENCY_MS)
         curr_delay = packet_data.get('accumulatedDelayMs', 0.0)
-        if max_lat > 0 and (curr_delay / max_lat) > 0.9: # Vượt 90%
-            reward += w['latency_violation']
+        if max_lat > 0:
+            lat_ratio = curr_delay / max_lat
+            if lat_ratio > 0.9: # Vượt 90% threshold
+                reward += w['latency_violation']
+            elif lat_ratio > 0.7: # Cảnh báo khi vượt 70%
+                reward += w['latency_violation'] * 0.3
 
-        # Thưởng/phạt cho các đặc trưng QoS của liên kết
+        # Phạt latency của link hiện tại
         reward += w['latency'] * total_latency_ratio 
+
+        # C. Tối ưu hóa Resource (Node Load & Utilization)
+        # Thưởng cho node có utilization thấp (ít tải)
+        reward += w['utilization'] * (1.0 - dest_util_ratio)
+        
+        # (MỚI) Thêm phạt cho node có load cao (dựa trên buffer usage)
+        # Lấy thông tin buffer từ current packet state
+        current_node_id = packet_data.get('currentHoldingNodeId')
+        if current_node_id:
+            current_node = self.state_builder.db.get_node(
+                current_node_id, 
+                projection={"currentPacketCount": 1, "packetBufferCapacity": 1}
+            )
+            if current_node:
+                curr_count = current_node.get("currentPacketCount", 0)
+                capacity = max(current_node.get("packetBufferCapacity", 1), 1)
+                node_load_ratio = curr_count / capacity
+                reward += w['node_load'] * node_load_ratio
+        
+        # (MỚI) Thưởng cho resource balance (tránh overload một node)
+        if dest_util_ratio > 0.1 and dest_util_ratio < 0.7:
+            # Sweet spot: Node đang hoạt động nhưng không quá tải
+            reward += w['resource_balance']
+
+        # D. QoS Metrics khác
         reward += w['bandwidth'] * avail_bw_ratio
-        reward += w['utilization'] * (1.0 - dest_util_ratio) # Thưởng cho util THẤP
-        reward += w['reliability'] * (1.0 - loss_rate_neighbor) # Thưởng cho loss THẤP
+        reward += w['reliability'] * (1.0 - loss_rate_neighbor)
         reward += w['fspl'] * fspl_ratio
         reward += w['operational'] * is_op
 
