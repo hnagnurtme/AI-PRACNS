@@ -7,6 +7,7 @@ import com.sagsins.core.model.NodeInfo;
 import com.sagsins.core.repository.INodeRepository;
 import com.sagsins.core.service.*;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,9 +23,11 @@ public class NodeService implements INodeService {
     private static final Logger log = LoggerFactory.getLogger(NodeService.class);
 
     private final INodeRepository nodeRepository;
+    private final SimpMessagingTemplate messagingTemplate;
     
-    public NodeService(INodeRepository nodeRepository) {
+    public NodeService(INodeRepository nodeRepository, SimpMessagingTemplate messagingTemplate) {
         this.nodeRepository = nodeRepository;
+        this.messagingTemplate = messagingTemplate;
     }
 
     @Override
@@ -65,7 +68,12 @@ public class NodeService implements INodeService {
         NodeInfo updatedNode = nodeRepository.save(existingNode);
         log.info("Successfully updated node with ID: {}", nodeId);
         
-        return NodeDTO.fromEntity(updatedNode);
+        // Broadcast update via WebSocket
+        NodeDTO nodeDTO = NodeDTO.fromEntity(updatedNode);
+        messagingTemplate.convertAndSend("/topic/node-status", nodeDTO);
+        log.debug("Broadcasted node update to /topic/node-status for node: {}", nodeId);
+        
+        return nodeDTO;
     }
 
     /**

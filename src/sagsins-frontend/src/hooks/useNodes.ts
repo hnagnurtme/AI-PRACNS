@@ -1,9 +1,12 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { useNodeStore } from '../state/nodeStore';
 import { getAllNodes } from '../services/nodeService';
 
 export const useNodes = () => {
     const { setNodes } = useNodeStore();
+
+    // Note: WebSocket connection is now managed globally via WebSocketProvider
+    // The global WebSocket will automatically update nodes via updateNodeInStore
 
     const refetchNodes = useCallback(async () => {
         try {
@@ -15,6 +18,11 @@ export const useNodes = () => {
             throw error;
         }
     }, [setNodes]);
+
+    // Initial fetch on mount
+    useEffect(() => {
+        refetchNodes();
+    }, [refetchNodes]);
 
     return {
         refetchNodes
