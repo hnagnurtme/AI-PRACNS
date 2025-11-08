@@ -4,6 +4,7 @@ com/sagsins/core/repository/IPacketRepository.class
 com/sagsins/core/DTOs/response/RestResponse.class
 com/sagsins/core/model/ServiceType.class
 com/sagsins/core/model/HopRecord.class
+com/sagsins/core/service/SimulationScenarioFactoryService.class
 com/sagsins/core/model/NodeInfo.class
 com/sagsins/core/configuration/CorsConfiguration$1.class
 com/sagsins/core/DTOs/NodeDTO.class
@@ -29,6 +30,7 @@ com/sagsins/core/model/RoutingDecisionInfo$Algorithm.class
 com/sagsins/core/model/ServiceQoS.class
 com/sagsins/core/CoreApplication.class
 com/sagsins/core/exception/ExceptionConstants.class
+com/sagsins/core/controller/ScenarioController.class
 com/sagsins/core/configuration/ChangeStreamConfiguration.class
 com/sagsins/core/configuration/MongoConfiguration.class
 com/sagsins/core/repository/IBatchPacketRepository.class
