@@ -16,7 +16,7 @@ export const AlgorithmComparisonChart = ({ batch }: { batch: NetworkBatch }) => 
 
         batch.packets.forEach(pair => {
             const dijkstraLatency = pair.dijkstraPacket?.analysisData?.totalLatencyMs;
-            const rlLatency = pair.rlpacket?.analysisData?.totalLatencyMs;
+            const rlLatency = pair.rlPacket?.analysisData?.totalLatencyMs;
 
             if (dijkstraLatency !== undefined && rlLatency !== undefined && 
                 !isNaN(dijkstraLatency) && !isNaN(rlLatency)) {
@@ -27,7 +27,7 @@ export const AlgorithmComparisonChart = ({ batch }: { batch: NetworkBatch }) => 
             }
 
             if (pair.dijkstraPacket?.dropped) dijkstraDropped++;
-            if (pair.rlpacket?.dropped) rlDropped++;
+            if (pair.rlPacket?.dropped) rlDropped++;
         });
 
         return { dijkstraWins, rlWins, ties, dijkstraDropped, rlDropped };

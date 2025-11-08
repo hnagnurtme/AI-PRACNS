@@ -67,6 +67,8 @@
 - Comparative analysis (RL vs Dijkstra)
 - Dynamic network topology with fault tolerance
 - Comprehensive performance metrics
+- **Diverse simulation scenarios** (Weather Events, Node Overload, Traffic Spikes, etc.)
+- **Real-time scenario management** via UI and REST API
 
 ### 1.3 Applications
 
@@ -239,7 +241,24 @@ PBL4/
 4. Click "Start Simulation"
 5. Monitor real-time metrics
 
-### 6.2 API Endpoints
+### 6.2 Simulation Scenarios
+
+The platform supports diverse simulation scenarios to test network behavior under different conditions:
+
+- **Normal**: Standard operation (default)
+- **Weather Event**: Bad weather affecting signal quality
+- **Node Overload**: High load and queue congestion
+- **Node Offline**: Temporary node failures
+- **Traffic Spike**: Burst traffic scenarios
+- **TTL Expired**: Packet lifetime management
+
+**Access scenarios via:**
+- Frontend UI: Monitor page → Scenario Selector dropdown
+- REST API: `POST /api/simulation/scenario/{scenarioName}`
+
+📖 **Detailed Guide**: See [Simulation Scenarios Documentation](docs/SIMULATION_SCENARIOS.md)
+
+### 6.3 API Endpoints
 
 API documentation for AI-PRANCS application
 ```

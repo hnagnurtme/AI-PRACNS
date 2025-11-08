@@ -25,6 +25,9 @@ export interface HopRecord {
     toNodePosition: Position | null;
     fromNodeBufferState: BufferState;
     routingDecisionInfo: RoutingDecisionInfo;
+    scenarioType?: string;
+    nodeLoadPercent?: number;
+    dropReasonDetails?: string;
 }
 
 export interface QoS {
@@ -80,6 +83,18 @@ export interface NetworkBatch {
     batchId: string;
     totalPairPackets: number;
     packets: ComparisonData[];
+}
+
+export interface SimulationScenario {
+    name: string;
+    displayName: string;
+    description: string;
+}
+
+export interface ScenarioState {
+    scenario: string;
+    displayName: string;
+    description: string;
 }
 
 export interface NodeCongestion {
