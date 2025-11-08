@@ -193,32 +193,45 @@ public class PacketChangeStreamService {
         try {
             TwoPacket packet = message.getBody();
             
+            // ✅ OPTIMIZATION: Early return for null packet
             if (packet == null) {
                 logger.warn("Received null TwoPacket in change event");
                 return;
             }
             
+            // ✅ OPTIMIZATION: Extract operation type safely
             ChangeStreamDocument<Document> raw = message.getRaw();
             String operationType = "unknown";
             if (raw != null && raw.getOperationType() != null) {
                 operationType = raw.getOperationType().getValue();
             }
             
+            // ✅ OPTIMIZATION: Early validation of required fields
+            if (packet.getPairId() == null) {
+                logger.warn("Received TwoPacket with null pairId, ignoring");
+                return;
+            }
+            
             // Kiểm tra có đủ 2 packets không (REQUIRED: cả dijkstra và rl phải có)
             boolean hasBothPackets = packet.getDijkstraPacket() != null && packet.getRlPacket() != null;
             
-            logger.info("🔄 [{}] TwoPacket received - pairId={}, dijkstra={}, rl={}, complete={}", 
-                operationType.toUpperCase(),
-                packet.getPairId(),
-                packet.getDijkstraPacket() != null ? "✓" : "✗",
-                packet.getRlPacket() != null ? "✓" : "✗",
-                hasBothPackets ? "YES" : "NO");
+            // ✅ OPTIMIZATION: Use debug level when appropriate
+            if (logger.isDebugEnabled()) {
+                logger.debug("🔄 [{}] TwoPacket received - pairId={}, dijkstra={}, rl={}, complete={}", 
+                    operationType.toUpperCase(),
+                    packet.getPairId(),
+                    packet.getDijkstraPacket() != null ? "✓" : "✗",
+                    packet.getRlPacket() != null ? "✓" : "✗",
+                    hasBothPackets ? "YES" : "NO");
+            }
             
-            // Cancel task cũ nếu có (reset timer vì có update mới)
+            // ✅ OPTIMIZATION: Cancel old task atomically and log only if necessary
             ScheduledFuture<?> oldTask = twoPacketSendTask.getAndSet(null);
             if (oldTask != null && !oldTask.isDone()) {
                 oldTask.cancel(false);
-                logger.debug("⏹️ Cancelled previous TwoPacket send task (reset timer due to new update)");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("⏹️ Cancelled previous TwoPacket send task (reset timer due to new update)");
+                }
             }
             
             // Chỉ schedule gửi nếu đã đủ 2 packets
@@ -231,19 +244,27 @@ public class PacketChangeStreamService {
                     try {
                         TwoPacket packetToSend = latestTwoPacket.getAndSet(null);
                         
+                        // ✅ OPTIMIZATION: Validate before sending
                         if (packetToSend != null && packetToSend.getPairId().equals(packet.getPairId())) {
                             // Double-check: Vẫn đủ 2 packets
                             if (packetToSend.getDijkstraPacket() != null && packetToSend.getRlPacket() != null) {
                                 // Push message qua WebSocket
                                 messagingTemplate.convertAndSend("/topic/packets", packetToSend);
                                 
-                                // Log JSON đã gửi
-                                String json = objectMapper.writeValueAsString(packetToSend);
-                                logger.info("📤 [SENT] TwoPacket to /topic/packets - pairId={}, dijkstra={}, rl={}\n📄 JSON: {}", 
-                                    packetToSend.getPairId(),
-                                    packetToSend.getDijkstraPacket().getPacketId(),
-                                    packetToSend.getRlPacket().getPacketId(),
-                                    json);
+                                // ✅ OPTIMIZATION: Only serialize JSON for logging if debug is enabled
+                                if (logger.isDebugEnabled()) {
+                                    String json = objectMapper.writeValueAsString(packetToSend);
+                                    logger.debug("📤 [SENT] TwoPacket to /topic/packets - pairId={}, dijkstra={}, rl={}\n📄 JSON: {}", 
+                                        packetToSend.getPairId(),
+                                        packetToSend.getDijkstraPacket().getPacketId(),
+                                        packetToSend.getRlPacket().getPacketId(),
+                                        json);
+                                } else {
+                                    logger.info("📤 [SENT] TwoPacket to /topic/packets - pairId={}, dijkstra={}, rl={}", 
+                                        packetToSend.getPairId(),
+                                        packetToSend.getDijkstraPacket().getPacketId(),
+                                        packetToSend.getRlPacket().getPacketId());
+                                }
                                 
                                 // Schedule xóa sau 10 giây
                                 scheduleDeleteTwoPacket(packetToSend.getPairId());
@@ -262,7 +283,9 @@ public class PacketChangeStreamService {
             } else {
                 // Không đủ 2 packets → không lưu, không schedule
                 latestTwoPacket.set(null);
-                logger.info("⏸️ TwoPacket incomplete - pairId={}, waiting for both packets (dijkstra AND rl required)", packet.getPairId());
+                if (logger.isDebugEnabled()) {
+                    logger.debug("⏸️ TwoPacket incomplete - pairId={}, waiting for both packets (dijkstra AND rl required)", packet.getPairId());
+                }
             }
                 
         } catch (Exception e) {
@@ -278,28 +301,41 @@ public class PacketChangeStreamService {
         try {
             BatchPacket batch = message.getBody();
             
+            // ✅ OPTIMIZATION: Early return for null batch
             if (batch == null) {
                 logger.warn("Received null BatchPacket in change event");
                 return;
             }
             
+            // ✅ OPTIMIZATION: Extract operation type safely
             ChangeStreamDocument<Document> raw = message.getRaw();
             String operationType = "unknown";
             if (raw != null && raw.getOperationType() != null) {
                 operationType = raw.getOperationType().getValue();
             }
             
-            logger.info("🔄 [{}] BatchPacket received - batchId={}, totalPairs={}, packetsCount={}", 
-                operationType.toUpperCase(),
-                batch.getBatchId(),
-                batch.getTotalPairPackets(),
-                batch.getPackets() != null ? batch.getPackets().size() : 0);
+            // ✅ OPTIMIZATION: Validate batch ID
+            if (batch.getBatchId() == null) {
+                logger.warn("Received BatchPacket with null batchId, ignoring");
+                return;
+            }
             
-            // Cancel task cũ nếu có (reset timer vì có update mới)
+            // ✅ OPTIMIZATION: Use debug level when appropriate
+            if (logger.isDebugEnabled()) {
+                logger.debug("🔄 [{}] BatchPacket received - batchId={}, totalPairs={}, packetsCount={}", 
+                    operationType.toUpperCase(),
+                    batch.getBatchId(),
+                    batch.getTotalPairPackets(),
+                    batch.getPackets() != null ? batch.getPackets().size() : 0);
+            }
+            
+            // ✅ OPTIMIZATION: Cancel old task atomically
             ScheduledFuture<?> oldTask = batchPacketSendTask.getAndSet(null);
             if (oldTask != null && !oldTask.isDone()) {
                 oldTask.cancel(false);
-                logger.debug("⏹️ Cancelled previous BatchPacket send task (reset timer due to new update)");
+                if (logger.isDebugEnabled()) {
+                    logger.debug("⏹️ Cancelled previous BatchPacket send task (reset timer due to new update)");
+                }
             }
             
             // Lưu batch mới nhất
@@ -314,13 +350,20 @@ public class PacketChangeStreamService {
                         // Push message qua WebSocket
                         messagingTemplate.convertAndSend("/topic/batchpacket", batchToSend);
                         
-                        // Log JSON đã gửi
-                        String json = objectMapper.writeValueAsString(batchToSend);
-                        logger.info("📤 [SENT] BatchPacket to /topic/batchpacket - batchId={}, totalPairs={}, packetsCount={}\n📄 JSON: {}", 
-                            batchToSend.getBatchId(),
-                            batchToSend.getTotalPairPackets(),
-                            batchToSend.getPackets() != null ? batchToSend.getPackets().size() : 0,
-                            json);
+                        // ✅ OPTIMIZATION: Only serialize JSON for logging if debug is enabled
+                        if (logger.isDebugEnabled()) {
+                            String json = objectMapper.writeValueAsString(batchToSend);
+                            logger.debug("📤 [SENT] BatchPacket to /topic/batchpacket - batchId={}, totalPairs={}, packetsCount={}\n📄 JSON: {}", 
+                                batchToSend.getBatchId(),
+                                batchToSend.getTotalPairPackets(),
+                                batchToSend.getPackets() != null ? batchToSend.getPackets().size() : 0,
+                                json);
+                        } else {
+                            logger.info("📤 [SENT] BatchPacket to /topic/batchpacket - batchId={}, totalPairs={}, packetsCount={}", 
+                                batchToSend.getBatchId(),
+                                batchToSend.getTotalPairPackets(),
+                                batchToSend.getPackets() != null ? batchToSend.getPackets().size() : 0);
+                        }
                         
                         // Schedule xóa sau 10 giây
                         scheduleDeleteBatchPacket(batchToSend.getBatchId());
