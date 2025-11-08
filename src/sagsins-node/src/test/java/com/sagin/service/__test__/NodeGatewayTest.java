@@ -65,40 +65,48 @@ class NodeGatewayTest {
     @Test
     @DisplayName("Test handleClient xử lý thành công packet hợp lệ")
     void testHandleClient_Success() throws Exception {
-        // Sử dụng real socket connection để test
-        try (ServerSocket serverSocket = new ServerSocket(0)) { // port 0 = random available port
-            int port = serverSocket.getLocalPort();
-            
-            // Start a thread to accept connection
-            Thread serverThread = new Thread(() -> {
-                try {
-                    Socket clientSocket = serverSocket.accept();
-                    nodeGateway.startListening(testNodeInfo, port);
-                    nodeGateway.handleClient(clientSocket);
-                } catch (Exception e) {
-                    // Ignore
-                }
-            });
-            serverThread.start();
-
-            // Connect as client and send data
-            try (Socket clientSocket = new Socket("localhost", port);
-                 OutputStream out = clientSocket.getOutputStream()) {
-                out.write(testPacketJson.getBytes(StandardCharsets.UTF_8));
-                out.flush();
-            }
-
-            serverThread.join(2000); // Wait max 2 seconds
-
-            // Verify
-            ArgumentCaptor<Packet> packetCaptor = ArgumentCaptor.forClass(Packet.class);
-            verify(mockTcpService, timeout(1000).times(1)).receivePacket(packetCaptor.capture());
-
-            Packet capturedPacket = packetCaptor.getValue();
-            assertNotNull(capturedPacket);
-            assertEquals(testPacketObject.getPacketId(), capturedPacket.getPacketId());
-            assertEquals(testNodeInfo.getNodeId(), capturedPacket.getCurrentHoldingNodeId());
+        // ✅ BUG FIX: Use the correct length-prefixed protocol (4-byte length + data)
+        // Create a properly formatted packet with length prefix
+        byte[] jsonBytes = testPacketJson.getBytes(StandardCharsets.UTF_8);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        DataOutputStream dos = new DataOutputStream(baos);
+        dos.writeInt(jsonBytes.length); // Write 4-byte length prefix
+        dos.write(jsonBytes); // Write actual JSON data
+        dos.flush();
+        byte[] packetWithLength = baos.toByteArray();
+        
+        // Find an available port and start listening
+        ServerSocket tempSocket = new ServerSocket(0);
+        int port = tempSocket.getLocalPort();
+        tempSocket.close(); // Close it so nodeGateway can bind to it
+        
+        // Give a brief moment for the OS to release the port
+        Thread.sleep(100);
+        
+        // Start listening on the port
+        nodeGateway.startListening(testNodeInfo, port);
+        
+        // Give time for the gateway to start
+        Thread.sleep(200);
+        
+        // Connect as client and send data
+        try (Socket clientSocket = new Socket("localhost", port);
+             OutputStream out = clientSocket.getOutputStream()) {
+            out.write(packetWithLength);
+            out.flush();
         }
+
+        // Verify
+        ArgumentCaptor<Packet> packetCaptor = ArgumentCaptor.forClass(Packet.class);
+        verify(mockTcpService, timeout(2000).times(1)).receivePacket(packetCaptor.capture());
+
+        Packet capturedPacket = packetCaptor.getValue();
+        assertNotNull(capturedPacket);
+        assertEquals(testPacketObject.getPacketId(), capturedPacket.getPacketId());
+        assertEquals(testNodeInfo.getNodeId(), capturedPacket.getCurrentHoldingNodeId());
+        
+        // Clean up
+        nodeGateway.stopListening();
     }
 
     @Test
