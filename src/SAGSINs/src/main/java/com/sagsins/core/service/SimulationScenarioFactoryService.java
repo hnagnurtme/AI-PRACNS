@@ -133,14 +133,16 @@ public class SimulationScenarioFactoryService {
     // Private helper methods to apply specific scenario effects
     
     private void applyWeatherEvent(NodeInfo node) {
-        // Randomly set bad weather conditions
+        // Set bad weather conditions with guaranteed effect
         double rand = random.nextDouble();
         if (rand < 0.3) {
             node.setWeather(WeatherCondition.STORM);
-        } else if (rand < 0.5) {
+        } else if (rand < 0.6) {  // Fixed: changed from 0.5 to 0.6
             node.setWeather(WeatherCondition.RAIN);
-        } else if (rand < 0.2) {
+        } else if (rand < 0.8) {  // Fixed: changed from 0.2 to 0.8
             node.setWeather(WeatherCondition.SEVERE_STORM);
+        } else {
+            node.setWeather(WeatherCondition.SNOW);
         }
         
         // Increase packet loss rate
