@@ -10,6 +10,20 @@ package-lock.json
 pnpm-lock.yaml
 /.vscode/
 
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
 
 /src/satellite-service/resources/application-prod.properties
 /target/
