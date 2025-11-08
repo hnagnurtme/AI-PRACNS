@@ -81,8 +81,12 @@ export const calculateCongestionMap = (batches: NetworkBatch[]): NodeCongestion[
         
         for (const comparison of batch.packets) {
             if (!comparison) continue;
-            processPacket(comparison.dijkstraPacket, accumulator);
-            processPacket(comparison.rlpacket, accumulator);
+            if (comparison.dijkstraPacket) {
+                processPacket(comparison.dijkstraPacket, accumulator);
+            }
+            if (comparison.rlPacket) {
+                processPacket(comparison.rlPacket, accumulator);
+            }
         }
     }
 

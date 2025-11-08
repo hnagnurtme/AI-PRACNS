@@ -21,6 +21,7 @@ com/sagsins/core/model/Position.class
 com/sagsins/core/model/UserInfo.class
 com/sagsins/core/model/BufferState.class
 com/sagsins/core/configuration/ChangeStreamConfiguration$1.class
+com/sagsins/core/model/SimulationScenario.class
 com/sagsins/core/utils/ReadPropertiesUtils.class
 com/sagsins/core/DTOs/request/BatchPacket.class
 com/sagsins/core/DTOs/request/UpdateStatusRequest$UpdateStatusRequestBuilder.class
@@ -33,6 +34,7 @@ com/sagsins/core/configuration/MongoConfiguration.class
 com/sagsins/core/repository/IBatchPacketRepository.class
 com/sagsins/core/model/Packet.class
 com/sagsins/core/controller/CoreController.class
+com/sagsins/core/controller/SimulationController.class
 com/sagsins/core/exception/DuplicateKeyException.class
 com/sagsins/core/repository/ITwoPacketRepository.class
 com/sagsins/core/DTOs/response/Message.class

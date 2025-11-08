@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# Cesium files (copied during build)
+public/Cesium/Workers
+public/Cesium/Assets
+public/Cesium/ThirdParty
+public/Cesium/Widgets
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
