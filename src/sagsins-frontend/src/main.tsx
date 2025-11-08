@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
 import { setupCesiumConfig } from './map/CesiumConfig'; 
+import { WebSocketProvider } from './contexts/WebSocketContext';
 
 // ************************************************
 // 1. CẤU HÌNH TOÀN CỤC (Cesium và các thư viện khác)
@@ -20,6 +21,8 @@ setupCesiumConfig(CESIUM_BASE_URL);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
-        <App />
+        <WebSocketProvider>
+            <App />
+        </WebSocketProvider>
     </React.StrictMode>,
 );
