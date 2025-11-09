@@ -188,6 +188,11 @@ class RLSimulator:
                 metrics.finalize(success=False, drop_reason='NO_NEIGHBORS')
                 return metrics
             
+            # NOTE: While we consider all neighbors here, the DQN model (OUTPUT_SIZE=10)
+            # can only output Q-values for the first 10 during exploitation (greedy).
+            # During exploration (epsilon-greedy), random selection can choose from all.
+            # For greedy testing (used in this comparison), effectively limited to first 10.
+            
             # Filter out already-visited neighbors to avoid immediate loops
             valid_neighbors = [(i, nid) for i, nid in enumerate(neighbors) if nid not in visited_nodes]
             
