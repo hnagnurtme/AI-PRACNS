@@ -6,7 +6,12 @@ import torch.optim as optim
 import numpy as np
 
 # (NOTE) IMPORT KIẾN TRÚC MỚI
-from python.rl_agent.dqn_model import create_dqn_networks, INPUT_SIZE, OUTPUT_SIZE
+from python.rl_agent.dqn_model import (
+    create_dqn_networks, 
+    create_legacy_dqn_networks,
+    INPUT_SIZE, 
+    OUTPUT_SIZE
+)
 from python.rl_agent.replay_buffer import ReplayBuffer
 from python.rl_agent.policy import get_epsilon  # (SỬA) Import hàm epsilon từ policy
 
@@ -27,11 +32,16 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # ======================== AGENT CLASS ==============================
 class DQNAgent:
-    def __init__(self, env):
+    def __init__(self, env, use_legacy_architecture: bool = False):
         self.env = env
         
         # (NOTE) Tạo mạng 94-Input, 10-Output
-        self.q_network, self.target_network = create_dqn_networks()
+        # Use legacy architecture for loading old checkpoints
+        if use_legacy_architecture:
+            self.q_network, self.target_network = create_legacy_dqn_networks()
+        else:
+            self.q_network, self.target_network = create_dqn_networks()
+        
         self.q_network.to(device)
         self.target_network.to(device)
 
@@ -45,10 +55,16 @@ class DQNAgent:
         self.update_count = 0
 
     # ==============================================================
-    def select_action(self, state_vector: np.ndarray) -> int:
-        """Epsilon-Greedy Action Selection"""
+    def select_action(self, state_vector: np.ndarray, greedy: bool = False) -> int:
+        """
+        Epsilon-Greedy Action Selection
+        
+        Args:
+            state_vector: Current state observation
+            greedy: If True, always select best action (no exploration)
+        """
         # (SỬA) Sử dụng hàm get_epsilon từ policy.py (thống nhất logic)
-        epsilon = get_epsilon(self.steps_done)
+        epsilon = 0.0 if greedy else get_epsilon(self.steps_done)
         self.steps_done += 1
 
         if np.random.rand() < epsilon:

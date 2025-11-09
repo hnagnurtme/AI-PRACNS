@@ -37,6 +37,35 @@ class DQN(nn.Module):
         x = self.dropout3(x)
         return self.fc4(x)
 
+
+class DQNLegacy(nn.Module):
+    """
+    Legacy DQN architecture (3-layer) for loading old checkpoints.
+    This matches the architecture used to train existing checkpoints.
+    """
+    
+    def __init__(self, input_size: int, output_size: int, dropout_rate: float = 0.2):
+        super(DQNLegacy, self).__init__()
+        
+        # Original architecture from training
+        hidden_1 = 256
+        hidden_2 = 128
+        
+        self.fc1 = nn.Linear(input_size, hidden_1)
+        self.dropout1 = nn.Dropout(dropout_rate)
+        self.fc2 = nn.Linear(hidden_1, hidden_2)
+        self.dropout2 = nn.Dropout(dropout_rate)
+        self.fc3 = nn.Linear(hidden_2, output_size)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """Forward pass with 3 layers, returns Q-values for 10 actions."""
+        x = F.relu(self.fc1(x))
+        x = self.dropout1(x)
+        x = F.relu(self.fc2(x))
+        x = self.dropout2(x)
+        return self.fc3(x)
+
+
 def create_dqn_networks(dropout_rate: float = 0.2) -> tuple[DQN, DQN]:
     """
     Tạo Q-Network và Target-Network với cùng kiến trúc.
@@ -51,5 +80,23 @@ def create_dqn_networks(dropout_rate: float = 0.2) -> tuple[DQN, DQN]:
     # Đồng bộ hóa trọng số ban đầu
     target_network.load_state_dict(q_network.state_dict())
     target_network.eval() # Target network chỉ dùng để inference
+    
+    return q_network, target_network
+
+
+def create_legacy_dqn_networks(dropout_rate: float = 0.2) -> tuple[DQNLegacy, DQNLegacy]:
+    """
+    Create Q-Network and Target-Network with legacy 3-layer architecture.
+    Use this to load old checkpoints trained with the original architecture.
+    
+    :param dropout_rate: Dropout rate (default 0.2)
+    :return: (q_network, target_network)
+    """
+    q_network = DQNLegacy(INPUT_SIZE, OUTPUT_SIZE, dropout_rate)
+    target_network = DQNLegacy(INPUT_SIZE, OUTPUT_SIZE, dropout_rate)
+    
+    # Sync initial weights
+    target_network.load_state_dict(q_network.state_dict())
+    target_network.eval()  # Target network for inference only
     
     return q_network, target_network

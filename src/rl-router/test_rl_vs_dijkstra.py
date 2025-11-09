@@ -9,6 +9,8 @@ import logging
 import random
 import time
 import numpy as np
+import os
+import torch
 from typing import Dict, Any, List
 from unittest.mock import Mock
 
@@ -178,8 +180,8 @@ class RLSimulator:
                 metrics.finalize(success=False, drop_reason='NO_NEIGHBORS')
                 return metrics
             
-            # Agent selects action
-            action_index = self.agent.select_action(state)
+            # Agent selects action (use greedy policy for testing)
+            action_index = self.agent.select_action(state, greedy=True)
             
             if action_index >= len(neighbors):
                 metrics.finalize(success=False, drop_reason='INVALID_ACTION')
@@ -263,8 +265,28 @@ def run_comparison_test():
     state_builder = StateBuilder(mongo_conn)
     env = SatelliteEnv(state_builder)
     
-    # Create RL agent (will use random actions if no trained model)
-    agent = DQNAgent(env)
+    # Create RL agent with legacy architecture to load old checkpoint
+    agent = DQNAgent(env, use_legacy_architecture=True)
+    
+    # Load trained model checkpoint
+    checkpoint_path = "models/checkpoints/dqn_checkpoint_fullpath_latest.pth"
+    if os.path.exists(checkpoint_path):
+        logger.info(f"Loading trained model from: {checkpoint_path}")
+        try:
+            checkpoint = torch.load(
+                checkpoint_path,
+                map_location=torch.device('cpu'),
+                weights_only=False
+            )
+            agent.q_network.load_state_dict(checkpoint['model_state_dict'])
+            # Set to evaluation mode (disable dropout)
+            agent.q_network.eval()
+            logger.info("Trained model loaded successfully!")
+            logger.info(f"Model was trained for {checkpoint.get('episode', 'unknown')} episodes")
+        except Exception as e:
+            logger.warning(f"Failed to load checkpoint: {e}. Using untrained model.")
+    else:
+        logger.warning(f"No checkpoint found at {checkpoint_path}. Using untrained model with random actions.")
     
     # Get available nodes
     all_nodes_data = state_builder.db.get_all_nodes(projection={'nodeId': 1})
