@@ -265,8 +265,8 @@ def run_comparison_test():
     state_builder = StateBuilder(mongo_conn)
     env = SatelliteEnv(state_builder)
     
-    # Create RL agent and load trained model
-    agent = DQNAgent(env)
+    # Create RL agent with legacy architecture to load old checkpoint
+    agent = DQNAgent(env, use_legacy_architecture=True)
     
     # Load trained model checkpoint
     checkpoint_path = "models/checkpoints/dqn_checkpoint_fullpath_latest.pth"
@@ -282,6 +282,7 @@ def run_comparison_test():
             # Set to evaluation mode (disable dropout)
             agent.q_network.eval()
             logger.info("Trained model loaded successfully!")
+            logger.info(f"Model was trained for {checkpoint.get('episode', 'unknown')} episodes")
         except Exception as e:
             logger.warning(f"Failed to load checkpoint: {e}. Using untrained model.")
     else:
