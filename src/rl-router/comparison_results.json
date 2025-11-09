@@ -1,0 +1,34 @@
+{
+  "rl": {
+    "algorithm": "RL-DQN",
+    "total_packets": 30,
+    "successful_packets": 1,
+    "delivery_rate_percent": 3.3333333333333335,
+    "avg_latency_ms": 24.383258891998103,
+    "median_latency_ms": 24.383258891998103,
+    "std_latency_ms": 0.0,
+    "avg_hops": 3.0,
+    "median_hops": 3.0,
+    "avg_node_utilization": 0.338,
+    "max_node_utilization": 0.338
+  },
+  "dijkstra": {
+    "algorithm": "DIJKSTRA",
+    "total_packets": 30,
+    "successful_packets": 19,
+    "delivery_rate_percent": 63.33333333333333,
+    "avg_latency_ms": 76.0821564155561,
+    "median_latency_ms": 65.4327192255949,
+    "std_latency_ms": 48.51652342223088,
+    "avg_hops": 7.631578947368421,
+    "median_hops": 7.0,
+    "avg_node_utilization": 0.4358093984962407,
+    "max_node_utilization": 0.6
+  },
+  "comparison": {
+    "latency_improvement_percent": 67.95140931755637,
+    "hop_count_improvement_percent": 60.689655172413794,
+    "resource_utilization_improvement_percent": 22.44315951737887,
+    "delivery_rate_improvement_percent": 1799.9999999999995
+  }
+}

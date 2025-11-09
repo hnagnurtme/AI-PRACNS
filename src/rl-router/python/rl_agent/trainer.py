@@ -55,27 +55,32 @@ class DQNAgent:
         self.update_count = 0
 
     # ==============================================================
-    def select_action(self, state_vector: np.ndarray, greedy: bool = False) -> int:
+    def select_action(self, state_vector: np.ndarray, greedy: bool = False, num_valid_actions: int = OUTPUT_SIZE) -> int:
         """
-        Epsilon-Greedy Action Selection
+        Epsilon-Greedy Action Selection with Action Masking
         
         Args:
             state_vector: Current state observation
             greedy: If True, always select best action (no exploration)
+            num_valid_actions: Number of valid actions (for masking invalid actions)
         """
         # (SỬA) Sử dụng hàm get_epsilon từ policy.py (thống nhất logic)
         epsilon = 0.0 if greedy else get_epsilon(self.steps_done)
         self.steps_done += 1
 
         if np.random.rand() < epsilon:
-            # (NOTE) Khám phá ngẫu nhiên 1 trong 10 hành động
-            return np.random.randint(OUTPUT_SIZE)
+            # (NOTE) Khám phá ngẫu nhiên từ các hành động HỢP LỆ
+            return np.random.randint(num_valid_actions)
 
         with torch.no_grad():
             state_tensor = torch.from_numpy(state_vector).float().unsqueeze(0).to(device)
-            q_values = self.q_network(state_tensor)
+            q_values = self.q_network(state_tensor).squeeze(0)  # Shape: [10]
             
-            # (NOTE) Lấy argmax từ 10 Q-values
+            # Mask invalid actions by setting their Q-values to -inf
+            if num_valid_actions < OUTPUT_SIZE:
+                q_values[num_valid_actions:] = float('-inf')
+            
+            # (NOTE) Lấy argmax từ các Q-values hợp lệ
             return q_values.argmax().item()
 
     # ==============================================================

@@ -74,6 +74,7 @@ class SatelliteEnv:
         total_reward = 0.0
         hop = 0
         transitions = [] # Lưu trữ (s, a, r, s') để học sau
+        visited_nodes = set()  # Track visited nodes to detect loops
 
         while hop < max_hops:
             current_node_id = self.current_packet_state["currentHoldingNodeId"]
@@ -95,7 +96,7 @@ class SatelliteEnv:
                 break 
 
             # --- TRƯỜNG HỢP 2: AGENT CHỌN HÀNH ĐỘNG ---
-            action_index = agent.select_action(state) # Agent trả về 0-9
+            action_index = agent.select_action(state, num_valid_actions=neighbor_count)  # Agent trả về 0-(neighbor_count-1)
 
             # --- TRƯỜNG HỢP 2A: HÀNH ĐỘNG KHÔNG HỢP LỆ ---
             # (TỐI ƯU) Phạt nặng agent nếu chọn action không tồn tại
@@ -111,12 +112,21 @@ class SatelliteEnv:
             # --- TRƯỜNG HỢP 2B: HÀNH ĐỘNG HỢP LỆ ---
             neighbor_id = neighbor_ids[action_index]
             
-            new_packet_data = self._simulate_hop(self.current_packet_state, neighbor_id)
-            next_state = self.state_builder.get_state_vector(new_packet_data)
-            done = self._is_terminal(new_packet_data)
-            
-            # Tính reward DỰA TRÊN (state, action) -> next_state
-            reward = self._calculate_reward(state, action_index, new_packet_data)
+            # (MỚI) Check for loop - penalize revisiting nodes
+            if neighbor_id in visited_nodes:
+                # Penalize loop but don't end episode immediately
+                reward = -self.weights['hop_cost'] * 3  # Triple penalty for loops
+                new_packet_data = self._simulate_hop(self.current_packet_state, neighbor_id)
+                next_state = self.state_builder.get_state_vector(new_packet_data)
+                done = False
+            else:
+                visited_nodes.add(current_node_id)
+                new_packet_data = self._simulate_hop(self.current_packet_state, neighbor_id)
+                next_state = self.state_builder.get_state_vector(new_packet_data)
+                done = self._is_terminal(new_packet_data)
+                
+                # Tính reward DỰA TRÊN (state, action) -> next_state
+                reward = self._calculate_reward(state, action_index, new_packet_data)
 
             transitions.append((state, action_index, reward, next_state, done))
             total_reward += reward
