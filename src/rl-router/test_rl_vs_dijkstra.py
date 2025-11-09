@@ -156,6 +156,7 @@ class RLSimulator:
         
         state = self.env.reset(packet_data)
         current_packet = packet_data.copy()
+        visited_nodes = set()  # Track visited nodes to prevent loops
         
         for hop in range(max_hops):
             current_node_id = current_packet['currentHoldingNodeId']
@@ -163,6 +164,13 @@ class RLSimulator:
             if current_node_id == dest_id:
                 metrics.finalize(success=True)
                 return metrics
+            
+            # Check for loop
+            if current_node_id in visited_nodes:
+                metrics.finalize(success=False, drop_reason='ROUTING_LOOP')
+                return metrics
+            
+            visited_nodes.add(current_node_id)
             
             # Get neighbors
             current_node = self.env.state_builder.db.get_node(
@@ -180,7 +188,16 @@ class RLSimulator:
                 metrics.finalize(success=False, drop_reason='NO_NEIGHBORS')
                 return metrics
             
+            # Filter out already-visited neighbors to avoid immediate loops
+            valid_neighbors = [(i, nid) for i, nid in enumerate(neighbors) if nid not in visited_nodes]
+            
+            if not valid_neighbors:
+                # All neighbors have been visited - stuck in a small cycle
+                metrics.finalize(success=False, drop_reason='ALL_NEIGHBORS_VISITED')
+                return metrics
+            
             # Agent selects action (use greedy policy for testing with action masking)
+            # Map valid neighbors to action indices
             action_index = self.agent.select_action(state, greedy=True, num_valid_actions=len(neighbors))
             
             if action_index >= len(neighbors):
@@ -189,6 +206,18 @@ class RLSimulator:
                 return metrics
             
             next_id = neighbors[action_index]
+            
+            # Check if selected neighbor was already visited (loop)
+            if next_id in visited_nodes:
+                # Agent chose to revisit - try next best unvisited neighbor
+                valid_indices = [i for i, nid in enumerate(neighbors) if nid not in visited_nodes]
+                if not valid_indices:
+                    metrics.finalize(success=False, drop_reason='FORCED_LOOP')
+                    return metrics
+                
+                # Choose randomly from unvisited (fallback strategy)
+                action_index = random.choice(valid_indices)
+                next_id = neighbors[action_index]
             
             # Get next node info
             next_node = self.env.state_builder.db.get_node(
