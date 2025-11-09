@@ -87,7 +87,7 @@ class DijkstraSimulator:
             best_neighbor = None
             min_distance = float('inf')
             
-            neighbor_batch = self.state_builder.db.get_neighbor_status_batch(neighbors[:10])
+            neighbor_batch = self.state_builder.db.get_neighbor_status_batch(neighbors)
             
             from python.utils.state_builder import convert_to_ecef, calculate_distance_km
             dest_pos = convert_to_ecef(dest_node.get('position', {}))
@@ -183,7 +183,7 @@ class RLSimulator:
                 metrics.finalize(success=False, drop_reason='NODE_NOT_FOUND')
                 return metrics
             
-            neighbors = current_node.get('neighbors', [])[:10]
+            neighbors = current_node.get('neighbors', [])
             if not neighbors:
                 metrics.finalize(success=False, drop_reason='NO_NEIGHBORS')
                 return metrics
