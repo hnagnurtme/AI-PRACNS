@@ -45,10 +45,16 @@ class DQNAgent:
         self.update_count = 0
 
     # ==============================================================
-    def select_action(self, state_vector: np.ndarray) -> int:
-        """Epsilon-Greedy Action Selection"""
+    def select_action(self, state_vector: np.ndarray, greedy: bool = False) -> int:
+        """
+        Epsilon-Greedy Action Selection
+        
+        Args:
+            state_vector: Current state observation
+            greedy: If True, always select best action (no exploration)
+        """
         # (SỬA) Sử dụng hàm get_epsilon từ policy.py (thống nhất logic)
-        epsilon = get_epsilon(self.steps_done)
+        epsilon = 0.0 if greedy else get_epsilon(self.steps_done)
         self.steps_done += 1
 
         if np.random.rand() < epsilon:
