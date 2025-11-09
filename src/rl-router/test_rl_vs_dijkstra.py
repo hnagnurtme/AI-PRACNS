@@ -87,7 +87,7 @@ class DijkstraSimulator:
             best_neighbor = None
             min_distance = float('inf')
             
-            neighbor_batch = self.state_builder.db.get_neighbor_status_batch(neighbors[:10])
+            neighbor_batch = self.state_builder.db.get_neighbor_status_batch(neighbors)
             
             from python.utils.state_builder import convert_to_ecef, calculate_distance_km
             dest_pos = convert_to_ecef(dest_node.get('position', {}))
@@ -183,10 +183,15 @@ class RLSimulator:
                 metrics.finalize(success=False, drop_reason='NODE_NOT_FOUND')
                 return metrics
             
-            neighbors = current_node.get('neighbors', [])[:10]
+            neighbors = current_node.get('neighbors', [])
             if not neighbors:
                 metrics.finalize(success=False, drop_reason='NO_NEIGHBORS')
                 return metrics
+            
+            # NOTE: While we consider all neighbors here, the DQN model (OUTPUT_SIZE=10)
+            # can only output Q-values for the first 10 during exploitation (greedy).
+            # During exploration (epsilon-greedy), random selection can choose from all.
+            # For greedy testing (used in this comparison), effectively limited to first 10.
             
             # Filter out already-visited neighbors to avoid immediate loops
             valid_neighbors = [(i, nid) for i, nid in enumerate(neighbors) if nid not in visited_nodes]
