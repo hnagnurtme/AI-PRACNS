@@ -95,7 +95,7 @@ class SatelliteEnv:
                 break 
 
             # --- TRƯỜNG HỢP 2: AGENT CHỌN HÀNH ĐỘNG ---
-            action_index = agent.select_action(state) # Agent trả về 0-9
+            action_index = agent.select_action(state, num_valid_actions=neighbor_count)  # Agent trả về 0-(neighbor_count-1)
 
             # --- TRƯỜNG HỢP 2A: HÀNH ĐỘNG KHÔNG HỢP LỆ ---
             # (TỐI ƯU) Phạt nặng agent nếu chọn action không tồn tại

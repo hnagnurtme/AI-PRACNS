@@ -180,10 +180,11 @@ class RLSimulator:
                 metrics.finalize(success=False, drop_reason='NO_NEIGHBORS')
                 return metrics
             
-            # Agent selects action (use greedy policy for testing)
-            action_index = self.agent.select_action(state, greedy=True)
+            # Agent selects action (use greedy policy for testing with action masking)
+            action_index = self.agent.select_action(state, greedy=True, num_valid_actions=len(neighbors))
             
             if action_index >= len(neighbors):
+                # This should never happen with masking, but keep as safety check
                 metrics.finalize(success=False, drop_reason='INVALID_ACTION')
                 return metrics
             
