@@ -75,10 +75,12 @@ export const PacketFlowDetail = ( { node, batch }: { node: NodeCongestion; batch
             [ pair.dijkstraPacket, pair.rlPacket ].forEach( packet => {  // ✅ Fixed: rlPacket (capital P)
                 if (!packet) return;  // ✅ Null check
                 
-                const hasNode = packet.hopRecords.some(
-                    hop => hop.fromNodeId === node.nodeId || hop.toNodeId === node.nodeId
+                // Check if this node ROUTED the packet (fromNodeId), not just received it
+                // Exclude hops where toNodeId starts with "USER:" (final delivery to user)
+                const hasRoutedPacket = packet.hopRecords.some(
+                    hop => hop.fromNodeId === node.nodeId && !hop.toNodeId.startsWith('USER:')
                 );
-                if ( hasNode ) {
+                if ( hasRoutedPacket ) {
                     packets.push( {
                         packet,
                         algorithm: packet.useRL ? 'RL' : 'Dijkstra',

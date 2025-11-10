@@ -105,13 +105,15 @@ public class ScenarioController {
         nodeRepository.saveAll(updatedNodes);
         
         // Broadcast updates via WebSocket
+        // Send individual updates to maintain compatibility with existing UI listeners
         List<NodeDTO> nodeDTOs = updatedNodes.stream()
                 .map(NodeDTO::fromEntity)
                 .collect(Collectors.toList());
         
-        nodeDTOs.forEach(nodeDTO -> {
+        // Send updates synchronously to prevent race conditions in UI
+        for (NodeDTO nodeDTO : nodeDTOs) {
             messagingTemplate.convertAndSend("/topic/node-status", nodeDTO);
-        });
+        }
         
         logger.info("Successfully applied scenario {} to {} nodes", scenarioName, updatedNodes.size());
         
