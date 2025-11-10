@@ -41,6 +41,14 @@ import java.util.concurrent.TimeUnit;
 public class TCP_Service implements ITCP_Service {
     private static final Logger logger = LoggerFactory.getLogger(TCP_Service.class);
 
+    // --- Constants ---
+    /**
+     * Maximum allowed size for a packet (16KB).
+     * This matches the MAX_PACKET_SIZE in NodeGateway to ensure consistency.
+     * Packets larger than this will be rejected to prevent memory issues.
+     */
+    private static final int MAX_PACKET_SIZE = 16 * 1024; // 16 KB
+
     // --- Dependencies ---
     private final INodeRepository nodeRepository;
     private final IUserRepository userRepository;
@@ -685,18 +693,27 @@ public class TCP_Service implements ITCP_Service {
     }
 
     /**
-     * Converts an integer to a 4-byte array in big-endian format.
+     * Converts an integer to a 4-byte array in big-endian format (network byte order).
      * This is used for the length-prefixing protocol.
+     * 
+     * Big-endian format means most significant byte (MSB) comes first:
+     * - Byte[0]: bits 24-31 (most significant)
+     * - Byte[1]: bits 16-23
+     * - Byte[2]: bits 8-15
+     * - Byte[3]: bits 0-7 (least significant)
+     * 
+     * This matches the format expected by DataInputStream.readInt() and is the
+     * standard network byte order (RFC 1700).
      *
      * @param value The integer value to convert
-     * @return A 4-byte array representing the integer
+     * @return A 4-byte array representing the integer in big-endian format
      */
     private byte[] intToBytes(int value) {
         return new byte[] {
-            (byte) (value >> 24),
-            (byte) (value >> 16),
-            (byte) (value >> 8),
-            (byte) value
+            (byte) (value >> 24),  // MSB: bits 24-31
+            (byte) (value >> 16),  // bits 16-23
+            (byte) (value >> 8),   // bits 8-15
+            (byte) value           // LSB: bits 0-7
         };
     }
 
@@ -738,9 +755,33 @@ public class TCP_Service implements ITCP_Service {
             return true; // Return 'true' to signal the job is "complete" and should not be retried.
         }
 
-        logger.debug("[TCP_Service] Sending (Attempt {}/{}): Packet {} to {} at {}:{}...",
+        // Validate packet size before sending
+        if (packetData.length <= 0 || packetData.length > MAX_PACKET_SIZE) {
+            logger.error(
+                    "[TCP_Service] FATAL: Serialized packet {} has invalid size {} bytes (max: {} bytes). Dropping permanently.",
+                    job.packet().getPacketId(), packetData.length, MAX_PACKET_SIZE);
+            
+            job.packet().setDropped(true);
+            job.packet().setDropReason("PACKET_SIZE_EXCEEDS_LIMIT");
+            
+            // If this was heading to a user, save it for analysis
+            if (job.destinationDesc().startsWith("USER:")) {
+                try {
+                    PacketHelper.calculateAnalysisData(job.packet());
+                    batchPacketService.savePacket(job.packet());
+                    logger.info("[TCP_Service] 💾 Saved DROPPED (oversized) packet {} to database.",
+                            job.packet().getPacketId());
+                } catch (Exception dbException) {
+                    logger.error("[TCP_Service] ❌ Failed to save oversized/dropped packet {}: {}",
+                            job.packet().getPacketId(), dbException.getMessage(), dbException);
+                }
+            }
+            return true; // Return 'true' to signal the job is "complete" and should not be retried.
+        }
+
+        logger.debug("[TCP_Service] Sending (Attempt {}/{}): Packet {} ({} bytes) to {} at {}:{}...",
                 job.attemptCount(), MAX_RETRIES,
-                job.packet().getPacketId(), job.destinationDesc(), job.host(), job.port());
+                job.packet().getPacketId(), packetData.length, job.destinationDesc(), job.host(), job.port());
 
         // 2. Open Socket and Send
         // (Use try-with-resources to ensure socket/streams are always closed)
@@ -753,11 +794,21 @@ public class TCP_Service implements ITCP_Service {
 
             try (OutputStream out = socket.getOutputStream()) {
                 // Write the 4-byte length prefix (for the protocol)
-                out.write(intToBytes(packetData.length));
+                byte[] lengthPrefix = intToBytes(packetData.length);
+                out.write(lengthPrefix);
                 
                 // Write the packet data
                 out.write(packetData);
                 out.flush();
+                
+                logger.debug("[TCP_Service] Sent {} bytes (length prefix: 0x{}{}{}{}) for Packet {} to {}",
+                        packetData.length,
+                        String.format("%02X", lengthPrefix[0]),
+                        String.format("%02X", lengthPrefix[1]),
+                        String.format("%02X", lengthPrefix[2]),
+                        String.format("%02X", lengthPrefix[3]),
+                        job.packet().getPacketId(), job.destinationDesc());
+                
                 logger.info("[TCP_Service] Successfully sent Packet {} to {}.",
                         job.packet().getPacketId(), job.destinationDesc());
                 return true; // Success!
