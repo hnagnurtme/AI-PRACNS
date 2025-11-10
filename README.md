@@ -297,7 +297,33 @@ http://localhost:8080/swagger-ui/index.html
 
 ---
 
-## 9. Troubleshooting
+## 9. Multi-Machine Deployment
+
+The system supports deployment across multiple machines with automatic LAN IP detection.
+
+**📖 See [Multi-Machine Setup Guide](docs/MULTI_MACHINE_SETUP.md) for detailed instructions.**
+
+Key features:
+- ✅ Automatic LAN IP detection on startup
+- ✅ Database IP auto-update for nodes and clients
+- ✅ Multi-hop packet routing (Client A → Node A → Node B → Client B)
+- ✅ Comprehensive logging for debugging
+
+Quick start:
+```bash
+# Node machines
+cd src/sagsins-node
+mvn exec:java -Dexec.mainClass="com.sagin.util.SimulationMain"
+
+# Client machines
+cd src/client-simulator
+mvn exec:java -Dexec.mainClass="com.example.MainApp"
+# Click "Start Listening" to auto-detect and update IP
+```
+
+---
+
+## 10. Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
@@ -305,10 +331,12 @@ http://localhost:8080/swagger-ui/index.html
 | **MongoDB connection failed** | Check `docker ps \| grep mongo` and restart |
 | **CUDA not available** | Install PyTorch with CUDA: `pip install torch --index-url https://download.pytorch.org/whl/cu118` |
 | **Out of memory** | Increase JVM heap: `export JAVA_OPTS="-Xmx2048m"` |
+| **Wrong IP detected** | Override with `export NODE_HOST_IP=<your-ip>` for nodes |
+| **Multi-machine connection failed** | See [Multi-Machine Setup Guide](docs/MULTI_MACHINE_SETUP.md) |
 
 ---
 
-## 10. Contributing
+## 11. Contributing
 
 1. Fork the repository
 2. Create feature branch: `git checkout -b feature/name`
@@ -323,7 +351,7 @@ http://localhost:8080/swagger-ui/index.html
 
 ---
 
-## 11. Roadmap
+## 12. Roadmap
 
 ### ✅ Phase 1: Core Features (Completed)
 - Multi-client simulation
@@ -334,9 +362,12 @@ http://localhost:8080/swagger-ui/index.html
 - React UI
 
 ### 🚧 Phase 2: Advanced Features (In Progress)
+- [x] Auto LAN IP detection and database sync
+- [x] Multi-machine deployment support
+- [x] Multi-hop routing tests
 - [ ] Advanced RL algorithms (A3C, PPO)
 - [ ] Real-time visualization
-- [ ] Comprehensive test suite
+- [x] Comprehensive test suite
 - [ ] CI/CD pipeline
 - [ ] Performance optimization
 
@@ -348,7 +379,7 @@ http://localhost:8080/swagger-ui/index.html
 
 ---
 
-## 12. License
+## 13. License
 
 This project is currently under **MIT License**
 ---
