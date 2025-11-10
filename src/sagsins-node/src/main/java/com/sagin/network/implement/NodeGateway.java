@@ -169,9 +169,17 @@ public class NodeGateway implements INodeGateway {
             // Keep reading packets from this connection as long as it's open
             while (isRunning.get()) {
                 int packetLength;
+                byte[] lengthBytes = new byte[4]; // Store raw bytes for diagnostics
                 try {
                     // 1. Read the 4-byte integer length prefix
-                    packetLength = dis.readInt();
+                    // Read raw bytes first for better diagnostics
+                    dis.readFully(lengthBytes);
+                    
+                    // Convert to int using big-endian format (network byte order)
+                    packetLength = ((lengthBytes[0] & 0xFF) << 24) |
+                                   ((lengthBytes[1] & 0xFF) << 16) |
+                                   ((lengthBytes[2] & 0xFF) << 8) |
+                                   (lengthBytes[3] & 0xFF);
                 } catch (EOFException eof) {
                     // Clean shutdown: client closed the connection.
                     logger.debug("[NodeGateway] Node {}: Client {} closed the connection.", nodeId,
@@ -179,11 +187,48 @@ public class NodeGateway implements INodeGateway {
                     break; // Exit the while loop
                 }
 
-                // 2. Sanity check the length
+                // 2. Enhanced sanity check with detailed diagnostics
                 if (packetLength <= 0 || packetLength > MAX_PACKET_SIZE) {
-                    logger.warn(
-                            "[NodeGateway] Node {}: Received invalid packet length {} from {}. Closing connection.",
-                            nodeId, packetLength, clientSocket.getRemoteSocketAddress());
+                    // Log detailed diagnostics to help identify byte order issues
+                    String hexBytes = String.format("0x%02X%02X%02X%02X", 
+                        lengthBytes[0], lengthBytes[1], lengthBytes[2], lengthBytes[3]);
+                    
+                    // Check if this looks like JSON data (client forgot length prefix)
+                    boolean looksLikeJson = false;
+                    if (lengthBytes[0] == '{' || lengthBytes[0] == '[') {
+                        looksLikeJson = true;
+                        String asciiChars = "";
+                        for (byte b : lengthBytes) {
+                            if (b >= 32 && b < 127) { // Printable ASCII
+                                asciiChars += (char) b;
+                            } else {
+                                asciiChars += '.';
+                            }
+                        }
+                        logger.error(
+                            "[NodeGateway] Node {}: PROTOCOL ERROR detected! Received what looks like JSON data '{}' ({}) from {} " +
+                            "instead of a length prefix. Client is NOT using length-prefix protocol. Closing connection.",
+                            nodeId, asciiChars, hexBytes, clientSocket.getRemoteSocketAddress());
+                        break;
+                    }
+                    
+                    // Check if reversing byte order would give a valid length (indicates endianness issue)
+                    int reversedLength = ((lengthBytes[3] & 0xFF) << 24) |
+                                        ((lengthBytes[2] & 0xFF) << 16) |
+                                        ((lengthBytes[1] & 0xFF) << 8) |
+                                        (lengthBytes[0] & 0xFF);
+                    
+                    if (reversedLength > 0 && reversedLength <= MAX_PACKET_SIZE) {
+                        logger.error(
+                            "[NodeGateway] Node {}: BYTE ORDER ISSUE detected! Received invalid packet length {} ({}) from {}. " +
+                            "Reversed byte order would give valid length {}. Client may be using wrong endianness (little-endian instead of big-endian). Closing connection.",
+                            nodeId, packetLength, hexBytes, clientSocket.getRemoteSocketAddress(), reversedLength);
+                    } else {
+                        logger.warn(
+                            "[NodeGateway] Node {}: Received invalid packet length {} ({}) from {}. " +
+                            "Expected range: 1-{} bytes. Closing connection.",
+                            nodeId, packetLength, hexBytes, clientSocket.getRemoteSocketAddress(), MAX_PACKET_SIZE);
+                    }
                     break; // Invalid length, stop processing this client
                 }
 
