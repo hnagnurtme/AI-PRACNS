@@ -685,6 +685,22 @@ public class TCP_Service implements ITCP_Service {
     }
 
     /**
+     * Converts an integer to a 4-byte array in big-endian format.
+     * This is used for the length-prefixing protocol.
+     *
+     * @param value The integer value to convert
+     * @return A 4-byte array representing the integer
+     */
+    private byte[] intToBytes(int value) {
+        return new byte[] {
+            (byte) (value >> 24),
+            (byte) (value >> 16),
+            (byte) (value >> 8),
+            (byte) value
+        };
+    }
+
+    /**
      * (Consumer I/O)
      * The actual I/O function: Attempts to serialize and send the packet via a
      * Socket.
@@ -736,9 +752,8 @@ public class TCP_Service implements ITCP_Service {
             );
 
             try (OutputStream out = socket.getOutputStream()) {
-                // Write the 4-byte length prefix (for the new protocol)
-                // Note: This requires the NodeGateway to be updated!
-                // out.write(intToBytes(packetData.length)); 
+                // Write the 4-byte length prefix (for the protocol)
+                out.write(intToBytes(packetData.length));
                 
                 // Write the packet data
                 out.write(packetData);
