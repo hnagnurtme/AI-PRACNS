@@ -39,7 +39,13 @@ public class SimulationScenarioFactoryService {
      * Apply scenario effects to a node based on scenario name
      */
     public NodeInfo applyScenarioToNode(NodeInfo node, String scenarioName) {
-        if ("NORMAL".equals(scenarioName) || node == null) {
+        if (node == null) {
+            return node;
+        }
+        
+        // Reset node to healthy state first for NORMAL or before applying any scenario
+        if ("NORMAL".equals(scenarioName)) {
+            resetNodeToNormal(node);
             return node;
         }
         
@@ -131,6 +137,40 @@ public class SimulationScenarioFactoryService {
     }
     
     // Private helper methods to apply specific scenario effects
+    
+    /**
+     * Reset node to normal operational state
+     */
+    private void resetNodeToNormal(NodeInfo node) {
+        // Ensure node is operational
+        node.setOperational(true);
+        
+        // Reset weather to clear/normal
+        node.setWeather(WeatherCondition.CLEAR);
+        
+        // Reset packet loss rate to minimal
+        if (node.getPacketLossRate() > 0.01) {
+            node.setPacketLossRate(0.001); // Minimal packet loss
+        }
+        
+        // Reset processing delay to normal
+        if (node.getNodeProcessingDelayMs() > 10) {
+            node.setNodeProcessingDelayMs(5.0); // Normal processing delay
+        }
+        
+        // Reset queue to normal levels (30% or less)
+        int capacity = node.getPacketBufferCapacity();
+        if (node.getCurrentPacketCount() > capacity * 0.3) {
+            node.setCurrentPacketCount((int)(capacity * 0.2)); // Normal queue level
+        }
+        
+        // Reset resource utilization to normal
+        if (node.getResourceUtilization() > 50.0) {
+            node.setResourceUtilization(30.0 + random.nextDouble() * 15.0); // 30-45%
+        }
+        
+        logger.debug("Reset node {} to normal state", node.getNodeId());
+    }
     
     private void applyWeatherEvent(NodeInfo node) {
         // Set bad weather conditions with guaranteed effect

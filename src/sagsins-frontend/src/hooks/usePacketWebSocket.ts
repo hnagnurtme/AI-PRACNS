@@ -12,20 +12,32 @@ export const usePacketWebSocket = ( url: string ) => {
         const client = new Client( {
             webSocketFactory: () => socket as unknown as WebSocket,
             onConnect: () => {
-                console.log( "✅ Connected to WebSocket" );
+                console.log( "✅ Connected to Packet WebSocket" );
                 client.subscribe( "/topic/packets", ( msg ) => {
-                    console.log( "📩 Message received", msg );
-                    const body: ComparisonData = JSON.parse( msg.body );
-
-                    
-                    setMessages( ( prev ) => [ ...prev, body ] );
+                    console.log( "📩 Packet message received", msg );
+                    try {
+                        const body: ComparisonData = JSON.parse( msg.body );
+                        setMessages( ( prev ) => [ ...prev, body ] );
+                    } catch (error) {
+                        console.error("❌ Error parsing packet message:", error);
+                    }
                 } );
             },
-            onStompError: ( err ) => console.error( "STOMP error:", err ),
+            onStompError: ( err ) => {
+                console.error( "❌ Packet WebSocket STOMP error:", err );
+            },
+            onDisconnect: () => {
+                console.log("🔌 Packet WebSocket disconnected");
+            },
+            // Add reconnection configuration
+            reconnectDelay: 5000,
+            heartbeatIncoming: 4000,
+            heartbeatOutgoing: 4000,
         } );
 
         client.activate();
         return () => {
+            console.log("🔌 Deactivating Packet WebSocket");
             client.deactivate();
         };
     }, [ url ] );
