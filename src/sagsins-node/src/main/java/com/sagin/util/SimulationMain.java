@@ -36,8 +36,6 @@ public class SimulationMain {
 
     private static final Logger logger = AppLogger.getLogger(SimulationMain.class);
 
-    // Load configuration from Environment Variables, with safe defaults.
-    private static final String NODE_HOST_IP = System.getenv().getOrDefault("NODE_HOST_IP", "127.0.0.1");
     private static final String RL_SERVICE_HOST_DEFAULT = "127.0.0.1";
     private static final int RL_SERVICE_PORT_DEFAULT = 6000;
 
@@ -48,6 +46,18 @@ public class SimulationMain {
 
         logger.info("=== Starting full SAGIN network simulation ===");
         logger.info("Simulation ID: {}", simulationId);
+
+        // --- 0. Auto-detect LAN IP Address ---
+        // Allow override via environment variable for special cases (e.g., Docker, testing)
+        String detectedIp = NetworkUtils.getLocalIpAddress();
+        String nodeHostIp = System.getenv().getOrDefault("NODE_HOST_IP", detectedIp);
+        
+        if (!nodeHostIp.equals(detectedIp)) {
+            logger.warn("⚠️ NODE_HOST_IP environment variable ({}) overrides auto-detected IP ({})", 
+                nodeHostIp, detectedIp);
+        } else {
+            logger.info("✅ Using auto-detected LAN IP: {}", nodeHostIp);
+        }
 
         // --- 1. Initialize Core Singleton Services ---
         // These services are created ONCE and shared by all nodes.
@@ -82,15 +92,15 @@ public class SimulationMain {
         Map<String, NodeInfo> nodeInfoMap = nodeRepository.loadAllNodeConfigs();
         logger.info("Loaded {} node configurations.", nodeInfoMap.size());
 
-        // Update IPs in memory first.
-        logger.info("Updating node IP addresses to {}...", NODE_HOST_IP);
+        // Update IPs in memory first with auto-detected IP.
+        logger.info("📝 Updating node IP addresses to {}...", nodeHostIp);
         nodeInfoMap.values().forEach(nodeInfo -> {
-            nodeService.updateNodeIpAddress(nodeInfo.getNodeId(), NODE_HOST_IP);
+            nodeService.updateNodeIpAddress(nodeInfo.getNodeId(), nodeHostIp);
         });
 
         // Flush all IP updates to the database in ONE operation.
         nodeService.flushToDatabase();
-        logger.info("Node IP addresses flushed to database.");
+        logger.info("✅ Node IP addresses flushed to database.");
 
         // --- 3. Launch Node Gateways ---
         // Use a Thread Pool to manage node threads.

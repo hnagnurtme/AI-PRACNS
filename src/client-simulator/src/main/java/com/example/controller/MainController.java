@@ -250,14 +250,46 @@ public class MainController {
     private void onListenToggle() {
         if (!listening) {
             try {
+                // Auto-detect LAN IP
+                String detectedIp = com.example.util.NetworkUtils.getLocalIpAddress();
+                System.out.println("🌐 Auto-detected LAN IP: " + detectedIp);
+                
                 int port = Integer.parseInt(view.tfListenPort.getText().trim());
+                
+                // Update UserInfo IP in database if sender is selected
+                String selectedSender = view.cbSenderUsername.getValue();
+                if (selectedSender != null && !selectedSender.isBlank() && userRepo != null) {
+                    try {
+                        Optional<UserInfo> userOpt = userRepo.findByUserId(selectedSender);
+                        if (userOpt.isPresent()) {
+                            UserInfo user = userOpt.get();
+                            String oldIp = user.getIpAddress();
+                            
+                            // Update IP in database
+                            user.setIpAddress(detectedIp);
+                            userRepo.updateUserIpAddress(selectedSender, detectedIp);
+                            
+                            if (!detectedIp.equals(oldIp)) {
+                                System.out.println("✅ Updated user " + selectedSender + " IP: " + oldIp + " → " + detectedIp);
+                            } else {
+                                System.out.println("ℹ️ User " + selectedSender + " IP unchanged: " + detectedIp);
+                            }
+                        }
+                    } catch (Exception ex) {
+                        System.err.println("⚠️ Failed to update user IP in database: " + ex.getMessage());
+                        ex.printStackTrace();
+                    }
+                }
+                
                 receiver.start(port, this::onPacketReceived);
                 listening = true;
                 view.btnListen.setText("Stop Listening");
-                view.lblStatus.setText("Listening on port " + port);
+                view.lblStatus.setText("Listening on " + detectedIp + ":" + port);
             } catch (IOException ex) {
                 view.lblStatus.setText("Failed to listen: " + ex.getMessage());
                 ex.printStackTrace();
+            } catch (NumberFormatException ex) {
+                view.lblStatus.setText("Invalid port number");
             }
         } else {
             receiver.stop();

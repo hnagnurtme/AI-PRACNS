@@ -25,4 +25,11 @@ public interface IUserRepository {
 
     void bulkUpdateUsers(List<UserInfo> users);
 
+    /**
+     * Update IP address for a specific user.
+     * @param userId The user ID
+     * @param ipAddress The new IP address
+     */
+    void updateUserIpAddress(String userId, String ipAddress);
+
 }

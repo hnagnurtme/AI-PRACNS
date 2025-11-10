@@ -127,4 +127,16 @@ public class MongoUserRepository implements IUserRepository {
         }
     }
 
+    @Override
+    public void updateUserIpAddress(String userId, String ipAddress) {
+        try {
+            Bson filter = Filters.eq("userId", userId);
+            Bson update = com.mongodb.client.model.Updates.set("ipAddress", ipAddress);
+            usersCollection.updateOne(filter, update);
+            logger.info("✅ Updated IP address for user {}: {}", userId, ipAddress);
+        } catch (Exception e) {
+            logger.error("❌ Failed to update IP address for user {}: {}", userId, e.getMessage(), e);
+        }
+    }
+
 }
