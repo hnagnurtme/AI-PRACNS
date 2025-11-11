@@ -4,9 +4,10 @@ import com.example.model.Packet;
 import com.example.util.PacketSerializerHelper;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -14,13 +15,17 @@ import java.util.concurrent.ConcurrentHashMap;
  * Optimized TCP packet sender that caches and reuses connections.
  * This class is a thread-safe singleton and manages its own lifecycle
  * using a JVM shutdown hook to close all connections.
+ *
+ * It uses a length-prefix protocol:
+ * - 4-byte Big-Endian integer for the length of the payload.
+ * - UTF-8 encoded JSON payload.
  */
 public class PacketSender {
 
     // 1. Singleton Instance
     private static final PacketSender INSTANCE = new PacketSender();
 
-    private final Map<String, PrintWriter> activeWriters = new ConcurrentHashMap<>();
+    private final Map<String, OutputStream> activeStreams = new ConcurrentHashMap<>();
     private final Map<String, Socket> activeSockets = new ConcurrentHashMap<>();
 
     /**
@@ -28,8 +33,6 @@ public class PacketSender {
      * Registers a shutdown hook to clean up connections on JVM exit.
      */
     private PacketSender() {
-        // 2. Thay thế cho @PreDestroy
-        // Đăng ký một "shutdown hook" để tự động gọi closeAll() khi app tắt
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             System.out.println("Shutdown hook running: Closing all active PacketSender connections...");
             this.closeAll();
@@ -38,14 +41,26 @@ public class PacketSender {
     }
 
     /**
-     * Lấy instance duy nhất của PacketSender.
+     * Gets the singleton instance of PacketSender.
      */
     public static PacketSender getInstance() {
         return INSTANCE;
     }
 
     /**
-     * Send a packet to the given host:port.
+     * Converts an integer to a 4-byte array in big-endian format (network byte order).
+     */
+    private byte[] intToBytes(int value) {
+        return new byte[] {
+            (byte) (value >> 24),
+            (byte) (value >> 16),
+            (byte) (value >> 8),
+            (byte) value
+        };
+    }
+
+    /**
+     * Send a packet to the given host:port using a length-prefix protocol.
      * Reuses an existing connection or creates a new one.
      *
      * @throws IOException when serialization fails or sending fails.
@@ -53,13 +68,13 @@ public class PacketSender {
     public void send(String host, int port, Packet packet) throws IOException {
         // Validate input
         if (host == null || host.isBlank()) {
-            throw new IOException("Host không được để trống");
+            throw new IOException("Host cannot be empty");
         }
         if (port <= 0 || port > 65535) {
-            throw new IOException("Port không hợp lệ: " + port);
+            throw new IOException("Invalid port: " + port);
         }
         if (packet == null) {
-            throw new IOException("Packet không được null");
+            throw new IOException("Packet cannot be null");
         }
         
         String json = PacketSerializerHelper.serialize(packet);
@@ -67,73 +82,70 @@ public class PacketSender {
             throw new IOException("Failed to serialize packet with ID: " + packet.getPacketId());
         }
 
+        byte[] payload = json.getBytes(StandardCharsets.UTF_8);
+        byte[] lengthPrefix = intToBytes(payload.length);
+
         String connectionKey = host + ":" + port;
 
         try {
-            PrintWriter writer = getOrCreateWriter(connectionKey, host, port);
+            OutputStream out = getOrCreateStream(connectionKey, host, port);
             
-            // Dùng synchronized trên writer để đảm bảo 
-            // 2 thread không ghi đè dữ liệu của nhau trên CÙNG MỘT socket
-            synchronized (writer) {
-                writer.println(json);
-                writer.flush(); // Đảm bảo dữ liệu được gửi ngay
-                
-                // Kiểm tra lỗi ngay lập tức
-                if (writer.checkError()) {
-                    throw new IOException("PrintWriter reported an error while sending to " + connectionKey);
-                }
+            // Synchronize on the stream to ensure thread-safe writing on the same socket
+            synchronized (out) {
+                out.write(lengthPrefix);
+                out.write(payload);
+                out.flush(); // Ensure data is sent immediately
             }
 
         } catch (IOException e) {
-            // Nếu có lỗi, xóa kết nối hỏng để lần sau tạo lại
+            // If an error occurs, evict the faulty connection from the cache
             System.err.println("❌ Connection failed for " + connectionKey + ". Evicting cache. Error: " + e.getMessage());
             closeAndRemoveConnection(connectionKey);
             throw new IOException("Failed to send packet to " + connectionKey + ": " + e.getMessage(), e);
         }
     }
 
-    private PrintWriter getOrCreateWriter(String key, String host, int port) throws IOException {
-        // Lần 1: Lấy nhanh (đã có kết nối)
-        PrintWriter writer = activeWriters.get(key);
-        if (writer != null) {
+    private OutputStream getOrCreateStream(String key, String host, int port) throws IOException {
+        // First check: quick retrieval for existing connections
+        OutputStream out = activeStreams.get(key);
+        if (out != null) {
             Socket socket = activeSockets.get(key);
-            // Kiểm tra socket còn mở không
+            // Validate the underlying socket is still open and connected
             if (socket != null && !socket.isClosed() && socket.isConnected()) {
-                return writer;
+                return out;
             } else {
-                // Socket đã đóng, xóa và tạo lại
+                // Socket is closed, evict and recreate
                 System.out.println("⚠️ Detected closed socket for " + key + ", recreating...");
                 closeAndRemoveConnection(key);
             }
         }
 
-        // Lần 2: Nếu không có, phải khóa lại để tạo mới
-        // Dùng 'this' để khóa toàn bộ object PacketSender
+        // Second check: synchronized block for creating a new connection
         synchronized (this) {
-            // Kiểm tra lại (double-checked locking)
-            writer = activeWriters.get(key);
-            if (writer != null) {
+            // Double-checked locking
+            out = activeStreams.get(key);
+            if (out != null) {
                 Socket socket = activeSockets.get(key);
                 if (socket != null && !socket.isClosed() && socket.isConnected()) {
-                    return writer;
+                    return out;
                 }
             }
 
-            // Tạo kết nối mới
+            // Create a new connection
             System.out.println("🔌 Creating new persistent connection to " + key);
             try {
                 Socket socket = new Socket();
-                socket.connect(new java.net.InetSocketAddress(host, port), 5000); // 5s timeout
-                socket.setSoTimeout(5000); // Read timeout
-                socket.setKeepAlive(true); // Giữ kết nối
+                socket.connect(new InetSocketAddress(host, port), 5000); // 5s connect timeout
+                socket.setSoTimeout(5000); // 5s read timeout
+                socket.setKeepAlive(true);
                 
-                PrintWriter newWriter = new PrintWriter(socket.getOutputStream(), true); // 'true' = autoFlush
+                OutputStream newStream = socket.getOutputStream();
 
                 activeSockets.put(key, socket);
-                activeWriters.put(key, newWriter);
+                activeStreams.put(key, newStream);
                 
                 System.out.println("✅ Successfully connected to " + key);
-                return newWriter;
+                return newStream;
             } catch (IOException e) {
                 System.err.println("❌ Failed to create connection to " + key + ": " + e.getMessage());
                 throw new IOException("Cannot connect to " + key + ": " + e.getMessage(), e);
@@ -142,28 +154,28 @@ public class PacketSender {
     }
 
     private void closeAndRemoveConnection(String key) {
-        // Khóa lại để đảm bảo thread-safety khi xóa
+        // Synchronize to ensure thread-safety during removal
         synchronized (this) {
-            activeWriters.remove(key);
+            activeStreams.remove(key);
             
             Socket socket = activeSockets.remove(key);
             if (socket != null) {
                 try {
                     socket.close();
                 } catch (IOException e) {
-                    // Bỏ qua lỗi khi đóng
+                    // Ignore errors on close
                 }
             }
         }
     }
 
     /**
-     * Đóng tất cả các kết nối đang hoạt động.
-     * Hàm này chủ yếu được gọi bởi shutdown hook.
+     * Closes all active connections.
+     * This is primarily called by the shutdown hook.
      */
     public void closeAll() {
-        // Dùng .keySet() để tránh ConcurrentModificationException
-        for (String key : activeSockets.keySet()) {
+        // Use keySet to avoid ConcurrentModificationException
+    for (String key : activeSockets.keySet()) {
             closeAndRemoveConnection(key);
         }
     }

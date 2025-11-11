@@ -63,7 +63,7 @@ public class DynamicRoutingService implements IRoutingService {
         Map<String, List<String>> graph = buildAdjacencyList(allNodes);
 
         for (NodeInfo srcNode : allNodes) {
-            if (!srcNode.getHealthy()) {
+            if (!srcNode.isOperational()) {
                 continue;
             }
             RoutingTable table = computeRoutingTable(srcNode.getNodeId(), graph);
@@ -75,7 +75,7 @@ public class DynamicRoutingService implements IRoutingService {
     private Map<String, List<String>> buildAdjacencyList(List<NodeInfo> nodes) {
         Map<String, List<String>> graph = new HashMap<>();
         for (NodeInfo node : nodes) {
-            if (!node.getHealthy()) continue;
+            if (!node.isOperational()) continue;
             List<String> visibleNeighbors = nodeService.getVisibleNodes(node, nodes).stream()
                     .filter(NodeInfo::getHealthy)
                     .map(NodeInfo::getNodeId)

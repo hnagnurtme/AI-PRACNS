@@ -80,13 +80,12 @@ public class NodeService implements INodeService {
             dirtyNodeIds.add(nodeId);
             return 0.0;
         }
-        // ✅ BUG FIX: Add null check for getHealthy() to prevent NullPointerException
-        Boolean isHealthy = node.getHealthy();
-        if (isHealthy != null && !isHealthy) {
-            packet.setDropped(true); packet.setDropReason("NODE_UNHEALTHY_" + nodeId); 
-            logger.warn("[NodeService] Node {} không khỏe. Packet {} bị drop.", nodeId, packet.getPacketId());
-            return 0.0;
-        }
+        // Boolean isHealthy = node.isOperational();
+        // if (isHealthy != null && !isHealthy) {
+        //     packet.setDropped(true); packet.setDropReason("NODE_UNHEALTHY_" + nodeId); 
+        //     logger.warn("[NodeService] Node {} không khỏe. Packet {} bị drop.", nodeId, packet.getPacketId());
+        //     return 0.0;
+        // }
         node.setCurrentPacketCount(node.getCurrentPacketCount() + 1); // Chiếm buffer
         // --- Hết ---
 
