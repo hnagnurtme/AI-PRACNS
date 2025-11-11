@@ -58,8 +58,13 @@ src/satellite-service/src/main/resources/application-production.yml
 
 # Maven build artifacts
 **/target/
+**/maven-status/
 
 # Backup files
 *.old.tsx
 *.old.ts
 *.old.js
+
+# Log files
+**/logs/
+*.log.gz
