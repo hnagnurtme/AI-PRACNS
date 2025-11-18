@@ -17,7 +17,11 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 logger = logging.getLogger(__name__)
 
 # --- MongoDB setup ---
-from python.utils.db_connector import LOCAL_MONGO_URI, CLOUD_MONGO_URI
+import sys
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from python.utils.db_connector import MongoConnector, LOCAL_MONGO_URI
+
+CLOUD_MONGO_URI = os.getenv("CLOUD_MONGO_URI", LOCAL_MONGO_URI)
 DB_NAME = "sagsin_network" # Use the consistent DB name
 
 # Constants for ECEF conversion
@@ -72,9 +76,9 @@ class NodeService:
         for node in nodes:
             node_info_cache[node["nodeId"]] = {
                 "ecef_pos": self.geo_to_ecef(node["position"]),
-                "rangeKm": node["communication"].get("rangeKm", 0),
-                "maxConnections": node["communication"].get("maxConnections", 0),
-                "operational": node.get("operational", False)
+                "rangeKm": node["communication"].get("maxRangeKm", 2000.0),
+                "maxConnections": node["communication"].get("maxConnections", 100),
+                "operational": node.get("isOperational", True)
             }
 
         for node1_id, info1 in node_info_cache.items():
@@ -101,7 +105,8 @@ class NodeService:
             node_data = next((n for n in nodes if n["nodeId"] == node_id), None)
             if node_data:
                 neighbors_map[node_id] = list(set(neighbors_map[node_id]))
-                neighbors_map[node_id] = neighbors_map[node_id][:node_data["communication"]["maxConnections"]]
+                max_conn = node_data["communication"].get("maxConnections", 100)
+                neighbors_map[node_id] = neighbors_map[node_id][:max_conn]
 
         return neighbors_map
 

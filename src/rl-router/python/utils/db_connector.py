@@ -16,8 +16,7 @@ except Exception:
 logger = logging.getLogger(__name__)
 
 # Define MongoDB URIs
-LOCAL_MONGO_URI = "mongodb://user:password123@localhost:27018/"
-CLOUD_MONGO_URI = "mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/network?retryWrites=true&w=majority&tls=true&appName=MONGO1&tlsAllowInvalidCertificates=true"
+LOCAL_MONGO_URI = "mongodb://user:password123@localhost:27017"
 
 # Định nghĩa kiểu dữ liệu cho một document Node
 NodeData = Dict[str, Any]
@@ -30,7 +29,6 @@ class MongoConnector:
         uri: Optional[str] = None,
         db_name: str = "sagsin_network",
         nodes_collection_name: str = "network_nodes",
-        use_cloud_db: bool = False, # New parameter
     ):
         """
         Initialize MongoConnector. The MongoDB URI is taken in this order:
@@ -47,15 +45,12 @@ class MongoConnector:
             resolved_uri = os.getenv("MONGODB_URI")
         elif os.getenv("MONGO_URI"):
             resolved_uri = os.getenv("MONGO_URI")
-        elif use_cloud_db:
-            resolved_uri = CLOUD_MONGO_URI
         else:
             resolved_uri = LOCAL_MONGO_URI
 
         self.client = MongoClient(resolved_uri)
         self.db = self.client[db_name]
         self.nodes_collection = self.db[nodes_collection_name]
-        # avoid logging credentials; log that connection was established (host part may contain creds)
         logger.info("Connected to MongoDB, DB: %s, Collection: %s", db_name, nodes_collection_name)
 
     def get_node(self, node_id: str, projection: Optional[Dict[str, int]] = None) -> Optional[NodeData]:
@@ -87,8 +82,8 @@ class MongoConnector:
         :param operational: True nếu muốn lấy các node đang hoạt động, False nếu không.
         :param projection: Optional, dict các field muốn lấy {field: 1}
         """
-        # Đã sửa lỗi chính tả và sử dụng trường 'isOperational'
-        return list(self.nodes_collection.find({"operational": operational}, projection))
+        # Sử dụng trường 'isOperational' để truy vấn
+        return list(self.nodes_collection.find({"isOperational": operational}, projection))
 
     # --- Hàm Lấy Node Lân cận và Batch (Tối ưu cho RL) ---
 
@@ -130,4 +125,75 @@ class MongoConnector:
         neighbor_ids = node.get("neighbors", [])
 
         # 2. Fetch trạng thái chi tiết của tất cả Neighbors trong 1 batch
-        return self.get_neighbor_status_batch(neighbor_ids, projection)    
+        return self.get_neighbor_status_batch(neighbor_ids, projection)
+
+    def get_nodes(self, node_ids: List[str], projection: Optional[Dict[str, int]] = None) -> List[NodeData]:
+        """
+        Lấy nhiều nodes theo danh sách IDs.
+        :param node_ids: Danh sách các nodeId cần fetch.
+        :param projection: Optional, dict các field muốn lấy {field: 1}.
+        :return: List các NodeData.
+        """
+        if not node_ids:
+            return []
+        results = self.nodes_collection.find({"nodeId": {"$in": node_ids}}, projection)
+        return list(results)
+
+    def clear_and_insert_nodes(self, nodes_data: List[NodeData]):
+        """
+        Xóa tất cả các document trong collection và insert list các node mới.
+        :param nodes_data: List các dictionary data của nodes.
+        """
+        self.nodes_collection.delete_many({})
+        if nodes_data:
+            self.nodes_collection.insert_many(nodes_data)
+        logger.info(f"Cleared collection and inserted {len(nodes_data)} new nodes.")
+
+    # --- User Management Methods ---
+
+    def get_user(self, user_id: str, projection: Optional[Dict[str, int]] = None) -> Optional[Dict[str, Any]]:
+        """
+        Lấy 1 User theo userId.
+        :param user_id: ID của User
+        :param projection: Optional, dict các field muốn lấy {field: 1}
+        """
+        users_collection = self.db["users"]
+        return users_collection.find_one({"userId": user_id}, projection)
+
+    def get_user_by_city(self, city_name: str, projection: Optional[Dict[str, int]] = None) -> Optional[Dict[str, Any]]:
+        """
+        Lấy User theo tên thành phố.
+        :param city_name: Tên thành phố
+        :param projection: Optional, dict các field muốn lấy {field: 1}
+        """
+        users_collection = self.db["users"]
+        return users_collection.find_one({"cityName": city_name}, projection)
+
+    def get_all_users(self, projection: Optional[Dict[str, int]] = None) -> List[Dict[str, Any]]:
+        """
+        Lấy tất cả Users trong Collection.
+        :param projection: Optional, dict các field muốn lấy {field: 1}
+        """
+        users_collection = self.db["users"]
+        return list(users_collection.find({}, projection))
+
+    def insert_user(self, user_data: Dict[str, Any]) -> str:
+        """
+        Thêm một User mới vào database.
+        :param user_data: Dictionary chứa thông tin user
+        :return: ID của user được insert
+        """
+        users_collection = self.db["users"]
+        result = users_collection.insert_one(user_data)
+        return str(result.inserted_id)
+
+    def clear_and_insert_users(self, users_data: List[Dict[str, Any]]):
+        """
+        Xóa tất cả users và insert danh sách users mới.
+        :param users_data: List các dictionary data của users.
+        """
+        users_collection = self.db["users"]
+        users_collection.delete_many({})
+        if users_data:
+            users_collection.insert_many(users_data)
+        logger.info(f"Cleared collection and inserted {len(users_data)} new users.")

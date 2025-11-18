@@ -22,6 +22,13 @@ class StateBuilder:
         # Tính toán trước kích thước output để dùng cho placeholder
         self.TOTAL_STATE_SIZE = 14 + 8 + (MAX_NEIGHBORS * NEIGHBOR_FEAT_SIZE)
 
+    def get_state_vector(self, packet: dict) -> np.ndarray:
+        """
+        Tạo State Vector chuẩn hóa (alias for build method).
+        Output shape: (22 + 14*MAX_NEIGHBORS,)
+        """
+        return self.build(packet)
+
     def build(self, packet: dict) -> np.ndarray:
         """
         Tạo State Vector chuẩn hóa.

@@ -47,9 +47,9 @@ class SatelliteEnv:
         
         # === CẤU HÌNH VECTOR STATE (RẤT QUAN TRỌNG) ===
         # Phải khớp chính xác với StateBuilder.build()
-        # Part A (Self): 12 features
+        # Part A (Self): 14 features
         # Part B (Dest): 8 features
-        self.START_INDEX_NEIGHBORS = 12 + 8  # = 20
+        self.START_INDEX_NEIGHBORS = 14 + 8  # = 22
         self.NEIGHBOR_FEAT_SIZE = NEIGHBOR_FEAT_SIZE # = 14 (theo constants mới)
 
     # =============================================================

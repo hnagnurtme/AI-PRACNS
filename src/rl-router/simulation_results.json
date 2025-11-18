@@ -1,0 +1,162 @@
+[
+  {
+    "simulationId": "sim_20251118_234348",
+    "timestamp": "2025-11-18T16:43:48.872379+00:00",
+    "sourceUser": {
+      "cityName": "Singapore",
+      "ipAddress": "127.0.0.1",
+      "port": 10000,
+      "userId": "user-Singapore",
+      "userName": "User_Singapore",
+      "latitude": 1.3521,
+      "longitude": 103.8198
+    },
+    "destinationUser": {
+      "cityName": "Hanoi",
+      "ipAddress": "127.0.0.1",
+      "port": 10027,
+      "userId": "user-Hanoi",
+      "userName": "User_Hanoi",
+      "latitude": 21.0285,
+      "longitude": 105.8542
+    },
+    "algorithm": "DIJKSTRA",
+    "path": [
+      "GS_SINGAPORE",
+      "LEO-18",
+      "LEO-23",
+      "GS_HANOI"
+    ],
+    "hopRecords": [
+      {
+        "hopNumber": 1,
+        "fromNodeId": "GS_SINGAPORE",
+        "toNodeId": "LEO-18",
+        "nodeType": "LEO_SATELLITE",
+        "latencyMs": 28.2185344977654,
+        "bandwidthMbps": 147,
+        "packetLossRate": 0.00575,
+        "distanceKm": 7860.106894154084,
+        "processingDelayMs": 2.0,
+        "propagationDelayMs": 26.2185344977654,
+        "timestamp": "2025-11-18T16:43:48.872332+00:00"
+      },
+      {
+        "hopNumber": 2,
+        "fromNodeId": "LEO-18",
+        "toNodeId": "LEO-23",
+        "nodeType": "LEO_SATELLITE",
+        "latencyMs": 36.71043623899867,
+        "bandwidthMbps": 146,
+        "packetLossRate": 0.0148,
+        "distanceKm": 9506.535100961888,
+        "processingDelayMs": 5.0,
+        "propagationDelayMs": 31.710436238998664,
+        "timestamp": "2025-11-18T16:43:48.872349+00:00"
+      },
+      {
+        "hopNumber": 3,
+        "fromNodeId": "LEO-23",
+        "toNodeId": "GS_HANOI",
+        "nodeType": "GROUND_STATION",
+        "latencyMs": 45.951179691711495,
+        "bandwidthMbps": 146,
+        "packetLossRate": 0.015200000000000002,
+        "distanceKm": 12276.836062137574,
+        "processingDelayMs": 5.0,
+        "propagationDelayMs": 40.951179691711495,
+        "timestamp": "2025-11-18T16:43:48.872357+00:00"
+      }
+    ],
+    "totalMetrics": {
+      "totalLatencyMs": 110.88015042847556,
+      "totalPacketLossRate": 0.035325671416088,
+      "minBandwidthMbps": 146,
+      "totalHops": 3,
+      "totalDistanceKm": 29643.478057253546
+    },
+    "packetData": "Hello from Singapore to Hanoi!",
+    "status": "COMPLETED",
+    "deliveryStatus": "DELIVERED",
+    "deliveryTimestamp": "2025-11-18T16:43:48.872840+00:00"
+  },
+  {
+    "simulationId": "sim_20251118_234348",
+    "timestamp": "2025-11-18T16:43:48.872663+00:00",
+    "sourceUser": {
+      "cityName": "Singapore",
+      "ipAddress": "127.0.0.1",
+      "port": 10000,
+      "userId": "user-Singapore",
+      "userName": "User_Singapore",
+      "latitude": 1.3521,
+      "longitude": 103.8198
+    },
+    "destinationUser": {
+      "cityName": "Hanoi",
+      "ipAddress": "127.0.0.1",
+      "port": 10027,
+      "userId": "user-Hanoi",
+      "userName": "User_Hanoi",
+      "latitude": 21.0285,
+      "longitude": 105.8542
+    },
+    "algorithm": "RL",
+    "path": [
+      "GS_SINGAPORE",
+      "GEO-05",
+      "GEO-08",
+      "GS_HANOI"
+    ],
+    "hopRecords": [
+      {
+        "hopNumber": 1,
+        "fromNodeId": "GS_SINGAPORE",
+        "toNodeId": "GEO-05",
+        "nodeType": "GEO_SATELLITE",
+        "latencyMs": 147.24261489651573,
+        "bandwidthMbps": 147,
+        "packetLossRate": 0.0109,
+        "distanceKm": 43542.574005056245,
+        "processingDelayMs": 2.0,
+        "propagationDelayMs": 145.24261489651573,
+        "timestamp": "2025-11-18T16:43:48.872615+00:00"
+      },
+      {
+        "hopNumber": 2,
+        "fromNodeId": "GEO-05",
+        "toNodeId": "GEO-08",
+        "nodeType": "GEO_SATELLITE",
+        "latencyMs": 164.4476136138122,
+        "bandwidthMbps": 380,
+        "packetLossRate": 0.02435,
+        "distanceKm": 47801.11898051198,
+        "processingDelayMs": 5.0,
+        "propagationDelayMs": 159.4476136138122,
+        "timestamp": "2025-11-18T16:43:48.872636+00:00"
+      },
+      {
+        "hopNumber": 3,
+        "fromNodeId": "GEO-08",
+        "toNodeId": "GS_HANOI",
+        "nodeType": "GROUND_STATION",
+        "latencyMs": 162.29651003723484,
+        "bandwidthMbps": 192,
+        "packetLossRate": 0.0196,
+        "distanceKm": 47156.235337082704,
+        "processingDelayMs": 5.0,
+        "propagationDelayMs": 157.29651003723484,
+        "timestamp": "2025-11-18T16:43:48.872646+00:00"
+      }
+    ],
+    "totalMetrics": {
+      "totalLatencyMs": 473.98673854756277,
+      "totalPacketLossRate": 0.053853270924411945,
+      "minBandwidthMbps": 147,
+      "totalHops": 3,
+      "totalDistanceKm": 138499.92832265093
+    },
+    "packetData": "Hello from Singapore to Hanoi!",
+    "status": "COMPLETED"
+  }
+]
