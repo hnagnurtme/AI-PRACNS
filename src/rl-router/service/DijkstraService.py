@@ -149,7 +149,7 @@ class DijkstraService:
 
         distances = {node: float('inf') for node in graph}
         distances[start_node] = 0
-        previous_nodes = {node: None for node in graph}
+        previous_nodes: Dict[str, Optional[str]] = {node: None for node in graph}
 
         priority_queue = [(0, start_node)]
 

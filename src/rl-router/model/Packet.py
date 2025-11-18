@@ -30,6 +30,7 @@ class HopRecord:
     latency_ms: float
     timestamp_ms: float
     distance_km: float
+    packet_loss_rate: float
     from_node_position: Optional[Position] = None
     to_node_position: Optional[Position] = None
     from_node_buffer_state: Optional[BufferState] = None

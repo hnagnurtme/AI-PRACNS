@@ -1,7 +1,7 @@
 [
   {
-    "simulationId": "sim_20251118_234348",
-    "timestamp": "2025-11-18T16:43:48.872379+00:00",
+    "simulationId": "sim_20251118_234540",
+    "timestamp": "2025-11-18T16:45:40.601596+00:00",
     "sourceUser": {
       "cityName": "Singapore",
       "ipAddress": "127.0.0.1",
@@ -23,66 +23,66 @@
     "algorithm": "DIJKSTRA",
     "path": [
       "GS_SINGAPORE",
-      "LEO-18",
-      "LEO-23",
+      "GEO-02",
+      "LEO-21",
       "GS_HANOI"
     ],
     "hopRecords": [
       {
         "hopNumber": 1,
         "fromNodeId": "GS_SINGAPORE",
-        "toNodeId": "LEO-18",
-        "nodeType": "LEO_SATELLITE",
-        "latencyMs": 28.2185344977654,
+        "toNodeId": "GEO-02",
+        "nodeType": "GEO_SATELLITE",
+        "latencyMs": 144.30107750934167,
         "bandwidthMbps": 147,
-        "packetLossRate": 0.00575,
-        "distanceKm": 7860.106894154084,
+        "packetLossRate": 0.00655,
+        "distanceKm": 42660.72462868056,
         "processingDelayMs": 2.0,
-        "propagationDelayMs": 26.2185344977654,
-        "timestamp": "2025-11-18T16:43:48.872332+00:00"
+        "propagationDelayMs": 142.30107750934167,
+        "timestamp": "2025-11-18T16:45:40.601535+00:00"
       },
       {
         "hopNumber": 2,
-        "fromNodeId": "LEO-18",
-        "toNodeId": "LEO-23",
+        "fromNodeId": "GEO-02",
+        "toNodeId": "LEO-21",
         "nodeType": "LEO_SATELLITE",
-        "latencyMs": 36.71043623899867,
-        "bandwidthMbps": 146,
-        "packetLossRate": 0.0148,
-        "distanceKm": 9506.535100961888,
+        "latencyMs": 122.74308545526188,
+        "bandwidthMbps": 173,
+        "packetLossRate": 0.0283,
+        "distanceKm": 35298.43507480387,
         "processingDelayMs": 5.0,
-        "propagationDelayMs": 31.710436238998664,
-        "timestamp": "2025-11-18T16:43:48.872349+00:00"
+        "propagationDelayMs": 117.74308545526188,
+        "timestamp": "2025-11-18T16:45:40.601560+00:00"
       },
       {
         "hopNumber": 3,
-        "fromNodeId": "LEO-23",
+        "fromNodeId": "LEO-21",
         "toNodeId": "GS_HANOI",
         "nodeType": "GROUND_STATION",
-        "latencyMs": 45.951179691711495,
-        "bandwidthMbps": 146,
-        "packetLossRate": 0.015200000000000002,
-        "distanceKm": 12276.836062137574,
+        "latencyMs": 31.058340694189553,
+        "bandwidthMbps": 192,
+        "packetLossRate": 0.027899999999999998,
+        "distanceKm": 7812.082073392474,
         "processingDelayMs": 5.0,
-        "propagationDelayMs": 40.951179691711495,
-        "timestamp": "2025-11-18T16:43:48.872357+00:00"
+        "propagationDelayMs": 26.058340694189553,
+        "timestamp": "2025-11-18T16:45:40.601570+00:00"
       }
     ],
     "totalMetrics": {
-      "totalLatencyMs": 110.88015042847556,
-      "totalPacketLossRate": 0.035325671416088,
-      "minBandwidthMbps": 146,
+      "totalLatencyMs": 298.10250365879307,
+      "totalPacketLossRate": 0.061446630353587994,
+      "minBandwidthMbps": 147,
       "totalHops": 3,
-      "totalDistanceKm": 29643.478057253546
+      "totalDistanceKm": 85771.24177687691
     },
     "packetData": "Hello from Singapore to Hanoi!",
     "status": "COMPLETED",
     "deliveryStatus": "DELIVERED",
-    "deliveryTimestamp": "2025-11-18T16:43:48.872840+00:00"
+    "deliveryTimestamp": "2025-11-18T16:45:40.601953+00:00"
   },
   {
-    "simulationId": "sim_20251118_234348",
-    "timestamp": "2025-11-18T16:43:48.872663+00:00",
+    "simulationId": "sim_20251118_234540",
+    "timestamp": "2025-11-18T16:45:40.601770+00:00",
     "sourceUser": {
       "cityName": "Singapore",
       "ipAddress": "127.0.0.1",
@@ -120,7 +120,7 @@
         "distanceKm": 43542.574005056245,
         "processingDelayMs": 2.0,
         "propagationDelayMs": 145.24261489651573,
-        "timestamp": "2025-11-18T16:43:48.872615+00:00"
+        "timestamp": "2025-11-18T16:45:40.601727+00:00"
       },
       {
         "hopNumber": 2,
@@ -133,7 +133,7 @@
         "distanceKm": 47801.11898051198,
         "processingDelayMs": 5.0,
         "propagationDelayMs": 159.4476136138122,
-        "timestamp": "2025-11-18T16:43:48.872636+00:00"
+        "timestamp": "2025-11-18T16:45:40.601744+00:00"
       },
       {
         "hopNumber": 3,
@@ -146,7 +146,7 @@
         "distanceKm": 47156.235337082704,
         "processingDelayMs": 5.0,
         "propagationDelayMs": 157.29651003723484,
-        "timestamp": "2025-11-18T16:43:48.872646+00:00"
+        "timestamp": "2025-11-18T16:45:40.601755+00:00"
       }
     ],
     "totalMetrics": {
