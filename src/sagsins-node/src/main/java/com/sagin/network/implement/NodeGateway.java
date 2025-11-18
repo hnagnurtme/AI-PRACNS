@@ -192,8 +192,6 @@ public class NodeGateway implements INodeGateway {
                     // Log detailed diagnostics to help identify byte order issues
                     String hexBytes = String.format("0x%02X%02X%02X%02X", 
                         lengthBytes[0], lengthBytes[1], lengthBytes[2], lengthBytes[3]);
-                    
-                    // Check if this looks like JSON data (client forgot length prefix)
                     boolean looksLikeJson = false;
                     if (lengthBytes[0] == '{' || lengthBytes[0] == '[') {
                         looksLikeJson = true;

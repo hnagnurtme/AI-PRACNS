@@ -19,9 +19,7 @@ services:
       dockerfile: Dockerfile
     container_name: rl-router
     environment:
-      MONGO_URI: "mongodb://user:password123@mongodb:27017/"
-    depends_on:
-      - mongodb
+      MONGO_URI: "mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/?appName=MONGO1"
     ports:
       - "65000:65000"
     restart: unless-stopped

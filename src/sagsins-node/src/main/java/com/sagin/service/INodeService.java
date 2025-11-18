@@ -49,4 +49,6 @@ public interface INodeService {
     void updateNodeIpAddress(String nodeId, String newIpAddress);
     
     void flushToDatabase();
+
+    void loadNodesIntoCache(Map<String, NodeInfo> nodes);
 }

@@ -6,7 +6,7 @@ services:
     container_name: mongodb_sag_sins
 
     ports:
-      - "27017:27017"
+      - "27018:27017"
 
     environment:
       MONGO_INITDB_ROOT_USERNAME: user
@@ -25,6 +25,23 @@ services:
 
     environment:
       MONGO_URL: "mongodb://user:password123@mongodb:27017/"
+
+    depends_on:
+      - mongodb
+
+    restart: unless-stopped
+
+  db-sync:
+    build:
+      context: .
+      dockerfile: Dockerfile.sync
+    container_name: db_synchronizer
+
+    environment:
+      LOCAL_MONGO_URI: "mongodb://user:password123@mongodb:27017/"
+      CLOUD_MONGO_URI: "${CLOUD_MONGO_URI}"
+      DB_NAME: "sagsin_network"
+      SYNC_INTERVAL_SECONDS: "15"
 
     depends_on:
       - mongodb

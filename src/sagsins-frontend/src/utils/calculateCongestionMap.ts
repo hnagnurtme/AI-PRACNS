@@ -51,8 +51,8 @@ const accumulateHopData = (nodeId: string, hop: HopRecord, accumulator: Map<stri
 const processPacket = (packet: Packet, accumulator: Map<string, NodeAccumulator>) => {
     // Guard against undefined packet
     if (!packet || !packet.hopRecords) return;
-    
-    const isRL = packet.useRL;
+
+    const isRL = packet.isUseRL;  // ✅ Fixed: Match backend field name
 
     for (const hop of packet.hopRecords) {
         // Tích lũy cho Node nguồn (fromNode)

@@ -1,0 +1,610 @@
+[
+  {
+    "simulationId": "sim_20251119_012132",
+    "timestamp": "2025-11-18T18:21:32.452143+00:00",
+    "sourceUser": {
+      "_id": "691cb5140cb1de514d396103",
+      "userId": "user-singapore",
+      "userName": "User Singapore",
+      "cityName": "Singapore",
+      "ipAddress": "127.0.0.1",
+      "port": 10002,
+      "isActive": true,
+      "connectionStatus": "DISCONNECTED",
+      "bandwidthMbps": 100.0,
+      "latencyMs": 50.0,
+      "packetLossRate": 0.0,
+      "sessionDuration": 0.0,
+      "dataConsumedMB": 0.0,
+      "securityLevel": "MEDIUM",
+      "allowedProtocols": [
+        "TCP",
+        "UDP",
+        "HTTP",
+        "HTTPS"
+      ],
+      "preferences": {
+        "autoReconnect": true,
+        "preferredNodes": [],
+        "qualityOfService": "HIGH",
+        "encryption": true
+      },
+      "latitude": 1.3521,
+      "longitude": 103.8198,
+      "lastUpdated": "2025-11-18T18:04:04.867842+00:00",
+      "lastActivity": "2025-11-18T18:04:04.867831+00:00"
+    },
+    "destinationUser": {
+      "_id": "691cb5140cb1de514d396102",
+      "userId": "user-hanoi",
+      "userName": "User Hanoi",
+      "cityName": "Hanoi",
+      "ipAddress": "127.0.0.1",
+      "port": 10001,
+      "isActive": true,
+      "connectionStatus": "DISCONNECTED",
+      "bandwidthMbps": 100.0,
+      "latencyMs": 50.0,
+      "packetLossRate": 0.0,
+      "sessionDuration": 0.0,
+      "dataConsumedMB": 0.0,
+      "securityLevel": "MEDIUM",
+      "allowedProtocols": [
+        "TCP",
+        "UDP",
+        "HTTP",
+        "HTTPS"
+      ],
+      "preferences": {
+        "autoReconnect": true,
+        "preferredNodes": [],
+        "qualityOfService": "HIGH",
+        "encryption": true
+      },
+      "latitude": 21.0285,
+      "longitude": 105.8542,
+      "lastUpdated": "2025-11-18T18:04:04.865423+00:00",
+      "lastActivity": "2025-11-18T18:04:04.865401+00:00"
+    },
+    "algorithm": "DIJKSTRA",
+    "path": [
+      "GS_HOCHIMINH",
+      "MEO-07",
+      "LEO-15",
+      "GS_HANOI"
+    ],
+    "hopRecords": [
+      {
+        "from_node_id": "GS_HOCHIMINH",
+        "to_node_id": "MEO-07",
+        "latency_ms": 64.3909217245211,
+        "timestamp_ms": 1763490092451.893,
+        "distance_km": 16608.75312563763,
+        "from_node_position": {
+          "latitude": 10.7769,
+          "longitude": 106.7009,
+          "altitude": 0.0
+        },
+        "to_node_position": {
+          "latitude": 11.835623962326622,
+          "longitude": -173.42797955895878,
+          "altitude": 10345.652464437124
+        },
+        "from_node_buffer_state": {
+          "queue_size": 113,
+          "bandwidth_utilization": 0.25
+        },
+        "routing_decision_info": {
+          "algorithm": "Dijkstra",
+          "metric": "latency",
+          "reward": null
+        },
+        "scenario_type": "NORMAL",
+        "node_load_percent": 25.0,
+        "drop_reason_details": null
+      },
+      {
+        "from_node_id": "MEO-07",
+        "to_node_id": "LEO-15",
+        "latency_ms": 86.66976933047401,
+        "timestamp_ms": 1763490092452.015,
+        "distance_km": 23251.798367121464,
+        "from_node_position": {
+          "latitude": 11.835623962326622,
+          "longitude": -173.42797955895878,
+          "altitude": 10345.652464437124
+        },
+        "to_node_position": {
+          "latitude": -3.5269085060765804,
+          "longitude": 29.515830252296382,
+          "altitude": 599.9902879564997
+        },
+        "from_node_buffer_state": {
+          "queue_size": 371,
+          "bandwidth_utilization": 0.49
+        },
+        "routing_decision_info": {
+          "algorithm": "Dijkstra",
+          "metric": "latency",
+          "reward": null
+        },
+        "scenario_type": "NORMAL",
+        "node_load_percent": 49.0,
+        "drop_reason_details": null
+      },
+      {
+        "from_node_id": "LEO-15",
+        "to_node_id": "GS_HANOI",
+        "latency_ms": 38.48519338659013,
+        "timestamp_ms": 1763490092452.0881,
+        "distance_km": 8461.68717575263,
+        "from_node_position": {
+          "latitude": -3.5269085060765804,
+          "longitude": 29.515830252296382,
+          "altitude": 599.9902879564997
+        },
+        "to_node_position": {
+          "latitude": 21.0285,
+          "longitude": 105.8542,
+          "altitude": 0.0
+        },
+        "from_node_buffer_state": {
+          "queue_size": 240,
+          "bandwidth_utilization": 0.27
+        },
+        "routing_decision_info": {
+          "algorithm": "Dijkstra",
+          "metric": "latency",
+          "reward": null
+        },
+        "scenario_type": "NORMAL",
+        "node_load_percent": 27.0,
+        "drop_reason_details": null
+      }
+    ],
+    "packetData": {
+      "packet_id": "pkt_20251119_012132",
+      "source_user_id": "user-singapore",
+      "destination_user_id": "user-hanoi",
+      "station_source": "GS_HOCHIMINH",
+      "station_dest": "GS_HANOI",
+      "type": "DATA",
+      "time_sent_from_source_ms": 1763490092451.74,
+      "payload_data_base64": "48656c6c6f2066726f6d2053696e6761706f726520746f2048616e6f69207769746820646174616261736520696e746567726174696f6e21",
+      "payload_size_byte": 56,
+      "service_qos": {
+        "service_type": "REALTIME",
+        "default_priority": 1,
+        "max_latency_ms": 100.0,
+        "max_jitter_ms": 10.0,
+        "min_bandwidth_mbps": 50.0,
+        "max_loss_rate": 0.01
+      },
+      "current_holding_node_id": "GS_HOCHIMINH",
+      "next_hop_node_id": "",
+      "priority_level": 1,
+      "max_acceptable_latency_ms": 100.0,
+      "max_acceptable_loss_rate": 0.01,
+      "analysis_data": {
+        "avg_latency": 63.18196148052842,
+        "avg_distance_km": 16107.41288950391,
+        "route_success_rate": 1.0,
+        "total_distance_km": 48322.23866851173,
+        "total_latency_ms": 189.54588444158526
+      },
+      "use_rl": false,
+      "ttl": 64,
+      "acknowledged_packet_id": null,
+      "path_history": [
+        "MEO-07",
+        "LEO-15",
+        "GS_HANOI"
+      ],
+      "hop_records": [
+        {
+          "from_node_id": "GS_HOCHIMINH",
+          "to_node_id": "MEO-07",
+          "latency_ms": 64.3909217245211,
+          "timestamp_ms": 1763490092451.893,
+          "distance_km": 16608.75312563763,
+          "from_node_position": {
+            "latitude": 10.7769,
+            "longitude": 106.7009,
+            "altitude": 0.0
+          },
+          "to_node_position": {
+            "latitude": 11.835623962326622,
+            "longitude": -173.42797955895878,
+            "altitude": 10345.652464437124
+          },
+          "from_node_buffer_state": {
+            "queue_size": 113,
+            "bandwidth_utilization": 0.25
+          },
+          "routing_decision_info": {
+            "algorithm": "Dijkstra",
+            "metric": "latency",
+            "reward": null
+          },
+          "scenario_type": "NORMAL",
+          "node_load_percent": 25.0,
+          "drop_reason_details": null
+        },
+        {
+          "from_node_id": "MEO-07",
+          "to_node_id": "LEO-15",
+          "latency_ms": 86.66976933047401,
+          "timestamp_ms": 1763490092452.015,
+          "distance_km": 23251.798367121464,
+          "from_node_position": {
+            "latitude": 11.835623962326622,
+            "longitude": -173.42797955895878,
+            "altitude": 10345.652464437124
+          },
+          "to_node_position": {
+            "latitude": -3.5269085060765804,
+            "longitude": 29.515830252296382,
+            "altitude": 599.9902879564997
+          },
+          "from_node_buffer_state": {
+            "queue_size": 371,
+            "bandwidth_utilization": 0.49
+          },
+          "routing_decision_info": {
+            "algorithm": "Dijkstra",
+            "metric": "latency",
+            "reward": null
+          },
+          "scenario_type": "NORMAL",
+          "node_load_percent": 49.0,
+          "drop_reason_details": null
+        },
+        {
+          "from_node_id": "LEO-15",
+          "to_node_id": "GS_HANOI",
+          "latency_ms": 38.48519338659013,
+          "timestamp_ms": 1763490092452.0881,
+          "distance_km": 8461.68717575263,
+          "from_node_position": {
+            "latitude": -3.5269085060765804,
+            "longitude": 29.515830252296382,
+            "altitude": 599.9902879564997
+          },
+          "to_node_position": {
+            "latitude": 21.0285,
+            "longitude": 105.8542,
+            "altitude": 0.0
+          },
+          "from_node_buffer_state": {
+            "queue_size": 240,
+            "bandwidth_utilization": 0.27
+          },
+          "routing_decision_info": {
+            "algorithm": "Dijkstra",
+            "metric": "latency",
+            "reward": null
+          },
+          "scenario_type": "NORMAL",
+          "node_load_percent": 27.0,
+          "drop_reason_details": null
+        }
+      ],
+      "accumulated_delay_ms": 189.54588444158526,
+      "dropped": false,
+      "drop_reason": null
+    },
+    "totalMetrics": {
+      "totalLatencyMs": 189.54588444158526,
+      "totalPacketLossRate": 0.06508461559116208,
+      "minBandwidthMbps": 104,
+      "totalHops": 3,
+      "totalDistanceKm": 48322.23866851173
+    },
+    "status": "COMPLETED",
+    "deliveryStatus": "DELIVERED",
+    "deliveryTimestamp": "2025-11-18T18:21:32.461849+00:00"
+  },
+  {
+    "simulationId": "sim_20251119_012132",
+    "timestamp": "2025-11-18T18:21:32.460824+00:00",
+    "sourceUser": {
+      "_id": "691cb5140cb1de514d396103",
+      "userId": "user-singapore",
+      "userName": "User Singapore",
+      "cityName": "Singapore",
+      "ipAddress": "127.0.0.1",
+      "port": 10002,
+      "isActive": true,
+      "connectionStatus": "DISCONNECTED",
+      "bandwidthMbps": 100.0,
+      "latencyMs": 50.0,
+      "packetLossRate": 0.0,
+      "sessionDuration": 0.0,
+      "dataConsumedMB": 0.0,
+      "securityLevel": "MEDIUM",
+      "allowedProtocols": [
+        "TCP",
+        "UDP",
+        "HTTP",
+        "HTTPS"
+      ],
+      "preferences": {
+        "autoReconnect": true,
+        "preferredNodes": [],
+        "qualityOfService": "HIGH",
+        "encryption": true
+      },
+      "latitude": 1.3521,
+      "longitude": 103.8198,
+      "lastUpdated": "2025-11-18T18:04:04.867842+00:00",
+      "lastActivity": "2025-11-18T18:04:04.867831+00:00"
+    },
+    "destinationUser": {
+      "_id": "691cb5140cb1de514d396102",
+      "userId": "user-hanoi",
+      "userName": "User Hanoi",
+      "cityName": "Hanoi",
+      "ipAddress": "127.0.0.1",
+      "port": 10001,
+      "isActive": true,
+      "connectionStatus": "DISCONNECTED",
+      "bandwidthMbps": 100.0,
+      "latencyMs": 50.0,
+      "packetLossRate": 0.0,
+      "sessionDuration": 0.0,
+      "dataConsumedMB": 0.0,
+      "securityLevel": "MEDIUM",
+      "allowedProtocols": [
+        "TCP",
+        "UDP",
+        "HTTP",
+        "HTTPS"
+      ],
+      "preferences": {
+        "autoReconnect": true,
+        "preferredNodes": [],
+        "qualityOfService": "HIGH",
+        "encryption": true
+      },
+      "latitude": 21.0285,
+      "longitude": 105.8542,
+      "lastUpdated": "2025-11-18T18:04:04.865423+00:00",
+      "lastActivity": "2025-11-18T18:04:04.865401+00:00"
+    },
+    "algorithm": "RL",
+    "path": [
+      "GS_HOCHIMINH",
+      "MEO-05",
+      "LEO-01",
+      "GS_HANOI"
+    ],
+    "hopRecords": [
+      {
+        "from_node_id": "GS_HOCHIMINH",
+        "to_node_id": "MEO-05",
+        "latency_ms": 58.09632901610024,
+        "timestamp_ms": 1763490092460.591,
+        "distance_km": 14721.684588394724,
+        "from_node_position": {
+          "latitude": 10.7769,
+          "longitude": 106.7009,
+          "altitude": 0.0
+        },
+        "to_node_position": {
+          "latitude": -46.014881215692284,
+          "longitude": 81.61615917432846,
+          "altitude": 10332.60980689948
+        },
+        "from_node_buffer_state": {
+          "queue_size": 113,
+          "bandwidth_utilization": 0.25
+        },
+        "routing_decision_info": {
+          "algorithm": "ReinforcementLearning",
+          "metric": "q_learning",
+          "reward": 0.8495811795486707
+        },
+        "scenario_type": "NORMAL",
+        "node_load_percent": 25.0,
+        "drop_reason_details": null
+      },
+      {
+        "from_node_id": "MEO-05",
+        "to_node_id": "LEO-01",
+        "latency_ms": 85.2527908216641,
+        "timestamp_ms": 1763490092460.774,
+        "distance_km": 23459.560666008325,
+        "from_node_position": {
+          "latitude": -46.014881215692284,
+          "longitude": 81.61615917432846,
+          "altitude": 10332.60980689948
+        },
+        "to_node_position": {
+          "latitude": 33.193446238297895,
+          "longitude": -109.96242940555643,
+          "altitude": 565.8154584138723
+        },
+        "from_node_buffer_state": {
+          "queue_size": 107,
+          "bandwidth_utilization": 0.11
+        },
+        "routing_decision_info": {
+          "algorithm": "ReinforcementLearning",
+          "metric": "q_learning",
+          "reward": 0.9420220657046634
+        },
+        "scenario_type": "NORMAL",
+        "node_load_percent": 11.0,
+        "drop_reason_details": null
+      },
+      {
+        "from_node_id": "LEO-01",
+        "to_node_id": "GS_HANOI",
+        "latency_ms": 48.819545116822226,
+        "timestamp_ms": 1763490092460.803,
+        "distance_km": 11284.03450966237,
+        "from_node_position": {
+          "latitude": 33.193446238297895,
+          "longitude": -109.96242940555643,
+          "altitude": 565.8154584138723
+        },
+        "to_node_position": {
+          "latitude": 21.0285,
+          "longitude": 105.8542,
+          "altitude": 0.0
+        },
+        "from_node_buffer_state": {
+          "queue_size": 496,
+          "bandwidth_utilization": 0.12
+        },
+        "routing_decision_info": {
+          "algorithm": "ReinforcementLearning",
+          "metric": "q_learning",
+          "reward": 0.8837963270287613
+        },
+        "scenario_type": "NORMAL",
+        "node_load_percent": 12.0,
+        "drop_reason_details": null
+      }
+    ],
+    "packetData": {
+      "packet_id": "pkt_20251119_012132",
+      "source_user_id": "user-singapore",
+      "destination_user_id": "user-hanoi",
+      "station_source": "GS_HOCHIMINH",
+      "station_dest": "GS_HANOI",
+      "type": "DATA",
+      "time_sent_from_source_ms": 1763490092460.523,
+      "payload_data_base64": "48656c6c6f2066726f6d2053696e6761706f726520746f2048616e6f69207769746820646174616261736520696e746567726174696f6e21",
+      "payload_size_byte": 56,
+      "service_qos": {
+        "service_type": "REALTIME",
+        "default_priority": 1,
+        "max_latency_ms": 100.0,
+        "max_jitter_ms": 10.0,
+        "min_bandwidth_mbps": 50.0,
+        "max_loss_rate": 0.01
+      },
+      "current_holding_node_id": "GS_HOCHIMINH",
+      "next_hop_node_id": "",
+      "priority_level": 1,
+      "max_acceptable_latency_ms": 100.0,
+      "max_acceptable_loss_rate": 0.01,
+      "analysis_data": {
+        "avg_latency": 64.05622165152886,
+        "avg_distance_km": 16488.426588021808,
+        "route_success_rate": 1.0,
+        "total_distance_km": 49465.279764065424,
+        "total_latency_ms": 192.16866495458657
+      },
+      "use_rl": true,
+      "ttl": 64,
+      "acknowledged_packet_id": null,
+      "path_history": [
+        "MEO-05",
+        "LEO-01",
+        "GS_HANOI"
+      ],
+      "hop_records": [
+        {
+          "from_node_id": "GS_HOCHIMINH",
+          "to_node_id": "MEO-05",
+          "latency_ms": 58.09632901610024,
+          "timestamp_ms": 1763490092460.591,
+          "distance_km": 14721.684588394724,
+          "from_node_position": {
+            "latitude": 10.7769,
+            "longitude": 106.7009,
+            "altitude": 0.0
+          },
+          "to_node_position": {
+            "latitude": -46.014881215692284,
+            "longitude": 81.61615917432846,
+            "altitude": 10332.60980689948
+          },
+          "from_node_buffer_state": {
+            "queue_size": 113,
+            "bandwidth_utilization": 0.25
+          },
+          "routing_decision_info": {
+            "algorithm": "ReinforcementLearning",
+            "metric": "q_learning",
+            "reward": 0.8495811795486707
+          },
+          "scenario_type": "NORMAL",
+          "node_load_percent": 25.0,
+          "drop_reason_details": null
+        },
+        {
+          "from_node_id": "MEO-05",
+          "to_node_id": "LEO-01",
+          "latency_ms": 85.2527908216641,
+          "timestamp_ms": 1763490092460.774,
+          "distance_km": 23459.560666008325,
+          "from_node_position": {
+            "latitude": -46.014881215692284,
+            "longitude": 81.61615917432846,
+            "altitude": 10332.60980689948
+          },
+          "to_node_position": {
+            "latitude": 33.193446238297895,
+            "longitude": -109.96242940555643,
+            "altitude": 565.8154584138723
+          },
+          "from_node_buffer_state": {
+            "queue_size": 107,
+            "bandwidth_utilization": 0.11
+          },
+          "routing_decision_info": {
+            "algorithm": "ReinforcementLearning",
+            "metric": "q_learning",
+            "reward": 0.9420220657046634
+          },
+          "scenario_type": "NORMAL",
+          "node_load_percent": 11.0,
+          "drop_reason_details": null
+        },
+        {
+          "from_node_id": "LEO-01",
+          "to_node_id": "GS_HANOI",
+          "latency_ms": 48.819545116822226,
+          "timestamp_ms": 1763490092460.803,
+          "distance_km": 11284.03450966237,
+          "from_node_position": {
+            "latitude": 33.193446238297895,
+            "longitude": -109.96242940555643,
+            "altitude": 565.8154584138723
+          },
+          "to_node_position": {
+            "latitude": 21.0285,
+            "longitude": 105.8542,
+            "altitude": 0.0
+          },
+          "from_node_buffer_state": {
+            "queue_size": 496,
+            "bandwidth_utilization": 0.12
+          },
+          "routing_decision_info": {
+            "algorithm": "ReinforcementLearning",
+            "metric": "q_learning",
+            "reward": 0.8837963270287613
+          },
+          "scenario_type": "NORMAL",
+          "node_load_percent": 12.0,
+          "drop_reason_details": null
+        }
+      ],
+      "accumulated_delay_ms": 192.16866495458657,
+      "dropped": false,
+      "drop_reason": null
+    },
+    "totalMetrics": {
+      "totalLatencyMs": 192.16866495458657,
+      "totalPacketLossRate": 0.06498899978837502,
+      "minBandwidthMbps": 192,
+      "totalHops": 3,
+      "totalDistanceKm": 49465.279764065424
+    },
+    "status": "COMPLETED"
+  }
+]

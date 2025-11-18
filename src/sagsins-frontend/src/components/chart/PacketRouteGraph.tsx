@@ -71,8 +71,8 @@ interface Packet {
     dropped: boolean;
     dropReason?: string | null;
     analysisData: AnalysisData;
-    useRL: boolean;
-    ttl: number;
+    isUseRL: boolean;  // ✅ Fixed: Match backend field name
+    TTL: number;       // ✅ Fixed: Uppercase to match backend
 }
 
 interface ComparisonData {
