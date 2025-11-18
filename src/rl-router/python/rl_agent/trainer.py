@@ -1,11 +1,9 @@
-# python/rl_agent/trainer.py
-
 import torch
 import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 
-# (NOTE) IMPORT KIẾN TRÚC MỚI
+# Import modules
 from python.rl_agent.dqn_model import (
     create_dqn_networks, 
     create_legacy_dqn_networks,
@@ -13,129 +11,118 @@ from python.rl_agent.dqn_model import (
     OUTPUT_SIZE
 )
 from python.rl_agent.replay_buffer import ReplayBuffer
-from python.rl_agent.policy import get_epsilon  # (SỬA) Import hàm epsilon từ policy
+# Import cả select_action để dùng logic masking chuẩn
+from python.rl_agent.policy import get_epsilon, select_action 
 
-# ======================== HYPERPARAMETERS (TỐI ƯU HÓA) ==========================
-# (NOTE) Cập nhật các hằng số này
-INPUT_SIZE = INPUT_SIZE      # 94
-OUTPUT_SIZE = OUTPUT_SIZE    # 10
+# ======================== HYPERPARAMETERS ==========================
+# Input size nên là 162 (theo dqn_model hiện tại)
+GAMMA = 0.98                 # Tăng nhẹ để nhìn xa hơn (Long-term routing)
+LR = 1e-4                    # Tăng Learning Rate (3e-6 quá chậm cho Dueling DQN)
+BATCH_SIZE = 128
+BUFFER_CAPACITY = 200000
+TARGET_UPDATE_INTERVAL = 50  # Cập nhật target chậm lại chút để ổn định
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-GAMMA = 0.97                 # Discount factor (tăng từ 0.95 để coi trọng future rewards)
-LR = 3e-6                    # Learning rate (giảm từ 5e-6 để stable hơn)
-BATCH_SIZE = 128             # Batch size (tăng từ 64 để generalize tốt hơn)
-BUFFER_CAPACITY = 200000     # Buffer capacity (tăng từ 100k để lưu nhiều experience hơn)
-TARGET_UPDATE_INTERVAL = 20  # Update target network (tăng từ 10 để stable hơn)
-EPSILON_DECAY_STEPS = 100000 # Epsilon decay (tăng từ 50k để explore nhiều hơn)
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-
-# ======================== AGENT CLASS ==============================
 class DQNAgent:
     def __init__(self, env, use_legacy_architecture: bool = False):
         self.env = env
         
-        # (NOTE) Tạo mạng 94-Input, 10-Output
-        # Use legacy architecture for loading old checkpoints
+        # 1. Khởi tạo Mạng Neural
         if use_legacy_architecture:
             self.q_network, self.target_network = create_legacy_dqn_networks()
         else:
+            # Dueling DQN (Không cần dropout rate nữa)
             self.q_network, self.target_network = create_dqn_networks()
         
-        self.q_network.to(device)
-        self.target_network.to(device)
+        self.q_network.to(DEVICE)
+        self.target_network.to(DEVICE)
 
+        # 2. Optimizer & Loss
         self.optimizer = optim.Adam(self.q_network.parameters(), lr=LR)
-        self.criterion = nn.MSELoss()
+        # Dùng SmoothL1Loss (Huber Loss) tốt hơn MSE cho RL
+        self.criterion = nn.SmoothL1Loss()
         
-        # (NOTE) Buffer giờ phải chứa state 94-chiều
+        # 3. Replay Buffer
         self.memory = ReplayBuffer(BUFFER_CAPACITY, INPUT_SIZE)
 
         self.steps_done = 0
         self.update_count = 0
 
-    # ==============================================================
     def select_action(self, state_vector: np.ndarray, greedy: bool = False, num_valid_actions: int = OUTPUT_SIZE) -> int:
         """
-        Epsilon-Greedy Action Selection with Action Masking
-        
-        Args:
-            state_vector: Current state observation
-            greedy: If True, always select best action (no exploration)
-            num_valid_actions: Number of valid actions (for masking invalid actions)
+        Wrapper gọi hàm select_action từ policy.py.
+        Giúp logic thống nhất và tận dụng Action Masking chuẩn.
         """
-        # (SỬA) Sử dụng hàm get_epsilon từ policy.py (thống nhất logic)
-        epsilon = 0.0 if greedy else get_epsilon(self.steps_done)
-        self.steps_done += 1
+        if greedy:
+            # Nếu greedy (dùng khi test), ép epsilon về 0
+            # Ta gọi trực tiếp logic exploitation của policy hoặc giả lập bước rất lớn
+            return select_action(self.q_network, state_vector, 999999999, num_valid_actions, DEVICE)
+        else:
+            # Training bình thường
+            action = select_action(self.q_network, state_vector, self.steps_done, num_valid_actions, DEVICE)
+            self.steps_done += 1
+            return action
 
-        if np.random.rand() < epsilon:
-            # (NOTE) Khám phá ngẫu nhiên từ các hành động HỢP LỆ
-            return np.random.randint(num_valid_actions)
-
-        with torch.no_grad():
-            state_tensor = torch.from_numpy(state_vector).float().unsqueeze(0).to(device)
-            q_values = self.q_network(state_tensor).squeeze(0)  # Shape: [10]
-            
-            # Mask invalid actions by setting their Q-values to -inf
-            if num_valid_actions < OUTPUT_SIZE:
-                q_values[num_valid_actions:] = float('-inf')
-            
-            # (NOTE) Lấy argmax từ các Q-values hợp lệ
-            return q_values.argmax().item()
-
-    # ==============================================================
     def optimize_model(self):
-        """(TỐI ƯU) Cập nhật Q-network (đã sửa lỗi dtype)"""
+        """Cập nhật trọng số mạng DQN."""
         if len(self.memory) < BATCH_SIZE:
             return
 
+        # 1. Sample từ Buffer (Lưu ý: Buffer đã trả về đúng shape (N,1))
         states, actions, rewards, next_states, dones = self.memory.sample(BATCH_SIZE)
 
-        # (TỐI ƯU) Đảm bảo đúng dtype (float32)
-        states = torch.tensor(states, device=device).float()
-        next_states = torch.tensor(next_states, device=device).float()
-        # (NOTE) actions giờ có thể từ 0-9
-        actions = torch.tensor(actions, device=device).unsqueeze(1)
-        rewards = torch.tensor(rewards, device=device).float().unsqueeze(1)
-        dones = torch.tensor(dones, device=device).float().unsqueeze(1)
+        # 2. Chuyển sang Tensor & Đưa lên GPU
+        # Dùng .from_numpy() nhanh hơn .tensor() vì nó chia sẻ bộ nhớ nếu có thể
+        state_batch = torch.from_numpy(states).float().to(DEVICE)
+        next_state_batch = torch.from_numpy(next_states).float().to(DEVICE)
+        action_batch = torch.from_numpy(actions).long().to(DEVICE) # Actions phải là Long/Int64
+        reward_batch = torch.from_numpy(rewards).float().to(DEVICE)
+        done_batch = torch.from_numpy(dones).float().to(DEVICE)
 
-        q_values = self.q_network(states).gather(1, actions)
-        
+        # 3. Tính Q(s, a) hiện tại
+        # action_batch shape (128, 1) -> gather ok
+        current_q_values = self.q_network(state_batch).gather(1, action_batch)
+
+        # 4. Tính V(s') từ Target Network (Double DQN logic could be added here)
         with torch.no_grad():
-            # (NOTE) target_network(next_states) trả về 10 Q-values
-            next_q_values = self.target_network(next_states).max(1)[0].unsqueeze(1)
-            q_targets = rewards + GAMMA * next_q_values * (1 - dones)
+            # Lấy max Q-value của trạng thái tiếp theo
+            # .max(1)[0] trả về (128,), cần unsqueeze(1) thành (128, 1) để cộng với reward
+            next_q_values = self.target_network(next_state_batch).max(1)[0].unsqueeze(1)
+            
+            # Bellman Equation: Target = Reward + Gamma * MaxQ * (1 - Done)
+            expected_q_values = reward_batch + (GAMMA * next_q_values * (1.0 - done_batch))
 
-        loss = self.criterion(q_values, q_targets)
+        # 5. Tính Loss & Backprop
+        loss = self.criterion(current_q_values, expected_q_values)
+
         self.optimizer.zero_grad()
         loss.backward()
+        
+        # Gradient Clipping: Chống bùng nổ gradient
         nn.utils.clip_grad_value_(self.q_network.parameters(), 1.0)
         self.optimizer.step()
 
+        # 6. Soft/Hard Update Target Network
         self.update_count += 1
         if self.update_count % TARGET_UPDATE_INTERVAL == 0:
-            self.update_target_network()
+            self.target_network.load_state_dict(self.q_network.state_dict())
 
-    # ==============================================================
-    def update_target_network(self):
-        self.target_network.load_state_dict(self.q_network.state_dict())
-
-    # ==============================================================
     def save_checkpoint(self, path: str):
         torch.save(self.q_network.state_dict(), path)
 
-
-# ======================== TRAINING LOOP ==========================
+# ======================== TRAINING LOOP HELPER ==========================
+# Hàm train() này thực ra không cần thiết nếu bạn dùng main_train.py 
+# nhưng giữ lại để tương thích code cũ nếu cần
 def train(agent: DQNAgent, env, num_episodes: int = 500):
-    """(TỐI ƯU) Huấn luyện agent (đã loại bỏ logic thừa)"""
     for episode in range(num_episodes):
-        packet_data = env.state_builder.generate_initial_packet()
-        
-        # (TỐI ƯU) env.simulate_episode đã tự quản lý việc
-        # tối ưu và cập nhật target network bên trong
+        # Giả định env có hàm này (hoặc dùng logic trong main_train.py)
+        if hasattr(env.state_builder, 'generate_initial_packet'):
+             packet_data = env.state_builder.generate_initial_packet()
+        else:
+             # Fallback dummy packet
+             packet_data = {"currentHoldingNodeId": "START", "stationDest": "END"}
+
         total_reward = env.simulate_episode(agent, packet_data, max_hops=10)
 
         if episode % 10 == 0:
             print(f"[Episode {episode:03d}] Total Reward = {total_reward:.3f}")
-        else:
-             print(f"[Episode {episode:03d}] Total Reward = {total_reward:.3f}")

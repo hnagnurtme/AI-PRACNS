@@ -3,6 +3,8 @@ import math
 import logging
 from typing import List, Dict, Any, Tuple, Optional
 import os
+from datetime import datetime
+
 # Support loading .env for local development
 try:
     from dotenv import load_dotenv
@@ -14,113 +16,92 @@ except Exception:
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# --- NodeType config ---
-R_EARTH = 6371.0  # km
-NODE_TYPE_MAX_RANGE = {
-    "GROUND_STATION": 2000.0,
-    "LEO_SATELLITE": 3000.0,
-    "MEO_SATELLITE": 10000.0,
-    "GEO_SATELLITE": 35000.0
-}
-
-MAX_RANGE_MAP = {
-    ("LEO_SATELLITE","MEO_SATELLITE"): 12000,
-    ("LEO_SATELLITE","GEO_SATELLITE"): 40000,
-    ("MEO_SATELLITE","GEO_SATELLITE"): 30000,
-    ("LEO_SATELLITE","LEO_SATELLITE"): NODE_TYPE_MAX_RANGE["LEO_SATELLITE"],
-    ("MEO_SATELLITE","MEO_SATELLITE"): NODE_TYPE_MAX_RANGE["MEO_SATELLITE"],
-    ("GEO_SATELLITE","GEO_SATELLITE"): NODE_TYPE_MAX_RANGE["GEO_SATELLITE"],
-}
-
 # --- MongoDB setup ---
-# Read from environment if available (MONGO_URI or MONGODB_URI), otherwise fallback to default
-MONGO_URI = os.getenv("MONGO_URI") or os.getenv("MONGODB_URI") or "mongodb://user:password123@localhost:27017/"
-DB_NAME = "network"
-COLLECTION_NAME = "network_nodes"
+from python.utils.db_connector import LOCAL_MONGO_URI, CLOUD_MONGO_URI
+DB_NAME = "sagsin_network" # Use the consistent DB name
+
+# Constants for ECEF conversion
+R_EARTH = 6371.0  # Earth radius in kilometers
 
 class NodeService:
-    def __init__(self, uri: Optional[str] = None):
-        # resolve passed uri or environment
-        resolved_uri = uri or MONGO_URI
+    def __init__(self, uri: Optional[str] = None, use_cloud_db: bool = False):
+        if uri:
+            resolved_uri = uri
+        elif use_cloud_db:
+            resolved_uri = CLOUD_MONGO_URI
+        else:
+            resolved_uri = LOCAL_MONGO_URI
+            
         self.client = pymongo.MongoClient(resolved_uri)
         self.db = self.client[DB_NAME]
-        self.collection = self.db[COLLECTION_NAME]
-        logger.info("Connected to MongoDB, DB: %s, Collection: %s", DB_NAME, COLLECTION_NAME)
+        self.collection = self.db["network_nodes"] # Use the consistent collection name
+        logger.info("Connected to MongoDB, DB: %s, Collection: %s", DB_NAME, "network_nodes")
 
     @staticmethod
-    def geo_to_xyz(node: Dict[str, Any]) -> Tuple[float, float, float]:
-        lat = math.radians(node["position"]["latitude"])
-        lon = math.radians(node["position"]["longitude"])
-        alt = node["position"].get("altitude", 0.0)
-        R = R_EARTH + alt
-        x = R * math.cos(lat) * math.cos(lon)
-        y = R * math.cos(lat) * math.sin(lon)
-        z = R * math.sin(lat)
+    def geo_to_ecef(pos: Dict[str, float]) -> Tuple[float, float, float]:
+        """
+        Converts geographic coordinates (latitude, longitude, altitude) to ECEF (x, y, z).
+        Latitude and longitude are in degrees, altitude in km.
+        """
+        lat = math.radians(pos['latitude'])
+        lon = math.radians(pos['longitude'])
+        alt = pos['altitude']
+
+        N = R_EARTH # Simplified, ignoring Earth's oblateness for N
+        
+        x = (N + alt) * math.cos(lat) * math.cos(lon)
+        y = (N + alt) * math.cos(lat) * math.sin(lon)
+        z = (N + alt) * math.sin(lat) # Simplified, ignoring Earth's oblateness for Z
+
         return x, y, z
 
     @staticmethod
-    def distance_3d(pos1: Tuple[float,float,float], pos2: Tuple[float,float,float]) -> float:
-        x1, y1, z1 = pos1
-        x2, y2, z2 = pos2
+    def distance_3d(pos1_ecef: Tuple[float,float,float], pos2_ecef: Tuple[float,float,float]) -> float:
+        """
+        Calculates the 3D Euclidean distance between two points in ECEF coordinates.
+        """
+        x1, y1, z1 = pos1_ecef
+        x2, y2, z2 = pos2_ecef
         return math.sqrt((x2-x1)**2 + (y2-y1)**2 + (z2-z1)**2)
 
-    @staticmethod
-    def elevation_ok(gs_pos: Tuple[float,float,float], sat_pos: Tuple[float,float,float], min_elev_deg=5.0) -> bool:
-        dx = sat_pos[0] - gs_pos[0]
-        dy = sat_pos[1] - gs_pos[1]
-        dz = sat_pos[2] - gs_pos[2]
-        distance = math.sqrt(dx*dx + dy*dy + dz*dz)
-        elev_rad = math.asin(dz/distance)
-        return math.degrees(elev_rad) >= min_elev_deg
-
     def compute_neighbors(self, nodes: List[Dict[str, Any]]) -> Dict[str, List[str]]:
-        neighbors_map = {}
+        neighbors_map = {node["nodeId"]: [] for node in nodes}
 
-        # Cache 3D positions
-        pos_cache = {node["nodeId"]: self.geo_to_xyz(node) for node in nodes}
+        # Cache ECEF positions and communication ranges
+        node_info_cache = {}
+        for node in nodes:
+            node_info_cache[node["nodeId"]] = {
+                "ecef_pos": self.geo_to_ecef(node["position"]),
+                "rangeKm": node["communication"].get("rangeKm", 0),
+                "maxConnections": node["communication"].get("maxConnections", 0),
+                "operational": node.get("operational", False)
+            }
 
-        for node_a in nodes:
-            node_a_id = node_a["nodeId"]
-            type_a = node_a.get("nodeType", "GROUND_STATION")
-            pos_a = pos_cache[node_a_id]
-            neighbors = []
+        for node1_id, info1 in node_info_cache.items():
+            if not info1["operational"]:
+                continue
 
-            for node_b in nodes:
-                node_b_id = node_b["nodeId"]
-                if node_b_id == node_a_id:
-                    continue
-                type_b = node_b.get("nodeType", "GROUND_STATION")
-                pos_b = pos_cache[node_b_id]
-
-                # --- GS ↔ GS ---
-                if type_a == "GROUND_STATION" and type_b == "GROUND_STATION":
-                    max_range = NODE_TYPE_MAX_RANGE["GROUND_STATION"]
-                    if self.distance_3d(pos_a, pos_b) <= max_range:
-                        neighbors.append(node_b_id)
+            for node2_id, info2 in node_info_cache.items():
+                if node1_id == node2_id or not info2["operational"]:
                     continue
 
-                # --- GS ↔ Satellite ---
-                if type_a == "GROUND_STATION" or type_b == "GROUND_STATION":
-                    gs_pos = pos_a if type_a == "GROUND_STATION" else pos_b
-                    sat_pos = pos_b if gs_pos is pos_a else pos_a
-                    if self.elevation_ok(gs_pos, sat_pos):
-                        neighbors.append(node_b_id)
-                    continue
+                # Calculate 3D distance
+                dist = self.distance_3d(info1["ecef_pos"], info2["ecef_pos"])
+                
+                # Check if within communication range of node1
+                if dist <= info1["rangeKm"] and len(neighbors_map[node1_id]) < info1["maxConnections"]:
+                    neighbors_map[node1_id].append(node2_id)
+                
+                # Check if within communication range of node2 (bidirectional)
+                if dist <= info2["rangeKm"] and len(neighbors_map[node2_id]) < info2["maxConnections"]:
+                    neighbors_map[node2_id].append(node1_id)
 
-                # --- Satellite ↔ Satellite same type ---
-                if type_a == type_b:
-                    max_range = NODE_TYPE_MAX_RANGE.get(type_a, 2000.0)
-                    if self.distance_3d(pos_a, pos_b) <= max_range:
-                        neighbors.append(node_b_id)
-                    continue
-
-                # --- Satellite ↔ Satellite cross-type ---
-                key = (type_a,type_b) if (type_a,type_b) in MAX_RANGE_MAP else (type_b,type_a)
-                max_range = MAX_RANGE_MAP.get(key, 15000)
-                if self.distance_3d(pos_a, pos_b) <= max_range:
-                    neighbors.append(node_b_id)
-
-            neighbors_map[node_a_id] = neighbors
+        # Ensure unique neighbors and limit to maxConnections
+        for node_id in neighbors_map:
+            node_data = next((n for n in nodes if n["nodeId"] == node_id), None)
+            if node_data:
+                neighbors_map[node_id] = list(set(neighbors_map[node_id]))
+                neighbors_map[node_id] = neighbors_map[node_id][:node_data["communication"]["maxConnections"]]
 
         return neighbors_map
 
@@ -134,10 +115,7 @@ class NodeService:
                 {"nodeId": node_id},
                 {"$set": {
                     "neighbors": neighbors,
-                    "communication.ipAddress": "127.0.0.1",
-                    "host": "127.0.0.1",
-                    "isOperational": True,
-                    "healthy":True
+                    "lastUpdated": datetime.now() # Update timestamp
                 }}
             )
             logger.info(f"  {node_id}: {len(neighbors)} neighbors updated")
@@ -149,7 +127,13 @@ class NodeService:
 
 
 if __name__ == "__main__":
-    service = NodeService()
+    
+    import argparse
+    parser = argparse.ArgumentParser(description="Update node neighbors in MongoDB.")
+    parser.add_argument("--cloud", action="store_true", help="Update cloud database instead of local.")
+    args = parser.parse_args()
+
+    service = NodeService(use_cloud_db=args.cloud)
     try:
         service.update_neighbors_in_db()
     finally:
