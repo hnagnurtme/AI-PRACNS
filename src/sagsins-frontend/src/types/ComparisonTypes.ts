@@ -30,8 +30,17 @@ export interface HopRecord {
     dropReasonDetails?: string;
 }
 
+// ✅ ServiceType matching backend enum
+export type ServiceType =
+    | "VIDEO_STREAM"
+    | "VIDEO_STREAMING"  // Backward compatibility
+    | "AUDIO_CALL"
+    | "IMAGE_TRANSFER"
+    | "TEXT_MESSAGE"
+    | "FILE_TRANSFER";
+
 export interface QoS {
-    serviceType: string;
+    serviceType: ServiceType;  // ✅ Fixed: Use union type instead of string
     defaultPriority: number;
     maxLatencyMs: number;
     maxJitterMs: number;
@@ -70,8 +79,8 @@ export interface Packet {
     dropped: boolean;
     dropReason?: string | null;
     analysisData: AnalysisData;
-    useRL: boolean;
-    ttl: number;
+    isUseRL: boolean;  // ✅ Fixed: Match backend field name (was: useRL)
+    TTL: number;       // ✅ Fixed: Uppercase to match backend (was: ttl)
 }
 
 export interface ComparisonData {

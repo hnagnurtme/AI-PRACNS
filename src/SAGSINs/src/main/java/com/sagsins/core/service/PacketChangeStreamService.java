@@ -67,7 +67,10 @@ public class PacketChangeStreamService {
     @PostConstruct
     public void initChangeStreamListeners() {
         logger.info("Initializing MongoDB Change Stream listeners...");
-        
+        logger.info("📊 MongoDB Connection Info:");
+        logger.info("   - Database: {}", mongoTemplate.getDb().getName());
+        logger.info("   - Collections: two_packets, batch_packets");
+
         try {
             // Khởi tạo scheduler cho batch packets và two packets
             scheduler = Executors.newScheduledThreadPool(2, r -> {
@@ -75,26 +78,38 @@ public class PacketChangeStreamService {
                 t.setDaemon(true);
                 return t;
             });
-            
+            logger.info("✅ Created scheduler for packet sending");
+
             // Khởi tạo scheduler cho delete tasks
             deleteScheduler = Executors.newScheduledThreadPool(2, r -> {
                 Thread t = new Thread(r, "packet-deleter");
                 t.setDaemon(true);
                 return t;
             });
-            
+            logger.info("✅ Created scheduler for packet deletion");
+
             // Listener cho two_packets collection
             initTwoPacketChangeStream();
-            
+
             // Listener cho batch_packets collection
             initBatchPacketChangeStream();
-            
+
             // Start listening
+            logger.info("🚀 Starting MessageListenerContainer...");
             messageListenerContainer.start();
-            
+
+            // Verify container is running
+            if (messageListenerContainer.isRunning()) {
+                logger.info("✅ MessageListenerContainer is RUNNING");
+            } else {
+                logger.warn("⚠️ MessageListenerContainer is NOT running!");
+            }
+
             logger.info("✅ MongoDB Change Stream listeners started successfully");
+            logger.info("🎯 Ready to receive change events from MongoDB");
         } catch (Exception e) {
             logger.error("❌ Failed to initialize Change Stream listeners: {}", e.getMessage(), e);
+            logger.error("❌ Stack trace:", e);
         }
     }
     
@@ -191,40 +206,43 @@ public class PacketChangeStreamService {
      */
     private void handleTwoPacketChange(Message<ChangeStreamDocument<Document>, TwoPacket> message) {
         try {
-            TwoPacket packet = message.getBody();
-            
+            logger.info("🔔 [CHANGE EVENT] Received change event for two_packets collection!");
+
+            final TwoPacket packet = message.getBody();
+
             // ✅ OPTIMIZATION: Early return for null packet
             if (packet == null) {
                 logger.warn("Received null TwoPacket in change event");
                 return;
             }
-            
+
             // ✅ OPTIMIZATION: Extract operation type safely
             ChangeStreamDocument<Document> raw = message.getRaw();
             String operationType = "unknown";
             if (raw != null && raw.getOperationType() != null) {
                 operationType = raw.getOperationType().getValue();
             }
-            
+            logger.info("📝 Operation Type: {}", operationType.toUpperCase());
+
             // ✅ OPTIMIZATION: Early validation of required fields
             if (packet.getPairId() == null) {
                 logger.warn("Received TwoPacket with null pairId, ignoring");
                 return;
             }
-            
+
             // Kiểm tra có đủ 2 packets không (REQUIRED: cả dijkstra và rl phải có)
             boolean hasBothPackets = packet.getDijkstraPacket() != null && packet.getRlPacket() != null;
-            
+
             // ✅ OPTIMIZATION: Use debug level when appropriate
             if (logger.isDebugEnabled()) {
-                logger.debug("🔄 [{}] TwoPacket received - pairId={}, dijkstra={}, rl={}, complete={}", 
+                logger.debug("🔄 [{}] TwoPacket received - pairId={}, dijkstra={}, rl={}, complete={}",
                     operationType.toUpperCase(),
                     packet.getPairId(),
                     packet.getDijkstraPacket() != null ? "✓" : "✗",
                     packet.getRlPacket() != null ? "✓" : "✗",
                     hasBothPackets ? "YES" : "NO");
             }
-            
+
             // ✅ OPTIMIZATION: Cancel old task atomically and log only if necessary
             ScheduledFuture<?> oldTask = twoPacketSendTask.getAndSet(null);
             if (oldTask != null && !oldTask.isDone()) {
@@ -233,17 +251,17 @@ public class PacketChangeStreamService {
                     logger.debug("⏹️ Cancelled previous TwoPacket send task (reset timer due to new update)");
                 }
             }
-            
+
             // Chỉ schedule gửi nếu đã đủ 2 packets
             if (hasBothPackets) {
                 // Lưu packet để gửi
                 latestTwoPacket.set(packet);
-                
+
                 // Schedule gửi sau 3 giây (sẽ bị cancel nếu có update mới)
                 ScheduledFuture<?> newTask = scheduler.schedule(() -> {
                     try {
                         TwoPacket packetToSend = latestTwoPacket.getAndSet(null);
-                        
+
                         // ✅ OPTIMIZATION: Validate before sending
                         if (packetToSend != null && packetToSend.getPairId().equals(packet.getPairId())) {
                             // Double-check: Vẫn đủ 2 packets
@@ -287,9 +305,15 @@ public class PacketChangeStreamService {
                     logger.debug("⏸️ TwoPacket incomplete - pairId={}, waiting for both packets (dijkstra AND rl required)", packet.getPairId());
                 }
             }
-                
+
+
+        } catch (IllegalArgumentException e) {
+            // Enum parsing error - log with more details
+            logger.error("❌ [ENUM ERROR] Failed to parse TwoPacket due to enum mismatch: {}", e.getMessage());
+            logger.error("   - This is likely due to serviceType enum mismatch between Python and Java");
+            logger.error("   - Check that Python uses valid ServiceType values: VIDEO_STREAMING, AUDIO_CALL, IMAGE_TRANSFER, TEXT_MESSAGE, FILE_TRANSFER");
         } catch (Exception e) {
-            logger.error("Error handling TwoPacket change: {}", e.getMessage(), e);
+            logger.error("❌ [ERROR] Error handling TwoPacket change: {}", e.getMessage(), e);
         }
     }
     
@@ -299,20 +323,23 @@ public class PacketChangeStreamService {
      */
     private void handleBatchPacketChange(Message<ChangeStreamDocument<Document>, BatchPacket> message) {
         try {
+            logger.info("🔔 [CHANGE EVENT] Received change event for batch_packets collection!");
+
             BatchPacket batch = message.getBody();
-            
+
             // ✅ OPTIMIZATION: Early return for null batch
             if (batch == null) {
                 logger.warn("Received null BatchPacket in change event");
                 return;
             }
-            
+
             // ✅ OPTIMIZATION: Extract operation type safely
             ChangeStreamDocument<Document> raw = message.getRaw();
             String operationType = "unknown";
             if (raw != null && raw.getOperationType() != null) {
                 operationType = raw.getOperationType().getValue();
             }
+            logger.info("📝 Operation Type: {}", operationType.toUpperCase());
             
             // ✅ OPTIMIZATION: Validate batch ID
             if (batch.getBatchId() == null) {

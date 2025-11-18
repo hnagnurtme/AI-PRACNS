@@ -83,7 +83,7 @@ export const PacketFlowDetail = ( { node, batch }: { node: NodeCongestion; batch
                 if ( hasRoutedPacket ) {
                     packets.push( {
                         packet,
-                        algorithm: packet.useRL ? 'RL' : 'Dijkstra',
+                        algorithm: packet.isUseRL ? 'RL' : 'Dijkstra',  // ✅ Fixed: Match backend field name
                         pairIndex: pairIdx
                     } );
                 }

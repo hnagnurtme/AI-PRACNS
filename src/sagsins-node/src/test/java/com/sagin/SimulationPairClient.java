@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 
 import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -82,7 +81,7 @@ public class SimulationPairClient {
         packet.setServiceQoS(QoSProfileFactory.getQosProfile(ServiceType.AUDIO_CALL));
         packet.setHopRecords(new ArrayList<>());
         packet.setPathHistory(new ArrayList<>());
-        packet.setTimeSentFromSourceMs(timestamp); // ✅ Cùng timestamp
+        packet.setTimeSentFromSourceMs(timestamp);
         packet.setAcknowledgedPacketId(null);
         packet.setCurrentHoldingNodeId(packet.getStationSource());
         packet.setNextHopNodeId(null);
@@ -90,29 +89,46 @@ public class SimulationPairClient {
         packet.setDropReason(null);
         packet.setAccumulatedDelayMs(0);
         packet.setAnalysisData(null);
-        packet.setUseRL(useRL); // ✅ Khác nhau chỉ ở đây
+        packet.setUseRL(useRL); 
         
         return packet;
     }
     
     /**
-     * Gửi packet qua TCP socket
+     * Gửi packet qua TCP socket với length-prefix protocol.
+     * ✅ FIX: Thêm 4-byte length prefix để phù hợp với NodeGateway receiver.
      */
     private static void sendPacket(Packet packet, String host, int port, ObjectMapper mapper, String label) {
         try (Socket socket = new Socket(host, port);
              OutputStream os = socket.getOutputStream()) {
 
-            String jsonPacket = mapper.writeValueAsString(packet);
-            logger.debug("[{}] Sending packet: {}", label, packet.getPacketId());
+            // Serialize packet to JSON bytes
+            byte[] packetBytes = mapper.writeValueAsBytes(packet);
+            logger.debug("[{}] Sending packet: {} ({} bytes)", label, packet.getPacketId(), packetBytes.length);
 
-            os.write(jsonPacket.getBytes(StandardCharsets.UTF_8));
+            // ✅ Write 4-byte length prefix (big-endian)
+            byte[] lengthPrefix = intToBytes(packetBytes.length);
+            os.write(lengthPrefix);   // Send length first
+            os.write(packetBytes);    // Send JSON data
             os.flush();
 
-            logger.info("✅ [{}] Packet sent: {} | useRL={}", 
-                    label, packet.getPacketId(), packet.isUseRL());
+            logger.info("✅ [{}] Packet sent successfully: {} | useRL={} | size={} bytes",
+                    label, packet.getPacketId(), packet.isUseRL(), packetBytes.length);
 
         } catch (Exception e) {
-            logger.error("[{}] Failed to send packet", label, e);
+            logger.error("[{}] Failed to send packet to {}:{}", label, host, port, e);
         }
+    }
+
+    /**
+     * Converts an integer to a 4-byte array in big-endian format (network byte order).
+     */
+    private static byte[] intToBytes(int value) {
+        return new byte[]{
+                (byte) (value >> 24),
+                (byte) (value >> 16),
+                (byte) (value >> 8),
+                (byte) value
+        };
     }
 }

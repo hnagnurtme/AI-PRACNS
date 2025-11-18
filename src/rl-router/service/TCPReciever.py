@@ -19,6 +19,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from model.Packet import Packet, QoS, AnalysisData, HopRecord, Position, BufferState, RoutingDecisionInfo, RoutingAlgorithm
 from service.TCPSender import send_packet
 from service.DijkstraService import DijkstraService
+from service.BatchPacketService import BatchPacketService
 from python.utils.db_connector import MongoConnector
 from python.utils.state_builder import StateBuilder
 
@@ -314,10 +315,13 @@ class TCPReceiver:
         self.db = MongoConnector()
         self.dijkstra_service = DijkstraService(self.db)
         self.state_builder = StateBuilder(self.db)
-        
+
         # Initialize QoS monitoring and packet logging
         self.qos_monitor = QoSMonitor(self.db)
         self.packet_logger = PacketLogger(self.db)
+
+        # Initialize BatchPacket service for automatic packet pair tracking
+        self.batch_packet_service = BatchPacketService(self.db)
 
         # Simulation results tracking
         self.simulation_results = []
@@ -366,6 +370,7 @@ class TCPReceiver:
         print(f"🔍 QoS Monitoring: Active ✅")
         print(f"📝 Packet Logging: Active ✅")
         print(f"💾 Database: Connected ✅")
+        print(f"📦 BatchPacket Auto-Save: Active ✅")
         print("-" * 60)
         
         while True:
@@ -581,7 +586,7 @@ class TCPReceiver:
         """
         packet.dropped = True
         packet.drop_reason = drop_reason
-        
+
         print(f"\n🔴 PACKET DROPPED")
         print("="*50)
         print(f"📦 Packet ID: {packet.packet_id}")
@@ -594,7 +599,10 @@ class TCPReceiver:
 
         # Log to database
         self.packet_logger.log_packet_drop(packet, drop_reason, packet.current_holding_node_id)
-        
+
+        # ✅ AUTO-SAVE to TwoPacket and BatchPacket collections
+        self.batch_packet_service.save_packet(packet)
+
         # Also save to simulation results
         self._save_simulation_result(packet, "DROPPED")
 
@@ -619,6 +627,9 @@ class TCPReceiver:
 
         # Log successful delivery to database
         log_id = self.packet_logger.log_packet_delivery(packet, packet.current_holding_node_id)
+
+        # ✅ AUTO-SAVE to TwoPacket and BatchPacket collections (SUCCESSFUL DELIVERY)
+        self.batch_packet_service.save_packet(packet)
 
         # Send to user
         user_address = {

@@ -88,32 +88,142 @@ public class DynamicRoutingService implements IRoutingService {
     private RoutingTable computeRoutingTable(String sourceNodeId, Map<String, List<String>> graph) {
         RoutingTable table = new RoutingTable();
 
-        // BFS không trọng số, precompute tất cả destination từ source
-        Queue<List<String>> queue = new LinkedList<>();
-        Set<String> visited = new HashSet<>();
-        queue.add(List.of(sourceNodeId));
+        // ✅ DIJKSTRA ALGORITHM with actual edge weights (distance/latency-based)
+        // Maps: nodeId -> shortest cost from source
+        Map<String, Double> costFromSource = new HashMap<>();
+        // Maps: nodeId -> previous node in shortest path
+        Map<String, String> previousNode = new HashMap<>();
+        // Priority queue: (cost, nodeId)
+        PriorityQueue<NodeCost> pq = new PriorityQueue<>(Comparator.comparingDouble(nc -> nc.cost));
 
-        while (!queue.isEmpty()) {
-            List<String> path = queue.poll();
-            String last = path.get(path.size() - 1);
+        // Initialize distances
+        costFromSource.put(sourceNodeId, 0.0);
+        pq.offer(new NodeCost(sourceNodeId, 0.0));
 
-            if (!visited.add(last)) continue;
+        // Dijkstra's main loop
+        while (!pq.isEmpty()) {
+            NodeCost current = pq.poll();
+            String currentNodeId = current.nodeId;
+            double currentCost = current.cost;
 
-            if (!last.equals(sourceNodeId)) {
-                table.updateRoute(RouteHelper.createBasicRoute(sourceNodeId, last, path));
+            // Skip if we've already processed this node with a better cost
+            if (currentCost > costFromSource.getOrDefault(currentNodeId, Double.MAX_VALUE)) {
+                continue;
             }
 
-            for (String neighbor : graph.getOrDefault(last, List.of())) {
-                if (!visited.contains(neighbor)) {
-                    List<String> newPath = new ArrayList<>(path);
-                    newPath.add(neighbor);
-                    queue.add(newPath);
+            // Explore neighbors
+            for (String neighborId : graph.getOrDefault(currentNodeId, List.of())) {
+                // Calculate edge cost (distance-based + other factors)
+                double edgeCost = calculateEdgeCost(currentNodeId, neighborId);
+                double newCost = currentCost + edgeCost;
+
+                // If this path is better, update it
+                if (newCost < costFromSource.getOrDefault(neighborId, Double.MAX_VALUE)) {
+                    costFromSource.put(neighborId, newCost);
+                    previousNode.put(neighborId, currentNodeId);
+                    pq.offer(new NodeCost(neighborId, newCost));
                 }
+            }
+        }
+
+        // Reconstruct paths for all reachable destinations
+        for (String destNodeId : costFromSource.keySet()) {
+            if (destNodeId.equals(sourceNodeId)) continue;
+
+            List<String> path = reconstructPath(sourceNodeId, destNodeId, previousNode);
+            if (path != null && !path.isEmpty()) {
+                RouteInfo route = RouteHelper.createRouteWithCost(
+                    sourceNodeId,
+                    destNodeId,
+                    path,
+                    costFromSource.get(destNodeId),
+                    nodeRepository
+                );
+                table.updateRoute(route);
             }
         }
 
         return table;
     }
+
+    /**
+     * Calculates the cost of an edge between two nodes.
+     * Cost is based on distance (propagation delay) and other factors.
+     */
+    private double calculateEdgeCost(String fromNodeId, String toNodeId) {
+        Optional<NodeInfo> fromNodeOpt = nodeRepository.getNodeInfo(fromNodeId);
+        Optional<NodeInfo> toNodeOpt = nodeRepository.getNodeInfo(toNodeId);
+
+        if (fromNodeOpt.isEmpty() || toNodeOpt.isEmpty()) {
+            return Double.MAX_VALUE; // Unreachable
+        }
+
+        NodeInfo fromNode = fromNodeOpt.get();
+        NodeInfo toNode = toNodeOpt.get();
+
+        // Calculate distance using Haversine formula
+        double distanceKm = calculateDistance(fromNode, toNode);
+
+        // Propagation delay (distance / speed of light)
+        // Speed of light in fiber/satellite ~= 200,000 km/s = 200 km/ms
+        double propagationDelayMs = distanceKm / 200.0;
+
+        // Bandwidth factor (lower bandwidth = higher cost)
+        double bandwidthMHz = fromNode.getCommunication().getBandwidthMHz();
+        double bandwidthFactor = (bandwidthMHz > 0) ? (1000.0 / bandwidthMHz) : 10.0;
+
+        // Weather impact (if available)
+        double weatherFactor = 1.0;
+        if (fromNode.getWeather() != null) {
+            weatherFactor = 1.0 + (fromNode.getWeather().getTypicalAttenuationDb() / 100.0);
+        }
+
+        // Total cost: propagation delay + bandwidth penalty + weather penalty
+        double totalCost = propagationDelayMs + bandwidthFactor + (weatherFactor * 0.5);
+
+        return totalCost;
+    }
+
+    /**
+     * Calculates distance between two nodes using Haversine formula.
+     */
+    private double calculateDistance(NodeInfo from, NodeInfo to) {
+        double R = 6371; // Earth radius in km
+        double dLat = Math.toRadians(to.getPosition().getLatitude() - from.getPosition().getLatitude());
+        double dLon = Math.toRadians(to.getPosition().getLongitude() - from.getPosition().getLongitude());
+        double a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                Math.cos(Math.toRadians(from.getPosition().getLatitude())) *
+                        Math.cos(Math.toRadians(to.getPosition().getLatitude())) *
+                        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return R * c;
+    }
+
+    /**
+     * Reconstructs the path from source to destination using the previousNode map.
+     */
+    private List<String> reconstructPath(String source, String dest, Map<String, String> previousNode) {
+        List<String> path = new ArrayList<>();
+        String current = dest;
+
+        while (current != null) {
+            path.add(0, current); // Add to front
+            if (current.equals(source)) break;
+            current = previousNode.get(current);
+        }
+
+        // Verify path is valid
+        if (path.isEmpty() || !path.get(0).equals(source)) {
+            return null;
+        }
+
+        return path;
+    }
+
+    /**
+     * Helper record for Dijkstra's priority queue.
+     */
+    private record NodeCost(String nodeId, double cost) {}
     public void forceUpdateRoutingTables() {
         logger.info("Force updating routing tables...");
         updateAllRoutingTables();

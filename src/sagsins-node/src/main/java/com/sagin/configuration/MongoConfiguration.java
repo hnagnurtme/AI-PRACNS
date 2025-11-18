@@ -22,11 +22,6 @@ public final class MongoConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(MongoConfiguration.class);
 
-    // --- Environment Variable Keys ---
-    // Best practice: Define keys in one place to avoid "magic strings".
-    private static final String MONGO_URI_ENV_VAR = "MONGO_URI";
-    private static final String MONGO_DB_NAME_ENV_VAR = "MONGO_DB_NAME";
-
     // --- Default / Constant Values ---
     public static final String DEFAULT_DATABASE_NAME = "network";
     public static final String NODES_COLLECTION = "network_nodes";
@@ -49,25 +44,27 @@ public final class MongoConfiguration {
     // --- PUBLIC STATIC UTILITIES ---
 
     /**
-     * Gets the MongoDB Connection String *exclusively* from environment
-     * variables.
+     * Gets the MongoDB Connection String from environment variables.
      *
      * @return The connection string.
-     * @throws IllegalStateException if the MONGO_URI environment variable is not
-     * set.
+     * @throws IllegalStateException if the MONGODB_URI or MONGO_URI environment variable is not set.
      */
     public static String getConnectionString() {
-        String connectionString = System.getenv(MONGO_URI_ENV_VAR);
-
-        if (connectionString == null || connectionString.trim().isEmpty()) {
-            logger.error("FATAL: {} environment variable is not set.", MONGO_URI_ENV_VAR);
-            throw new IllegalStateException(
-                    "MongoDB connection string is missing. Please set the " + MONGO_URI_ENV_VAR + " environment variable.");
+        // Try MONGODB_URI first, then MONGO_URI
+        String uri = System.getenv("MONGODB_URI");
+        if (uri == null || uri.trim().isEmpty()) {
+            uri = System.getenv("MONGO_URI");
         }
 
-        // Note: Do not log the connection string itself, as it contains secrets.
-        logger.info("MongoDB Connection String loaded from environment variable {}.", MONGO_URI_ENV_VAR);
-        return connectionString;
+        if (uri == null || uri.trim().isEmpty()) {
+            String errorMsg = "MongoDB URI not found in environment variables. " +
+                            "Please set MONGODB_URI or MONGO_URI environment variable.";
+            logger.error(errorMsg);
+            throw new IllegalStateException(errorMsg);
+        }
+
+        logger.debug("Using MongoDB URI from environment variables");
+        return uri;
     }
 
     /**
@@ -77,14 +74,7 @@ public final class MongoConfiguration {
      * @return The database name.
      */
     public static String getDatabaseName() {
-        String dbName = System.getenv(MONGO_DB_NAME_ENV_VAR);
-        if (dbName == null || dbName.trim().isEmpty()) {
-            logger.warn("{} environment variable not set. Using default database: {}",
-                    MONGO_DB_NAME_ENV_VAR, DEFAULT_DATABASE_NAME);
-            return DEFAULT_DATABASE_NAME;
-        }
-        logger.info("Using database: {}", dbName);
-        return dbName;
+        return "network";
     }
 
     /**

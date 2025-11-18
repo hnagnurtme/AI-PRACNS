@@ -323,7 +323,7 @@ Each hop includes:
 ### Environment Variables
 ```bash
 # .env file
-MONGODB_URI=mongodb://user:password123@localhost:27017
+MONGODB_URI=mongodb+srv://admin:SMILEisme0106@mongo1.ragz4ka.mongodb.net/?appName=MONGO1
 ```
 
 ### Router Configuration
@@ -370,7 +370,7 @@ router = TCPReceiver(
 ### Issue: Database connection failed
 - Verify MongoDB is running
 - Check credentials in MONGODB_URI
-- Ensure database name is correct (sagsin_network)
+- Ensure database name is correct (network)
 
 ### Issue: No path found
 - Verify nodes have neighbor relationships

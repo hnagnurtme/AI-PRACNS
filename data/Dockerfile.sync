@@ -1,0 +1,18 @@
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Install dependencies
+RUN pip install --no-cache-dir pymongo
+
+# Copy the sync script
+COPY sync_db.py /app/sync_db.py
+
+# Set environment variables with defaults
+ENV LOCAL_MONGO_URI="mongodb://user:password123@mongodb:27017/"
+ENV CLOUD_MONGO_URI=""
+ENV DB_NAME="sagsin_network"
+ENV SYNC_INTERVAL_SECONDS="15"
+
+# Run the sync script
+CMD ["python", "-u", "sync_db.py"]

@@ -92,10 +92,15 @@ public class SimulationMain {
         Map<String, NodeInfo> nodeInfoMap = nodeRepository.loadAllNodeConfigs();
         logger.info("Loaded {} node configurations.", nodeInfoMap.size());
 
+        // Load nodes into the service cache
+        nodeService.loadNodesIntoCache(nodeInfoMap);
+
         // Update IPs in memory first with auto-detected IP.
         logger.info("📝 Updating node IP addresses to {}...", nodeHostIp);
         nodeInfoMap.values().forEach(nodeInfo -> {
-            nodeService.updateNodeIpAddress(nodeInfo.getNodeId(), nodeHostIp);
+            if (nodeInfo.getCommunication() != null) {
+                nodeService.updateNodeIpAddress(nodeInfo.getNodeId(), nodeHostIp);
+            }
         });
 
         // Flush all IP updates to the database in ONE operation.

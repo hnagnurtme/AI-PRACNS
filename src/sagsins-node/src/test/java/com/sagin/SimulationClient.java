@@ -10,16 +10,26 @@ import org.slf4j.Logger;
 
 import java.io.OutputStream;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
 public class SimulationClient {
     private static final Logger logger = AppLogger.getLogger(SimulationClient.class);
-    
+
+    // Hàm chuyển int -> 4 byte big-endian (length prefix)
+    private static byte[] intToBytes(int value) {
+        return new byte[]{
+                (byte) (value >> 24),
+                (byte) (value >> 16),
+                (byte) (value >> 8),
+                (byte) value
+        };
+    }
+
     public static void main(String[] args) {
         String host = "localhost";
         int port = 7765;
-        
+
         String requestId = "REQ-" + System.currentTimeMillis();
         AppLogger.putMdc("requestId", requestId);
         logger.info("Starting simulation client, sending packet to {}:{}", host, port);
@@ -43,7 +53,7 @@ public class SimulationClient {
         packet.setPathHistory(new ArrayList<>());
         packet.setTimeSentFromSourceMs(System.currentTimeMillis());
         packet.setAcknowledgedPacketId(null);
-        packet.setCurrentHoldingNodeId(packet.getStationSource()); // ⚡ quan trọng
+        packet.setCurrentHoldingNodeId(packet.getStationSource());
         packet.setNextHopNodeId(null);
         packet.setDropped(false);
         packet.setDropReason(null);
@@ -55,18 +65,21 @@ public class SimulationClient {
         ObjectMapper objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
-        try (Socket socket = new Socket(host, port);
-             OutputStream os = socket.getOutputStream()) {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(host, port), 1000); // timeout 1s
+            try (OutputStream os = socket.getOutputStream()) {
 
-            // Chuyển packet thành JSON UTF-8
-            String jsonPacket = objectMapper.writeValueAsString(packet);
-            logger.debug("Sending packet JSON: {}", jsonPacket);
+                // Chuyển packet thành JSON UTF-8
+                byte[] packetBytes = objectMapper.writeValueAsBytes(packet);
 
-            os.write(jsonPacket.getBytes(StandardCharsets.UTF_8));
-            os.flush();
+                // --- Thêm 4-byte length prefix ---
+                byte[] lengthPrefix = intToBytes(packetBytes.length);
+                os.write(lengthPrefix);   // gửi độ dài trước
+                os.write(packetBytes);    // gửi dữ liệu JSON
+                os.flush();
 
-            logger.info("✅ Packet sent successfully to NodeGateway (packet ID: {})", packet.getPacketId());
-
+                logger.info("✅ Packet sent successfully to NodeGateway (packet ID: {})", packet.getPacketId());
+            }
         } catch (Exception e) {
             logger.error("Failed to send packet to NodeGateway at {}:{}", host, port, e);
         } finally {

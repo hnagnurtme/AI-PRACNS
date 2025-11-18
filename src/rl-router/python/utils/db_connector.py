@@ -17,9 +17,6 @@ except Exception:
 
 logger = logging.getLogger(__name__)
 
-# Define MongoDB URIs
-LOCAL_MONGO_URI = "mongodb://user:password123@localhost:27017"
-
 # Định nghĩa kiểu dữ liệu cho một document Node
 NodeData = Dict[str, Any]
 
@@ -29,15 +26,17 @@ class MongoConnector:
     def __init__(
         self,
         uri: Optional[str] = None,
-        db_name: str = "sagsin_network",
+        db_name: str = "network",
         nodes_collection_name: str = "network_nodes",
     ):
         """
         Initialize MongoConnector. The MongoDB URI is taken in this order:
         1) the `uri` parameter if provided,
-        2) the `MONGODB_URI` environment variable (loaded from .env by python-dotenv if present),
-        3) the CLOUD_MONGO_URI if use_cloud_db is True,
-        4) the LOCAL_MONGO_URI otherwise.
+        2) the `MONGODB_URI` environment variable,
+        3) the `MONGO_URI` environment variable.
+
+        Raises:
+            ValueError: If no MongoDB URI is provided via parameter or environment variables.
         """
 
         # resolve URI from parameter or environment
@@ -48,7 +47,10 @@ class MongoConnector:
         elif os.getenv("MONGO_URI"):
             resolved_uri = os.getenv("MONGO_URI")
         else:
-            resolved_uri = LOCAL_MONGO_URI
+            raise ValueError(
+                "No MongoDB URI provided. Please set MONGODB_URI or MONGO_URI environment variable, "
+                "or provide the uri parameter to MongoConnector."
+            )
 
         self.client = MongoClient(resolved_uri)
         self.db = self.client[db_name]

@@ -1,72 +1,93 @@
-from db_config import get_collection
-nodes = get_collection("nodes")
-
-from datetime import datetime
-import math
 import time
 import random
-import logging
+from datetime import datetime
+from pymongo import MongoClient
 
-# --- 1. Logging setup ---
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
-)
+# --- Configuration ---
+LOCAL_MONGO_URI = "mongodb://user:password123@localhost:27018/"
+DB_NAME = "sagsin_network"
+UPDATE_INTERVAL_SECONDS = 10 # Update satellite positions every 10 seconds
 
-# --- 2. Database setup ---
+def get_mongo_client(uri):
+    """Creates a MongoClient from a URI."""
+    try:
+        client = MongoClient(uri, serverSelectionTimeoutMS=5000)
+        client.admin.command('ismaster') # Check connection
+        return client
+    except Exception as e:
+        print(f"Error connecting to MongoDB at {uri}: {e}")
+        return None
 
-# --- 3. Hàm cập nhật vị trí ---
-def update_positions(interval_seconds=5):
-    logging.info("Node position updater started.")
-    while True:
-        try:
-            all_nodes = list(nodes.find({}))
-            for node in all_nodes:
-                pos = node.get("position", {})
-                vel = node.get("velocity", {})
-                node_type = node.get("type", "")
+def update_satellite_positions(client):
+    """
+    Updates the positions of LEO, MEO, and GEO satellites in the database.
+    - LEO/MEO: Simulate movement by incrementing longitude.
+    - GEO: Keep fixed (or very slight random wobble).
+    """
+    if not client:
+        print("No MongoDB client available for update.")
+        return
 
-                lat = pos.get("latitude", 0.0)
-                lon = pos.get("longitude", 0.0)
-                alt = pos.get("altitude", 0.0)
+    db = client[DB_NAME]
+    nodes_collection = db["network_nodes"]
 
-                vx = vel.get("velocityX", 0.0)
-                vy = vel.get("velocityY", 0.0)
-                vz = vel.get("velocityZ", 0.0)
+    print(f"[{datetime.now()}] Updating satellite positions...")
 
-                # --- Nếu là vệ tinh ---
-                if "SATELLITE" in node_type:
-                    lat += vx * 0.01 + math.sin(time.time() / 60) * 0.001
-                    lon += vy * 0.01 + math.cos(time.time() / 60) * 0.001
-                    alt += vz * 0.1 + random.uniform(-0.05, 0.05)
-                else:
-                    lat += random.uniform(-0.00001, 0.00001)
-                    lon += random.uniform(-0.00001, 0.00001)
+    # Fetch all satellite nodes
+    satellites = nodes_collection.find({
+        "nodeType": {"$in": ["LEO_SATELLITE", "MEO_SATELLITE", "GEO_SATELLITE"]}
+    })
 
-                # --- Giới hạn ---
-                lat = max(-90, min(90, lat))
-                lon = (lon + 180) % 360 - 180
+    for sat in satellites:
+        node_id = sat["nodeId"]
+        node_type = sat["nodeType"]
+        current_pos = sat["position"]
 
-                nodes.update_one(
-                    {"_id": node["_id"]},
-                    {"$set": {
-                       # ipAddress:localhost
-                        "communication.ipAddress": "10.185.211.133",
-                        "position.latitude": lat,
-                        "position.longitude": lon,
-                        "position.altitude": alt,
-                        "status.lastUpdated": datetime.utcnow().isoformat() + "Z"
-                    }}
-                )
+        new_longitude = current_pos["longitude"]
+        new_latitude = current_pos["latitude"]
+        new_altitude = current_pos["altitude"]
 
-            logging.info(f"Updated {len(all_nodes)} nodes.")
-            time.sleep(interval_seconds)
+        if node_type == "LEO_SATELLITE":
+            # LEOs move faster
+            new_longitude = (new_longitude + random.uniform(0.5, 1.5)) % 360
+            new_latitude = (new_latitude + random.uniform(-0.1, 0.1)) # Slight latitude drift
+        elif node_type == "MEO_SATELLITE":
+            # MEOs move moderately
+            new_longitude = (new_longitude + random.uniform(0.1, 0.5)) % 360
+            new_latitude = (new_latitude + random.uniform(-0.05, 0.05)) # Slight latitude drift
+        elif node_type == "GEO_SATELLITE":
+            # GEOs are geostationary, so minimal movement
+            new_longitude = (new_longitude + random.uniform(-0.001, 0.001)) % 360
+            new_latitude = (new_latitude + random.uniform(-0.001, 0.001)) # Very slight wobble
 
-        except Exception as e:
-            logging.error(f"Error during update: {e}")
-            time.sleep(2)  # tránh spam lỗi quá nhanh
+        # Ensure latitude stays within bounds
+        new_latitude = max(-90, min(90, new_latitude))
 
-# --- 4. Entry point ---
+        nodes_collection.update_one(
+            {"nodeId": node_id},
+            {"$set": {
+                "position.longitude": new_longitude,
+                "position.latitude": new_latitude,
+                "lastUpdated": datetime.now() # Update timestamp
+            }}
+        )
+        # print(f"  - Updated {node_id} ({node_type}): Lat={new_latitude:.2f}, Lon={new_longitude:.2f}")
+
+    print(f"[{datetime.now()}] Satellite position update complete.")
+
 if __name__ == "__main__":
-    update_positions()
+    print("Starting satellite position update scheduler (local-only mode)...")
+    mongo_client = get_mongo_client(LOCAL_MONGO_URI)
+
+    if not mongo_client:
+        print("Failed to connect to local MongoDB. Exiting scheduler.")
+    else:
+        try:
+            while True:
+                update_satellite_positions(mongo_client)
+                time.sleep(UPDATE_INTERVAL_SECONDS)
+        except KeyboardInterrupt:
+            print("\nScheduler stopped by user.")
+        finally:
+            mongo_client.close()
+            print("MongoDB connection closed.")

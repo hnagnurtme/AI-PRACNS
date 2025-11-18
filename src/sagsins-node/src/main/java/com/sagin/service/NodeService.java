@@ -542,4 +542,10 @@ public class NodeService implements INodeService {
             logger.warn("[NodeService] Cannot mark Node {} as unhealthy: not found in cache.", nodeId);
         }
     }
+
+    @Override
+    public void loadNodesIntoCache(Map<String, NodeInfo> nodes) {
+        nodeStateCache.putAll(nodes);
+        logger.info("[NodeService] Loaded {} nodes into cache.", nodes.size());
+    }
 }

@@ -56,7 +56,7 @@ public class TCP_Service implements ITCP_Service {
     private final IRoutingService routingService;
     private final ObjectMapper objectMapper;
     private final com.sagin.service.BatchPacketService batchPacketService;
-    private final RLRoutingService rlRoutingService; // Injected dependency
+    private final RLRoutingService rlRoutingService;
 
     // --- Retry Queue & Scheduler ---
     private final BlockingQueue<RetryablePacket> sendQueue;
@@ -100,23 +100,19 @@ public class TCP_Service implements ITCP_Service {
             IUserRepository userRepository,
             IRoutingService routingService,
             com.sagin.service.BatchPacketService batchPacketService,
-            RLRoutingService rlRoutingService // ✅ OPTIMIZATION 1: Injected Dependency
+            RLRoutingService rlRoutingService
     ) {
         this.nodeRepository = nodeRepository;
         this.nodeService = nodeService;
         this.userRepository = userRepository;
         this.routingService = routingService;
         this.batchPacketService = batchPacketService;
-        this.rlRoutingService = rlRoutingService; // Assign injected dependency
+        this.rlRoutingService = rlRoutingService; 
 
-        // Initialize ObjectMapper and register JavaTimeModule (for Instant, etc.)
         this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
-        // Initialize queue and background service
         this.sendQueue = new LinkedBlockingQueue<>();
         this.retryScheduler = Executors.newSingleThreadScheduledExecutor();
-
-        // Start the background queue processing thread
         this.startSendScheduler();
     }
 
@@ -842,26 +838,62 @@ public class TCP_Service implements ITCP_Service {
      * Selects the best route using RL or a standard fallback.
      */
     private RouteInfo getBestRoute(Packet packet) {
+        // Standard Dijkstra-based routing service
+        RouteInfo standardRoute = routingService.getBestRoute(packet.getCurrentHoldingNodeId(), packet.getStationDest());
+
         if (!packet.isUseRL()) {
-            return routingService.getBestRoute(packet.getCurrentHoldingNodeId(), packet.getStationDest());
+            logger.debug("[TCP_Service] Routing decision for {}: Using standard route (RL not enabled).", packet.getPacketId());
+            return standardRoute;
+        }
+
+        // RL is enabled, let's get both routes and compare
+        logger.info("[TCP_Service] Routing decision for {}: RL enabled. Comparing RL and standard routes.", packet.getPacketId());
+
+        // 1. Get RL route
+        RouteInfo rlRoute = null;
+        try {
+            rlRoute = rlRoutingService.getNextHop(
+                new RoutingRequest(
+                    packet.getPacketId(),
+                    packet.getCurrentHoldingNodeId(),
+                    packet.getStationDest(),
+                    packet.getMaxAcceptableLatencyMs(),
+                    packet.getTTL(),
+                    packet.getServiceQoS()
+                )
+            );
+        } catch (Exception e) {
+            logger.error("[TCP_Service] Error calling RL service for packet {}: {}. Falling back to standard route.", 
+                packet.getPacketId(), e.getMessage(), e);
+            return standardRoute; // Fallback on error
+        }
+
+        // 2. Compare routes
+        if (rlRoute == null || rlRoute.getPathNodeIds() == null || rlRoute.getPathNodeIds().isEmpty()) {
+            logger.warn("[TCP_Service] RL service returned null or empty route for {}. Using standard route.", packet.getPacketId());
+            return standardRoute;
+        }
+
+        if (standardRoute == null || standardRoute.getPathNodeIds() == null || standardRoute.getPathNodeIds().isEmpty()) {
+            logger.warn("[TCP_Service] Standard routing returned null or empty route for {}. Using RL route as only option.", packet.getPacketId());
+            return rlRoute;
+        }
+
+        int rlPathLength = rlRoute.getPathNodeIds().size();
+        int standardPathLength = standardRoute.getPathNodeIds().size();
+
+        logger.info("[TCP_Service] Route comparison for {}: RL Path Length = {}, Standard Path Length = {}",
+            packet.getPacketId(), rlPathLength, standardPathLength);
+
+        // 3. Choose the best one
+        if (rlPathLength <= standardPathLength) {
+            logger.info("[TCP_Service] Choosing RL route for {}: Path is shorter or equal ({} <= {}).", 
+                packet.getPacketId(), rlPathLength, standardPathLength);
+            return rlRoute;
         } else {
-            // Attempt to get a route from the RL service
-            RouteInfo routeInfo = rlRoutingService.getNextHop(
-                    new RoutingRequest(
-                            packet.getPacketId(),
-                            packet.getCurrentHoldingNodeId(),
-                            packet.getStationDest(),
-                            packet.getMaxAcceptableLatencyMs(),
-                            packet.getTTL(),
-                            packet.getServiceQoS()));
-            
-            if (routeInfo != null) {
-                return routeInfo; // Use RL route
-            }
-            
-            // Fallback to standard routing if RL service fails or returns null
-            logger.warn("[TCP_Service] RL service returned no route for {}. Falling back to standard routing.", packet.getPacketId());
-            return routingService.getBestRoute(packet.getCurrentHoldingNodeId(), packet.getStationDest());
+            logger.info("[TCP_Service] Choosing standard route for {}: Path is shorter ({} < {}).", 
+                packet.getPacketId(), standardPathLength, rlPathLength);
+            return standardRoute;
         }
     }
 }
