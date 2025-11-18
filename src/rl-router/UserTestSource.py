@@ -2,7 +2,7 @@ import socket
 import time
 
 HOST = '127.0.0.1'  # The server's hostname or IP address
-PORT = 65432        # The port used by the server
+PORT = 10006        # The port used by the server
 
 def run_source():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:

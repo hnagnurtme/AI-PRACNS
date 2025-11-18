@@ -156,14 +156,14 @@ class EnhancedPacketSender:
         print(f"📍 Source GS: {source_gs.get('nodeName')}")
         print(f"🎯 Destination GS: {dest_gs.get('nodeName')}")
 
-        # Create QoS based on service type
+        # Create QoS based on service type (more lenient for multi-hop routing)
         qos = QoS(
             service_type="REALTIME",
             default_priority=1,
-            max_latency_ms=100.0,
-            max_jitter_ms=10.0,
-            min_bandwidth_mbps=50.0,
-            max_loss_rate=0.01
+            max_latency_ms=500.0,  # Increased from 100ms to 500ms for multi-hop
+            max_jitter_ms=50.0,     # Increased from 10ms to 50ms
+            min_bandwidth_mbps=10.0, # Reduced from 50 to 10 Mbps
+            max_loss_rate=0.05       # Increased from 0.01 to 0.05 (5%)
         )
 
         # Create analysis data
@@ -190,8 +190,8 @@ class EnhancedPacketSender:
             current_holding_node_id=source_gs.get('nodeId', ''),
             next_hop_node_id="",
             priority_level=1,
-            max_acceptable_latency_ms=100.0,
-            max_acceptable_loss_rate=0.01,
+            max_acceptable_latency_ms=500.0,  # More lenient for multi-hop routing
+            max_acceptable_loss_rate=0.05,     # 5% loss tolerance for multi-hop
             analysis_data=analysis_data,
             use_rl=use_rl,
             ttl=64,
@@ -202,7 +202,7 @@ class EnhancedPacketSender:
         print(f"   Algorithm: {'RL' if use_rl else 'Dijkstra'}")
         print(f"   Payload size: {len(payload)} bytes")
         print(f"   QoS: Latency<{packet.max_acceptable_latency_ms}ms, "
-              f"Loss<{packet.max_acceptable_loss_rate}, "
+              f"Loss<{packet.max_acceptable_loss_rate:.2%}, "
               f"BW>{packet.service_qos.min_bandwidth_mbps}Mbps")
 
         return packet

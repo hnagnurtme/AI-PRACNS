@@ -92,17 +92,18 @@ class QoSMonitor:
             if not next_hop_data.get('isOperational', True):
                 self.violation_stats["node_unavailable"] += 1
                 return f"Next hop node {next_hop_data.get('nodeId')} is not operational"
-        
-        # Estimate packet loss probability
-        current_loss_rate = current_node_data.get('packetLossRate', 0)
-        cumulative_loss_rate = self._calculate_cumulative_loss_rate(packet)
-        
-        # Add current node loss rate to cumulative
-        total_estimated_loss = cumulative_loss_rate + current_loss_rate
-        
-        if total_estimated_loss > packet.max_acceptable_loss_rate:
-            self.violation_stats["loss_rate_violations"] += 1
-            return f"Loss rate violation: {total_estimated_loss:.4f} > {packet.max_acceptable_loss_rate}"
+
+            # Estimate packet loss probability for the next hop
+            # This check is done here because loss occurs on the link to the next hop
+            current_hop_loss_rate = current_node_data.get('packetLossRate', 0)
+            cumulative_loss_rate = self._calculate_cumulative_loss_rate(packet)
+            
+            # Correctly calculate total cumulative loss
+            total_estimated_loss = 1 - ((1 - cumulative_loss_rate) * (1 - current_hop_loss_rate))
+            
+            if total_estimated_loss > packet.max_acceptable_loss_rate:
+                self.violation_stats["loss_rate_violations"] += 1
+                return f"Loss rate violation: {total_estimated_loss:.4f} > {packet.max_acceptable_loss_rate}"
         
         return None  # No violation
     
@@ -669,10 +670,45 @@ class TCPReceiver:
             if not current_node:
                 return None
 
-            neighbor_ids = current_node.get('neighbors', [])[:OUTPUT_SIZE]
+            neighbor_ids = current_node.get('neighbors', [])
+
+            # If no neighbors are explicitly defined, find them by proximity
+            if not neighbor_ids:
+                print("⚠️ No explicit neighbors found. Calculating by proximity...")
+                all_nodes = self.db.get_all_nodes()
+                current_node_pos_data = current_node.get('position')
+                if not current_node_pos_data:
+                    return None # Cannot calculate distance without position
+
+                current_node_pos = Position(
+                    latitude=current_node_pos_data.get('latitude', 0.0),
+                    longitude=current_node_pos_data.get('longitude', 0.0),
+                    altitude=current_node_pos_data.get('altitude', 0.0)
+                )
+                node_range = current_node.get("communication", {}).get("maxRangeKm", 2000.0)
+
+                for other_node in all_nodes:
+                    if other_node['nodeId'] == current_node['nodeId'] or not other_node.get("isOperational", True):
+                        continue
+                    
+                    other_node_pos_data = other_node.get('position')
+                    if not other_node_pos_data:
+                        continue
+
+                    other_node_pos = Position(
+                        latitude=other_node_pos_data.get('latitude', 0.0),
+                        longitude=other_node_pos_data.get('longitude', 0.0),
+                        altitude=other_node_pos_data.get('altitude', 0.0)
+                    )
+
+                    distance = calculate_distance_km(current_node_pos, other_node_pos)
+                    if distance <= node_range:
+                        neighbor_ids.append(other_node['nodeId'])
+            
+            neighbor_ids = neighbor_ids[:OUTPUT_SIZE]
 
             if not neighbor_ids:
-                print("❌ No neighbors found in database")
+                print("❌ No neighbors found, even after proximity check.")
                 return None
 
             # Run RL model inference

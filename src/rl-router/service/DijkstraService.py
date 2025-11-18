@@ -63,7 +63,7 @@ class DijkstraService:
 
             node1_ecef = geo_to_ecef(node_data["position"])
 
-            # If neighbors are specified, use them
+            # If neighbors are specified and not empty, use them
             if "neighbors" in node_data and node_data["neighbors"]:
                 for neighbor_id in node_data["neighbors"]:
                     if neighbor_id in node_info_cache:
@@ -73,7 +73,7 @@ class DijkstraService:
                             distance = distance_3d(node1_ecef, neighbor_ecef)
                             graph[node_id][neighbor_id] = distance
             else:
-                # Fallback to calculating neighbors if not present
+                # Fallback to calculating neighbors if not present or empty
                 node_range = node_data.get("communication", {}).get("maxRangeKm", 2000.0)
                 for other_node_id, other_node_data in node_info_cache.items():
                     if node_id == other_node_id or not other_node_data.get("isOperational", True):
@@ -104,7 +104,7 @@ class DijkstraService:
 
             node1_ecef = geo_to_ecef(node_data["position"])
 
-            # If neighbors are specified, use them
+            # If neighbors are specified and not empty, use them
             if "neighbors" in node_data and node_data["neighbors"]:
                 for neighbor_id in node_data["neighbors"]:
                     if neighbor_id in node_info_cache:
@@ -114,7 +114,7 @@ class DijkstraService:
                             distance = distance_3d(node1_ecef, neighbor_ecef)
                             graph[node_id][neighbor_id] = distance
             else:
-                # Fallback to calculating neighbors if not present
+                # Fallback to calculating neighbors if not present or empty
                 node_range = node_data.get("communication", {}).get("maxRangeKm", 2000.0)
                 for other_node_id, other_node_data in node_info_cache.items():
                     if node_id == other_node_id or not other_node_data.get("isOperational", True):

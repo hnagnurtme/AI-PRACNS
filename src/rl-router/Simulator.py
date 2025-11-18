@@ -4,10 +4,11 @@ import random
 import math
 import sys
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import List, Dict, Any, Optional, Tuple
 from dataclasses import dataclass, field
 from enum import Enum
+from bson.objectid import ObjectId
 
 # Add the project root to the Python path
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -145,6 +146,16 @@ class DatabaseNodeManager:
         # Clear cache for this node
         if node_id in self.nodes_cache:
             del self.nodes_cache[node_id]
+
+class CustomJSONEncoder(json.JSONEncoder):
+    def default(self, o: Any) -> Any:
+        if isinstance(o, ObjectId):
+            return str(o)
+        if isinstance(o, (datetime, date)):
+            return o.isoformat()
+        if is_dataclass(o):
+            return asdict(o)
+        return super().default(o)
 
 class EnhancedPacketSimulation:
     """Lớp mô phỏng packet nâng cao với tích hợp database"""
@@ -368,13 +379,14 @@ class EnhancedPacketSimulation:
         """
         Mô phỏng hành trình packet với tích hợp database đầy đủ
         """
-        print(f"🚀 Starting enhanced packet simulation: {source_user.userName} -> {destination_user.userName} ({algorithm})")
+        # Access userName via dictionary key
+        print(f"🚀 Starting enhanced packet simulation: {source_user.get('userName', 'N/A')} -> {destination_user.get('userName', 'N/A')} ({algorithm})")
         
-        # Lấy tọa độ user từ database hoặc attributes
-        source_lat = getattr(source_user, 'latitude', 1.3521)  # Singapore mặc định
-        source_lon = getattr(source_user, 'longitude', 103.8198)
-        dest_lat = getattr(destination_user, 'latitude', 21.0285)  # Hanoi mặc định
-        dest_lon = getattr(destination_user, 'longitude', 105.8542)
+        # Lấy tọa độ user từ database hoặc attributes using .get for safety
+        source_lat = source_user.get('latitude', 1.3521)  # Singapore mặc định
+        source_lon = source_user.get('longitude', 103.8198)
+        dest_lat = destination_user.get('latitude', 21.0285)  # Hanoi mặc định
+        dest_lon = destination_user.get('longitude', 105.8542)
         
         # Tìm ground station gần nhất từ database
         source_gs = self.find_nearest_ground_station(source_lat, source_lon)
@@ -445,14 +457,14 @@ class EnhancedPacketSimulation:
         )
         
         # Tính packet loss tổng (xác suất tích lũy)
-        total_packet_loss_rate = 1 - (1 - total_packet_loss / len(hop_records)) ** len(hop_records)
+        total_packet_loss_rate = 1 - (1 - total_packet_loss / len(hop_records)) ** len(hop_records) if hop_records else 0
         
         # Tạo kết quả mô phỏng
         simulation_result = {
             "simulationId": f"sim_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "sourceUser": source_user.to_dict(),
-            "destinationUser": destination_user.to_dict(),
+            "sourceUser": source_user, # Pass dict directly
+            "destinationUser": destination_user, # Pass dict directly
             "algorithm": algorithm,
             "path": [node.get("nodeId") for node in path_nodes],
             "hopRecords": [self._hop_record_to_dict(hr) for hr in hop_records],
@@ -502,8 +514,8 @@ class EnhancedPacketSimulation:
         
         return Packet(
             packet_id=f"pkt_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
-            source_user_id=source_user.userId,
-            destination_user_id=destination_user.userId,
+            source_user_id=source_user.get('userId', ''),
+            destination_user_id=destination_user.get('userId', ''),
             station_source=source_gs.get("nodeId", ""),
             station_dest=destination_gs.get("nodeId", ""),
             type="DATA",
@@ -599,20 +611,22 @@ class EnhancedPacketSimulation:
     def send_packet_to_destination(self, simulation_result: Dict[str, Any]) -> bool:
         """Gửi packet đến user đích"""
         try:
-            destination_user = None
-            for user in self.user_manager.users:
-                if user.userId == simulation_result["destinationUser"]["userId"]:
-                    destination_user = user
-                    break
-            
+            destination_user_dict = simulation_result.get("destinationUser", {})
+            if not destination_user_dict:
+                print("❌ Destination user information not found in simulation result")
+                return False
+
+            # Since user_manager.get_user returns a dict, we can use it directly.
+            destination_user = self.user_manager.get_user(destination_user_dict.get("userId"))
+
             if not destination_user:
-                print(f"❌ Destination user not found")
+                print(f"❌ Destination user with ID {destination_user_dict.get('userId')} not found in database")
                 return False
             
             packet_data = {
                 "type": "ENHANCED_SIMULATION_RESULT",
                 "simulationId": simulation_result["simulationId"],
-                "sourceUser": simulation_result["sourceUser"]["userName"],
+                "sourceUser": simulation_result.get("sourceUser", {}).get("userName", "N/A"),
                 "timestamp": simulation_result["timestamp"],
                 "metrics": simulation_result["totalMetrics"],
                 "packetData": simulation_result["packetData"]
@@ -620,20 +634,28 @@ class EnhancedPacketSimulation:
             
             packet_json = json.dumps(packet_data, indent=2)
             
-            print(f"📤 Sending enhanced packet to {destination_user.userName} at {destination_user.ipAddress}:{destination_user.port}")
+            dest_ip = destination_user.get("ipAddress")
+            dest_port = destination_user.get("port")
+            dest_username = destination_user.get("userName")
+
+            if not dest_ip or not dest_port:
+                print(f"❌ Destination user {dest_username} is missing IP address or port.")
+                return False
+
+            print(f"📤 Sending enhanced packet to {dest_username} at {dest_ip}:{dest_port}")
             
             success = self._send_udp_packet(
-                destination_user.ipAddress,
-                destination_user.port,
+                dest_ip,
+                dest_port,
                 packet_json
             )
             
             if success:
-                print(f"✅ Enhanced packet successfully sent to {destination_user.userName}")
+                print(f"✅ Enhanced packet successfully sent to {dest_username}")
                 simulation_result["deliveryStatus"] = "DELIVERED"
                 simulation_result["deliveryTimestamp"] = datetime.now(timezone.utc).isoformat()
             else:
-                print(f"❌ Failed to send enhanced packet to {destination_user.userName}")
+                print(f"❌ Failed to send enhanced packet to {dest_username}")
                 simulation_result["deliveryStatus"] = "FAILED"
             
             return success
@@ -658,7 +680,8 @@ class EnhancedPacketSimulation:
 
     def compare_algorithms(self, source_user, destination_user, packet_data: str) -> Dict[str, Any]:
         """So sánh hiệu năng giữa hai thuật toán"""
-        print(f"🔬 Comparing algorithms for {source_user.userName} -> {destination_user.userName}")
+        # Access userName via dictionary key, using .get for safety
+        print(f"🔬 Comparing algorithms for {source_user.get('userName', 'N/A')} -> {destination_user.get('userName', 'N/A')}")
         
         dijkstra_result = self.simulate_packet_journey(
             source_user, destination_user, packet_data, "DIJKSTRA"
@@ -668,11 +691,15 @@ class EnhancedPacketSimulation:
             source_user, destination_user, packet_data, "RL"
         )
         
+        # Check if source_user and destination_user are objects with to_dict, otherwise assume they are dicts
+        source_user_dict = source_user.to_dict() if hasattr(source_user, 'to_dict') else source_user
+        destination_user_dict = destination_user.to_dict() if hasattr(destination_user, 'to_dict') else destination_user
+
         comparison = {
             "comparisonId": f"comp_{datetime.now().strftime('%Y%m%d_%H%M%S')}",
             "timestamp": datetime.now(timezone.utc).isoformat(),
-            "sourceUser": source_user.to_dict(),
-            "destinationUser": destination_user.to_dict(),
+            "sourceUser": source_user_dict,
+            "destinationUser": destination_user_dict,
             "dijkstraResults": dijkstra_result["totalMetrics"],
             "rlResults": rl_result["totalMetrics"],
             "winner": self._determine_winner(
@@ -723,7 +750,7 @@ class EnhancedPacketSimulation:
     def save_simulation_results(self, filename: str = "enhanced_simulation_results.json"):
         """Lưu kết quả mô phỏng"""
         with open(filename, "w") as f:
-            json.dump(self.simulation_results, f, indent=2, ensure_ascii=False)
+            json.dump(self.simulation_results, f, indent=2, ensure_ascii=False, cls=CustomJSONEncoder)
         print(f"✅ Saved {len(self.simulation_results)} enhanced simulation results to {filename}")
 
 # Ví dụ sử dụng
@@ -735,22 +762,17 @@ if __name__ == "__main__":
     
     # Khởi tạo user manager
     user_manager = UserManager()
-    user_manager.load_from_json("helper/network_user.json")
     
     # Tạo enhanced packet simulation
     enhanced_simulator = EnhancedPacketSimulation(db_connector, user_manager)
     
     # Lấy users để simulation
-    source_user = user_manager.get_user_by_id("user-Singapore")
-    dest_user = user_manager.get_user_by_id("user-Hanoi")
+    source_user = user_manager.get_user("user-singapore")
+    dest_user = user_manager.get_user("user-hanoi")
     
     if source_user and dest_user:
         # Thêm tọa độ cho users
-        source_user.latitude = 1.3521
-        source_user.longitude = 103.8198
-        dest_user.latitude = 21.0285
-        dest_user.longitude = 105.8542
-        
+
         # Chạy so sánh thuật toán với database
         comparison = enhanced_simulator.compare_algorithms(
             source_user, 
