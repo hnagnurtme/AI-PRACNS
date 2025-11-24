@@ -9,6 +9,12 @@ from simulation.core.packet import Packet
 import random
 from utils.constants import MAX_PROCESSING_DELAY_MS
 
+# Congestion and load balancing thresholds
+HIGH_CONGESTION_THRESHOLD = 0.8
+MODERATE_CONGESTION_THRESHOLD = 0.6
+MODERATE_CONGESTION_MULTIPLIER = 0.5
+SEVERE_IMBALANCE_THRESHOLD = 0.9
+
 class DynamicSatelliteEnv(SatelliteEnv):
     def __init__(self, state_builder, nodes: Dict, weights: Optional[Dict] = None, dynamic_config: Optional[Dict] = None):
         super().__init__(state_builder, weights)
@@ -42,6 +48,9 @@ class DynamicSatelliteEnv(SatelliteEnv):
         return self.state_builder.build(initial_packet, dynamic_neighbors=neighbor_ids)
     
     def step_dynamics(self):
+        """
+        Update all dynamic factors and ensure node neighbors are updated for baseline algorithms.
+        """
         self.simulation_time += self.time_step
         
         weather_impact = self.weather_model.update(self.time_step)
@@ -50,11 +59,16 @@ class DynamicSatelliteEnv(SatelliteEnv):
         self.mobility_manager.update_nodes(self.time_step)
         self.failure_model.update_failures()
         
-        return {
+        dynamic_state = {
             'weather_impact': weather_impact,
             'traffic_load': traffic_load,
             'simulation_time': self.simulation_time
         }
+        
+        # CRITICAL FIX: Update node neighbors so baseline algorithms have current neighbors
+        self.mobility_manager.update_node_neighbors(dynamic_state)
+        
+        return dynamic_state
     
     def _simulate_hop(self, packet: Packet, next_node_id: Optional[str], dropped: bool = False) -> Packet:
         new_p = packet
@@ -163,6 +177,47 @@ class DynamicSatelliteEnv(SatelliteEnv):
                     'node_type': node.nodeType
                 })
         return operational_nodes
+    
+    def get_network_metrics(self) -> Dict[str, float]:
+        """
+        Calculate network-wide metrics for analysis.
+        Useful for comparing RL vs baseline performance.
+        
+        Returns:
+            Dictionary with metrics like average congestion, packet loss, etc.
+        """
+        total_utilization = 0.0
+        total_queue_occupancy = 0.0
+        total_packet_loss = 0.0
+        operational_count = 0
+        
+        for node_id, node in self.mobility_manager.nodes.items():
+            if node.isOperational and not self.failure_model.is_node_failed(node_id):
+                total_utilization += node.resourceUtilization
+                total_queue_occupancy += node.currentPacketCount / max(node.packetBufferCapacity, 1)
+                total_packet_loss += node.packetLossRate
+                operational_count += 1
+        
+        if operational_count == 0:
+            return {
+                'avg_utilization': 0.0,
+                'avg_queue_occupancy': 0.0,
+                'avg_packet_loss': 0.0,
+                'operational_nodes': 0
+            }
+        
+        return {
+            'avg_utilization': total_utilization / operational_count,
+            'avg_queue_occupancy': total_queue_occupancy / operational_count,
+            'avg_packet_loss': total_packet_loss / operational_count,
+            'operational_nodes': operational_count,
+            'max_utilization': max((node.resourceUtilization 
+                                   for node_id, node in self.mobility_manager.nodes.items() 
+                                   if node.isOperational), default=0.0),
+            'utilization_variance': np.var([node.resourceUtilization 
+                                           for node_id, node in self.mobility_manager.nodes.items() 
+                                           if node.isOperational]) if operational_count > 0 else 0.0
+        }
 
     def _is_terminal(self, packet: Packet) -> bool:
         is_dest = packet.current_holding_node_id == packet.station_dest
@@ -221,14 +276,56 @@ class DynamicSatelliteEnv(SatelliteEnv):
 
     def _calculate_dynamic_reward(self, prev_state: np.ndarray, action_idx: int,
                                 new_packet: Packet, dynamic_state: Dict) -> float:
+        """
+        Enhanced reward function that considers:
+        1. Basic routing metrics (base_reward)
+        2. Dynamic environmental factors (weather, traffic)
+        3. Resource balancing and congestion avoidance
+        4. Proactive optimization (avoiding overloaded nodes)
+        """
         base_reward = self._calculate_reward(prev_state, action_idx, new_packet)
 
+        # Dynamic environmental penalties
         dynamic_penalty = 0.0
-
+        
         if dynamic_state['weather_impact'] > 0.7:
             dynamic_penalty -= self.weights.get('weather_penalty', 50.0)
 
         if dynamic_state['traffic_load'] > 2.0:
             dynamic_penalty -= self.weights.get('traffic_penalty', 20.0)
+        
+        # Extract neighbor features for resource balancing analysis
+        start_idx = self.START_INDEX_NEIGHBORS + (action_idx * self.NEIGHBOR_FEAT_SIZE)
+        
+        if start_idx + self.NEIGHBOR_FEAT_SIZE <= len(prev_state):
+            feats = prev_state[start_idx : start_idx + self.NEIGHBOR_FEAT_SIZE]
+            
+            # Resource utilization features
+            queue_score = feats[5]  # Queue occupancy (0-1, higher = more congested)
+            cpu_score = feats[6]    # CPU utilization (0-1, higher = more utilized)
+            
+            # Reward for selecting less congested nodes (load balancing)
+            # This helps RL learn to avoid overloaded nodes proactively
+            congestion_level = (queue_score + cpu_score) / 2.0
+            
+            # Strong reward for avoiding congested nodes
+            if congestion_level > HIGH_CONGESTION_THRESHOLD:
+                # Heavily penalize selecting highly congested nodes
+                dynamic_penalty -= self.weights.get('congestion_penalty', 100.0)
+            elif congestion_level > MODERATE_CONGESTION_THRESHOLD:
+                # Moderate penalty for moderately congested nodes
+                dynamic_penalty -= self.weights.get('congestion_penalty', 100.0) * MODERATE_CONGESTION_MULTIPLIER
+            else:
+                # Reward for selecting underutilized nodes (load balancing)
+                dynamic_penalty += self.weights.get('load_balance_reward', 20.0) * (1.0 - congestion_level)
+            
+            # Reward fairness - penalize extreme resource imbalances
+            # This encourages spreading load across the network
+            resource_variance_penalty = 0.0
+            if cpu_score > SEVERE_IMBALANCE_THRESHOLD or queue_score > SEVERE_IMBALANCE_THRESHOLD:
+                # Severe imbalance detected
+                resource_variance_penalty = -self.weights.get('resource_imbalance_penalty', 75.0)
+            
+            dynamic_penalty += resource_variance_penalty
 
         return base_reward + dynamic_penalty
