@@ -1,0 +1,104 @@
+# SAGIN Network Configuration
+# Defines the structure and parameters of the satellite-aerial-ground network
+
+network:
+  name: "SAGIN Test Network"
+  description: "Satellite-Aerial-Ground Integrated Network for RL routing"
+
+# Node types and their default parameters
+node_types:
+  satellite:
+    leo:
+      orbit_altitude_km: 550
+      communication_range_km: 3000
+      bandwidth_mhz: 500
+      processing_delay_ms: 5
+      battery_capacity_wh: 10000
+      power_consumption_w: 50
+
+    meo:
+      orbit_altitude_km: 10000
+      communication_range_km: 5000
+      bandwidth_mhz: 1000
+      processing_delay_ms: 8
+      battery_capacity_wh: 20000
+      power_consumption_w: 100
+
+    geo:
+      orbit_altitude_km: 35786
+      communication_range_km: 8000
+      bandwidth_mhz: 2000
+      processing_delay_ms: 10
+      battery_capacity_wh: 50000
+      power_consumption_w: 200
+
+  uav:
+    altitude_km: 10
+    communication_range_km: 100
+    bandwidth_mhz: 200
+    processing_delay_ms: 2
+    battery_capacity_wh: 500
+    power_consumption_w: 20
+    max_speed_kmh: 100
+
+  ground_station:
+    communication_range_km: 50
+    bandwidth_mhz: 1000
+    processing_delay_ms: 1
+    unlimited_power: true
+
+# Network topology
+topology:
+  num_leo_satellites: 6
+  num_meo_satellites: 3
+  num_geo_satellites: 1
+  num_uavs: 4
+  num_ground_stations: 5
+
+# Link parameters
+links:
+  satellite_to_satellite:
+    max_distance_km: 5000
+    min_snr_db: 10.0
+    propagation_speed_kmps: 299792  # Speed of light
+
+  satellite_to_ground:
+    max_distance_km: 40000
+    min_snr_db: 15.0
+    weather_sensitive: true
+
+  satellite_to_uav:
+    max_distance_km: 3000
+    min_snr_db: 12.0
+    weather_sensitive: true
+
+  uav_to_ground:
+    max_distance_km: 100
+    min_snr_db: 8.0
+    weather_sensitive: true
+
+  ground_to_ground:
+    max_distance_km: 50
+    min_snr_db: 5.0
+    weather_sensitive: false
+
+# Buffer and queue parameters
+buffers:
+  default_capacity: 1000
+  max_packet_size_bytes: 2048
+  min_packet_size_bytes: 64
+  congestion_threshold: 0.8
+
+# Quality of Service (QoS) parameters
+qos:
+  priority_levels:
+    critical: 4
+    high: 3
+    medium: 2
+    low: 1
+
+  latency_requirements:
+    critical: 300  # ms
+    high: 1000
+    medium: 2000
+    low: 5000
