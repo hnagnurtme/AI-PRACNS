@@ -31,7 +31,12 @@ DEFAULT_WEIGHTS = {
     'node_load': -20.0,
     'resource_balance': 5.0,
     'weather_penalty': -50.0,
+    'traffic_penalty': -20.0,
     'traffic_bonus': 20.0,
+    # New weights for enhanced reward function
+    'congestion_penalty': 100.0,
+    'load_balance_reward': 20.0,
+    'resource_imbalance_penalty': 75.0,
 }
 
 class SatelliteEnv:
