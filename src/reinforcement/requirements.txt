@@ -1,0 +1,30 @@
+# Core Reinforcement Learning Framework
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Data Processing and Scientific Computing
+numpy>=1.24.0,<2.0.0
+scipy>=1.10.0
+
+# Database Connector
+pymongo>=4.6.0
+dnspython>=2.3.0
+
+# Configuration and Logging
+pyyaml>=6.0
+tqdm>=4.65.0
+python-dotenv>=1.0.0
+
+# Data Analysis and Visualization
+pandas>=2.0.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Machine Learning
+scikit-learn>=1.3.0
+
+# Reinforcement Learning Environment
+gymnasium>=0.29.0
+
+# Hyperparameter Optimization
+optuna>=3.0.0

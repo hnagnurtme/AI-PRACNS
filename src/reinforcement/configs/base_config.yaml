@@ -1,0 +1,47 @@
+database:
+  host: "localhost"
+  port: 27017
+  db_name: "sagin"
+  username: "user"
+  password: "password123"
+  auth_source: "admin"
+
+training:
+  num_episodes: 2000
+  max_hops: 15
+  batch_size: 128
+  buffer_capacity: 100000
+  target_update_interval: 100
+
+rl_agent:
+  use_dueling: true
+  learning_rate: 0.0001
+  gamma: 0.99
+  epsilon_start: 1.0
+  epsilon_end: 0.01
+  epsilon_decay: 10000
+
+dynamics:
+  satellite_velocity_scale: 1.0
+  uav_movement_scale: 0.5
+  weather_variability: 0.7
+  storm_probability: 0.05
+  traffic_variability: 0.8
+  burst_traffic_probability: 0.1
+  failure_probability: 0.02
+  recovery_probability: 0.1
+
+reward_weights:
+  goal: 5000.0
+  drop: 1000.0
+  hop_cost: -10.0
+  progress_penalty: -20.0
+  latency: -10.0
+  latency_violation: -200.0
+  snr_reward: 5.0
+  utilization: 8.0
+  reliability: 5.0
+  operational: 10.0
+  node_load: -20.0
+  weather_penalty: -50.0
+  traffic_penalty: 20.0

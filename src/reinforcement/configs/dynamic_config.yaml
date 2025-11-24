@@ -1,0 +1,80 @@
+# Dynamic SAGIN Configuration
+# Configuration for dynamic network simulation with weather, traffic, and failures
+
+dynamics:
+  enabled: true
+  time_step: 1.0  # Time step in seconds
+
+  mobility:
+    enabled: true
+    max_neighbors: 10
+    update_frequency: 5.0  # Update positions every 5 seconds
+
+  weather:
+    enabled: true
+    change_probability: 0.05  # 5% chance of weather change per time step
+    regional_weather: true
+    regions:
+      - region_A
+      - region_B
+      - region_C
+      - region_D
+
+  traffic:
+    enabled: true
+    base_load: 1.0
+    peak_load: 2.5
+    period: 86400  # 24 hours in seconds
+
+  failures:
+    enabled: true
+    node_failure_prob: 0.001  # 0.1% per time step
+    link_failure_prob: 0.002  # 0.2% per time step
+    recovery_time: 300.0  # 5 minutes
+
+# Reward function weights
+reward_weights:
+  goal: 5000.0
+  drop: 1000.0
+  hop_cost: -10.0
+  progress_penalty: -20.0
+  latency: -10.0
+  latency_violation: -200.0
+  snr_reward: 5.0
+  utilization: 8.0
+  reliability: 5.0
+  operational: 10.0
+  node_load: -20.0
+  weather_penalty: -50.0
+  traffic_penalty: 20.0
+
+# Training configuration
+training:
+  max_hops: 12
+  num_episodes: 2000
+  min_replay_size: 1000
+  learning_rate: 0.0001
+  batch_size: 128
+
+rl_agent:
+  use_dueling: true
+  gamma: 0.99
+  epsilon_start: 1.0
+  epsilon_end: 0.01
+  epsilon_decay: 10000
+  buffer_capacity: 100000
+  target_update_interval: 100
+
+# Evaluation configuration
+evaluation:
+  num_episodes: 100
+  deterministic: false
+  save_trajectories: true
+
+# Database configuration
+database:
+  connection_string: "mongodb://localhost:27017/"
+  db_name: "sagin"
+  username: "user"
+  password: "password123"
+  auth_source: "admin"
