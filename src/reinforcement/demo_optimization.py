@@ -181,7 +181,12 @@ def demonstrate_network_metrics():
     print(f"Average utilization: {avg_util:.2f}")
     print(f"Utilization variance: {variance:.4f} (HIGH = BAD)")
     
-    print(f"\n✓ Variance is {variance / 0.0000:.1f}x higher in imbalanced network!")
+    balanced_variance = 0.0000
+    if balanced_variance > 0:
+        ratio = variance / balanced_variance
+        print(f"\n✓ Variance is {ratio:.1f}x higher in imbalanced network!")
+    else:
+        print(f"\n✓ Imbalanced network has much higher variance!")
     print("✓ RL optimizes for low variance to achieve fair load distribution.")
 
 

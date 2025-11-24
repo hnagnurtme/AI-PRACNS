@@ -9,6 +9,12 @@ from simulation.core.packet import Packet
 import random
 from utils.constants import MAX_PROCESSING_DELAY_MS
 
+# Congestion and load balancing thresholds
+HIGH_CONGESTION_THRESHOLD = 0.8
+MODERATE_CONGESTION_THRESHOLD = 0.6
+MODERATE_CONGESTION_MULTIPLIER = 0.5
+SEVERE_IMBALANCE_THRESHOLD = 0.9
+
 class DynamicSatelliteEnv(SatelliteEnv):
     def __init__(self, state_builder, nodes: Dict, weights: Optional[Dict] = None, dynamic_config: Optional[Dict] = None):
         super().__init__(state_builder, weights)
@@ -303,12 +309,12 @@ class DynamicSatelliteEnv(SatelliteEnv):
             congestion_level = (queue_score + cpu_score) / 2.0
             
             # Strong reward for avoiding congested nodes
-            if congestion_level > 0.8:
+            if congestion_level > HIGH_CONGESTION_THRESHOLD:
                 # Heavily penalize selecting highly congested nodes
                 dynamic_penalty -= self.weights.get('congestion_penalty', 100.0)
-            elif congestion_level > 0.6:
+            elif congestion_level > MODERATE_CONGESTION_THRESHOLD:
                 # Moderate penalty for moderately congested nodes
-                dynamic_penalty -= self.weights.get('congestion_penalty', 100.0) * 0.5
+                dynamic_penalty -= self.weights.get('congestion_penalty', 100.0) * MODERATE_CONGESTION_MULTIPLIER
             else:
                 # Reward for selecting underutilized nodes (load balancing)
                 dynamic_penalty += self.weights.get('load_balance_reward', 20.0) * (1.0 - congestion_level)
@@ -316,7 +322,7 @@ class DynamicSatelliteEnv(SatelliteEnv):
             # Reward fairness - penalize extreme resource imbalances
             # This encourages spreading load across the network
             resource_variance_penalty = 0.0
-            if cpu_score > 0.9 or queue_score > 0.9:
+            if cpu_score > SEVERE_IMBALANCE_THRESHOLD or queue_score > SEVERE_IMBALANCE_THRESHOLD:
                 # Severe imbalance detected
                 resource_variance_penalty = -self.weights.get('resource_imbalance_penalty', 75.0)
             

@@ -6,6 +6,12 @@ Verifies that RL learns to avoid congestion and balance resources.
 import unittest
 import numpy as np
 
+# Test constants matching the environment configuration
+START_INDEX_NEIGHBORS = 22  # 14 (self) + 8 (dest)
+NEIGHBOR_FEAT_SIZE = 14
+MAX_NEIGHBORS = 10
+TOTAL_STATE_SIZE = START_INDEX_NEIGHBORS + (MAX_NEIGHBORS * NEIGHBOR_FEAT_SIZE)  # 162
+
 
 class MockNode:
     """Mock node for testing."""
@@ -28,11 +34,7 @@ class TestResourceBalancing(unittest.TestCase):
         # Features include queue_score (index 5) and cpu_score (index 6)
         
         # Create a state where action selects a highly congested node
-        state = np.zeros(162, dtype=np.float32)  # 14 + 8 + 10*14
-        
-        # Set neighbor features at START_INDEX_NEIGHBORS
-        START_INDEX_NEIGHBORS = 22
-        NEIGHBOR_FEAT_SIZE = 14
+        state = np.zeros(TOTAL_STATE_SIZE, dtype=np.float32)
         
         # First neighbor: highly congested (queue=0.9, cpu=0.9)
         state[START_INDEX_NEIGHBORS + 5] = 0.9  # queue_score
@@ -48,8 +50,7 @@ class TestResourceBalancing(unittest.TestCase):
     
     def test_load_balance_reward(self):
         """Test that underutilized nodes receive rewards."""
-        state = np.zeros(162, dtype=np.float32)
-        START_INDEX_NEIGHBORS = 22
+        state = np.zeros(TOTAL_STATE_SIZE, dtype=np.float32)
         
         # First neighbor: underutilized (queue=0.2, cpu=0.2)
         state[START_INDEX_NEIGHBORS + 5] = 0.2  # queue_score
@@ -62,8 +63,7 @@ class TestResourceBalancing(unittest.TestCase):
     
     def test_resource_imbalance_detection(self):
         """Test detection of resource imbalances."""
-        state = np.zeros(162, dtype=np.float32)
-        START_INDEX_NEIGHBORS = 22
+        state = np.zeros(TOTAL_STATE_SIZE, dtype=np.float32)
         
         # First neighbor: severe imbalance (queue=0.95, cpu=0.95)
         state[START_INDEX_NEIGHBORS + 5] = 0.95
@@ -218,9 +218,7 @@ class TestProactiveCongestionAvoidance(unittest.TestCase):
     def test_congestion_prediction(self):
         """Test congestion level prediction from state."""
         # Simulate state with neighbor information
-        state = np.zeros(162, dtype=np.float32)
-        START_INDEX_NEIGHBORS = 22
-        NEIGHBOR_FEAT_SIZE = 14
+        state = np.zeros(TOTAL_STATE_SIZE, dtype=np.float32)
         
         # Neighbor 0: congested
         state[START_INDEX_NEIGHBORS + 5] = 0.85  # queue
