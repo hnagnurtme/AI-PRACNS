@@ -1,0 +1,15 @@
+# Docker ignore file for scheduler
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.log
+*.egg-info/
+dist/
+build/
+.env
+.venv
+venv/
+node_update.log
+

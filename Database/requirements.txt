@@ -1,0 +1,7 @@
+# Database Scheduler Dependencies
+pyyaml>=6.0
+pymongo>=4.0
+
+# For database connection (if not using Backend models)
+# pymongo is already included above
+
