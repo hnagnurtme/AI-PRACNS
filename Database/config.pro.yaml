@@ -1,0 +1,81 @@
+# Database Configuration - Production Environment
+# Node Position Update Scheduler Configuration
+
+# MongoDB Connection
+mongodb:
+  uri: "${MONGODB_URI}"
+  database: "${DB_NAME}"
+  connection_timeout: 30
+
+# Scheduler Settings
+scheduler:
+  update_interval_seconds: 10  # Update node positions every N seconds
+  enable_logging: true
+  log_file: "/var/log/node_update.log"
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+
+# Orbital Mechanics Constants
+orbital_mechanics:
+  # Earth Constants
+  earth:
+    radius_km: 6371.0
+    radius_m: 6371000.0
+  
+  # LEO (Low Earth Orbit) Satellites
+  leo:
+    period_seconds: 5400  # ~90 minutes
+    period_minutes: 90
+    altitude_km: 550
+    altitude_range:
+      min_km: 160
+      max_km: 2000
+    speed_km_per_s: 7.8
+    speed_m_per_s: 7800
+    default_semi_major_axis_km: 6928.0
+  
+  # MEO (Medium Earth Orbit) Satellites
+  meo:
+    period_seconds: 43200  # ~12 hours
+    period_hours: 12
+    altitude_km: 20000
+    altitude_range:
+      min_km: 2000
+      max_km: 35786
+    speed_km_per_s: 3.9
+    speed_m_per_s: 3900
+    default_semi_major_axis_km: 26562.0
+  
+  # GEO (Geostationary Earth Orbit) Satellites
+  geo:
+    period_seconds: 86400  # 24 hours
+    period_hours: 24
+    altitude_km: 35786
+    altitude_range:
+      min_km: 35786
+      max_km: 35786
+    speed_km_per_s: 3.07
+    speed_m_per_s: 3070
+    default_semi_major_axis_km: 42164.0
+
+# Node Update Settings
+node_update:
+  update_node_types:
+    - "LEO_SATELLITE"
+    - "MEO_SATELLITE"
+    - "GEO_SATELLITE"
+  
+  update_fields:
+    - "position"
+    - "velocity"
+    - "lastPositionUpdate"
+    - "positionTimestamp"
+    - "lastUpdated"
+  
+  only_operational: true
+
+# Performance Settings
+performance:
+  batch_size: 100
+  max_retries: 3
+  retry_delay_seconds: 1
+

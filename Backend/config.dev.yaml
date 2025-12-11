@@ -1,0 +1,316 @@
+# Optimized Backend Configuration for RL Routing
+# Enhanced for performance and training efficiency
+
+# MongoDB Connection
+mongodb:
+  uri: "mongodb://admin:password@localhost:27017/aiprancs?authSource=admin"
+  database: "aiprancs"
+  connection_timeout: 30
+  max_pool_size: 50
+  min_pool_size: 10
+
+# RL Agent Configuration - OPTIMIZED
+rl_agent:
+  # Algorithm
+  algorithm: "DuelingDQN"
+  architecture: "optimized_dueling"
+  
+  # Model Paths
+  model_path: "./models/rl_agent"
+  best_model_path: "./models/best_models"
+  checkpoint_path: "./models/checkpoints"
+  tensorboard_log_dir: "./logs/tensorboard"
+  
+  # Optimized DQN Hyperparameters
+  dqn:
+    learning_rate: 0.0001
+    batch_size: 64  # Increased for better stability
+    buffer_size: 100000
+    learning_starts: 5000  # More samples before training
+    target_update_interval: 1000
+    gamma: 0.99
+    tau: 0.005  # Soft updates for stability
+    
+    # Advanced Training
+    use_double_dqn: true
+    use_prioritized_replay: true
+    gradient_clip: 10.0
+    train_freq: 1  # Train every step
+    gradient_steps: 1
+    
+    # Optimized Exploration
+    exploration_initial_eps: 1.0
+    exploration_final_eps: 0.01  # Lower final epsilon
+    exploration_decay: 0.9995  # Exponential decay
+    
+    # Optimized Dueling DQN
+    dueling:
+      enabled: true
+      hidden_dims: [512, 256, 128]  # Deeper network
+      activation_fn: "elu"  # Better than relu
+      dropout_rate: 0.1  # Regularization
+      use_layer_norm: true  # Training stability
+
+# Optimized State Builder Configuration
+state_builder:
+  # Optimized dimensions
+  max_nodes: 30  # Reduced from 50 for performance
+  max_terminals: 2  # Only need source + destination
+  
+  # Feature optimization
+  node_feature_dim: 12  # Optimized from 15
+  terminal_feature_dim: 6  # Optimized from 8
+  global_feature_dim: 8  # Optimized from 10
+  
+  # Performance features
+  use_caching: true
+  cache_size: 1000
+  enable_smart_filtering: true
+  
+  # Dynamic features
+  dynamic_positions:
+    enabled: true
+    update_interval_seconds: 30  # Less frequent updates
+
+# Optimized Training Configuration
+training:
+  # Episode Settings
+  max_episodes: 2000  # More episodes for better learning
+  max_steps_per_episode: 15  # Reduced for faster episodes
+  eval_frequency: 50  # More frequent evaluation
+  
+  # Advanced Training Features
+  target_update_frequency: 100
+  gradient_clip: 1.0
+  early_stopping_patience: 50
+  
+  # Evaluation
+  eval_episodes: 20  # More episodes for stable metrics
+  eval_deterministic: true
+  
+  # Checkpointing
+  save_frequency: 100
+  save_best_only: true  # Only save best models
+  
+  # Early Stopping
+  early_stopping:
+    enabled: true
+    patience: 100
+    min_delta: 0.01
+    monitor: "mean_reward"
+  
+  # Logging
+  log_frequency: 10
+  tensorboard_enabled: true
+  console_log_enabled: true
+  
+  # Performance Monitoring
+  enable_performance_metrics: true
+  memory_monitoring: true
+  
+  # Advanced Training Features
+  use_enhanced_trainer: true  # Use enhanced trainer with curriculum, imitation, multi-objective
+
+# Curriculum Learning Configuration
+curriculum:
+  enabled: true
+  min_success_rate: 0.7  # Advance to next level when success rate >= 70%
+  min_episodes_at_level: 100  # Minimum episodes before advancing
+  adaptive: true  # Adaptive difficulty
+  difficulty_increment: 0.05
+
+# Imitation Learning Configuration
+imitation_learning:
+  enabled: true
+  use_dagger: true  # Dataset Aggregation
+  expert_ratio: 0.3  # 30% expert actions initially
+  bc_loss_weight: 0.5  # Behavior Cloning loss weight
+
+# Multi-objective Optimization Configuration
+multi_objective:
+  enabled: true
+  use_pareto: true  # Use Pareto front
+  pareto_front_size: 10
+  latency_weight: 0.4
+  reliability_weight: 0.3
+  energy_weight: 0.3
+  adaptive_weights: true  # Adapt weights based on performance
+
+# Optimized Reward Function Configuration - Nới lỏng để tăng success rate
+reward:
+  # Primary Rewards (optimized scales)
+  success_reward: 200.0
+  failure_penalty: -10.0  # Giảm từ -30.0 xuống -10.0
+  step_penalty: -0.1  # Giảm từ -0.5 xuống -0.1
+  hop_penalty: -0.5  # Giảm từ -2.0 xuống -0.5
+  
+  # Progressive Rewards - Tăng để khuyến khích progress
+  progress_reward_scale: 100.0  # Tăng từ 15.0 lên 100.0
+  distance_reward_scale: 5.0  # Giảm từ 8.0 xuống 5.0
+  quality_reward_scale: 5.0
+  proximity_bonus_scale: 50.0  # Bonus khi đến gần destination
+  
+  # QoS Compliance
+  qos_bonus: 30.0
+  qos_penalty: -15.0
+  
+  # Efficiency Rewards
+  efficiency_bonus: 20.0
+  inefficiency_penalty: -10.0
+  
+  # Resource Awareness - Giảm penalties
+  high_utilization_penalty: -2.0  # Giảm từ -5.0
+  medium_utilization_penalty: -1.0  # Giảm từ -2.0
+  loss_rate_penalty_scale: 5.0  # Giảm từ 10.0
+
+# Action Space Configuration
+action_space:
+  type: "discrete"
+  max_actions: 30  # Matches max_nodes
+  
+  # Action Selection
+  use_action_masking: true
+  enable_temperature: true
+  default_temperature: 1.0
+
+# Network Configuration
+network:
+  # Node limits
+  max_satellite_nodes: 15
+  max_aerial_nodes: 10
+  max_ground_nodes: 5
+  
+  # Performance limits
+  max_bandwidth_mhz: 1000.0
+  max_power_watts: 100.0
+  max_latency_ms: 1000
+
+# QoS Configuration
+qos:
+  # Default QoS profiles
+  profiles:
+    voice:
+      max_latency_ms: 150
+      min_bandwidth_mbps: 64
+      max_loss_rate: 0.01
+      priority: 10
+      
+    video:
+      max_latency_ms: 300
+      min_bandwidth_mbps: 512
+      max_loss_rate: 0.05
+      priority: 8
+      
+    data:
+      max_latency_ms: 1000
+      min_bandwidth_mbps: 10
+      max_loss_rate: 0.1
+      priority: 5
+  
+  # Validation
+  enable_qos_validation: true
+  strict_qos_enforcement: false
+
+# Performance Optimization Configuration
+performance:
+  # Hardware
+  num_threads: 4
+  use_gpu: true
+  device: "cuda"  # Prefer GPU
+  
+  # Memory
+  max_memory_usage_mb: 4096
+  enable_memory_monitoring: true
+  
+  # Caching
+  enable_model_caching: true
+  cache_size: 100
+  cache_ttl_seconds: 3600
+  
+  # Batch processing
+  enable_batch_processing: true
+  max_batch_size: 32
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  file: "./logs/rl_training.log"
+  max_file_size_mb: 100
+  backup_count: 5
+  console: true
+  tensorboard: true
+  
+  # Detailed logging
+  enable_training_metrics: true
+  enable_performance_metrics: true
+  enable_qos_metrics: true
+
+# Evaluation Configuration
+evaluation:
+  # Comprehensive metrics
+  metrics:
+    - "mean_reward"
+    - "success_rate"
+    - "mean_hops"
+    - "mean_latency"
+    - "mean_distance"
+    - "qos_compliance_rate"
+    - "resource_utilization"
+  
+  # Comparison benchmarks
+  enable_dijkstra_comparison: true
+  enable_heuristic_comparison: true
+  
+  # Reporting
+  generate_reports: true
+  report_format: "json"
+  save_detailed_metrics: true
+
+# Advanced Features
+advanced:
+  # Curriculum Learning
+  curriculum_learning:
+    enabled: true
+    difficulty_steps: [500, 1000, 1500]  # Episode milestones
+    distance_increase_km: [1000, 5000, 10000]
+    node_failure_rates: [0.0, 0.1, 0.2]
+  
+  # Transfer Learning
+  transfer_learning:
+    enabled: false
+    pretrained_model_path: "./models/pretrained"
+    freeze_layers: ["shared_layers"]
+  
+  # Multi-objective Optimization
+  multi_objective:
+    enabled: true
+    objectives: ["latency", "reliability", "resource_usage"]
+    weights: [0.4, 0.4, 0.2]
+  
+  # Ensemble Learning
+  ensemble:
+    enabled: false
+    num_models: 5
+    voting_strategy: "soft"
+
+# Service Configuration
+service:
+  # RL Routing Service
+  rl_routing:
+    enable_caching: true
+    cache_ttl_seconds: 300
+    max_concurrent_requests: 100
+    timeout_seconds: 30
+    
+    # Fallback strategies
+    enable_heuristic_fallback: true
+    enable_dijkstra_fallback: true
+    
+    # QoS handling
+    strict_qos_enforcement: false
+    qos_validation_level: "medium"
+  
+  # Performance
+  request_timeout_seconds: 10
+  max_retries: 3
+  circuit_breaker_enabled: true

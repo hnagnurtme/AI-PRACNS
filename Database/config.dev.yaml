@@ -1,0 +1,84 @@
+# Database Configuration - Development Environment
+# Node Position Update Scheduler Configuration
+
+# MongoDB Connection
+mongodb:
+  uri: "mongodb://admin:password@localhost:27017/aiprancs?authSource=admin"
+  database: "aiprancs"
+  connection_timeout: 30
+
+# Scheduler Settings
+scheduler:
+  update_interval_seconds: 10  # Update node positions every N seconds
+  enable_logging: true
+  log_file: "node_update.log"
+  log_level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+
+# Orbital Mechanics Constants
+orbital_mechanics:
+  # Earth Constants
+  earth:
+    radius_km: 6371.0
+    radius_m: 6371000.0
+  
+  # LEO (Low Earth Orbit) Satellites
+  leo:
+    period_seconds: 5400  # ~90 minutes (90 * 60)
+    period_minutes: 90
+    altitude_km: 550
+    altitude_range:
+      min_km: 160
+      max_km: 2000
+    speed_km_per_s: 7.8
+    speed_m_per_s: 7800
+    default_semi_major_axis_km: 6928.0  # Earth radius + altitude
+  
+  # MEO (Medium Earth Orbit) Satellites
+  meo:
+    period_seconds: 43200  # ~12 hours (12 * 60 * 60)
+    period_hours: 12
+    altitude_km: 20000
+    altitude_range:
+      min_km: 2000
+      max_km: 35786
+    speed_km_per_s: 3.9
+    speed_m_per_s: 3900
+    default_semi_major_axis_km: 26562.0  # Earth radius + altitude
+  
+  # GEO (Geostationary Earth Orbit) Satellites
+  geo:
+    period_seconds: 86400  # 24 hours (24 * 60 * 60)
+    period_hours: 24
+    altitude_km: 35786
+    altitude_range:
+      min_km: 35786
+      max_km: 35786
+    speed_km_per_s: 3.07
+    speed_m_per_s: 3070
+    default_semi_major_axis_km: 42164.0  # Earth radius + altitude
+
+# Node Update Settings
+node_update:
+  # Which node types to update
+  update_node_types:
+    - "LEO_SATELLITE"
+    - "MEO_SATELLITE"
+    - "GEO_SATELLITE"
+  
+  # Fields to update in database
+  update_fields:
+    - "position"
+    - "velocity"
+    - "lastPositionUpdate"
+    - "positionTimestamp"
+    - "lastUpdated"
+  
+  # Only update operational nodes
+  only_operational: true
+
+# Performance Settings
+performance:
+  batch_size: 100  # Process nodes in batches
+  max_retries: 3
+  retry_delay_seconds: 1
+
