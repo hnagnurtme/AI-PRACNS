@@ -36,6 +36,10 @@ __pycache__/
 *$py.class
 *.so
 .Python
+venv/
+.venv/
+env/
+.env/
 
 # Node (general)
 node_modules/

@@ -120,7 +120,19 @@ class RLRoutingService:
         topology: Optional[Dict] = None,
         scenario: Optional[Dict] = None
     ) -> Dict:
-        """Optimized path calculation với performance monitoring"""
+        """
+        Optimized path calculation với performance monitoring
+        
+        ⚠️ LƯU Ý: RL Routing Service hiện tại còn YẾU KÉM so với Dijkstra.
+        Xem chi tiết trong calculate_path_rl() ở api/routing_bp.py để biết lý do.
+        
+        Các vấn đề chính:
+        - Phụ thuộc vào model quality và training
+        - Có giới hạn max_steps (6-8) so với Dijkstra không giới hạn
+        - Không đảm bảo optimality như Dijkstra
+        - Có thể fail và cần fallback
+        - Phức tạp hơn trong debug và maintenance
+        """
         start_time = time.time()
         self.request_count += 1
         

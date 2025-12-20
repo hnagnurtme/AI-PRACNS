@@ -1047,6 +1047,9 @@ def calculate_path_rl(
     """
     Calculate path using RL agent (with fallback to heuristic)
     
+    ⚠️ LƯU Ý: RL Routing hiện tại còn YẾU KÉM so với Dijkstra.
+    Xem chi tiết trong docs/RL_LIMITATIONS.md để biết lý do.
+    
     Args:
         source_terminal: Source terminal
         dest_terminal: Destination terminal
