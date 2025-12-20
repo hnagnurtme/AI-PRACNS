@@ -1,860 +1,717 @@
 #!/usr/bin/env python3
 """
-Script to seed database with realistic sample data for SAGIN network simulation
-Adds sample nodes (satellites and ground stations) and terminals with accurate physics
+Deterministic Seed Data Generator for SAGIN RL Training
+Creates structured, reproducible data optimized for RL training and evaluation
 """
 from pymongo import MongoClient
 from datetime import datetime
 import os
-import random
 import math
+from typing import Dict, List, Tuple
 
 MONGODB_URI = os.getenv('MONGODB_URI', 'mongodb://admin:password@localhost:27017/aiprancs?authSource=admin')
 DB_NAME = os.getenv('DB_NAME', 'aiprancs')
 
-# Physical constants
-EARTH_RADIUS_KM = 6371.0  # km
-EARTH_MU = 398600.4418  # Earth's gravitational parameter (km³/s²)
-SPEED_OF_LIGHT = 299792.458  # km/s
+# Physical constants (from constants.py)
+EARTH_RADIUS_KM = 6371.0
+EARTH_MU = 398600.4418
+SPEED_OF_LIGHT_KM_S = 299792.458
 
-def calculate_orbital_velocity(altitude_km):
-    """
-    Calculate orbital velocity using vis-viva equation
-    v = sqrt(μ/r) where r = Earth radius + altitude
-    Returns velocity in km/s
-    """
+# Training-optimized configuration
+NUM_LEO_SATELLITES = 24  # 4 planes x 6 satellites for good coverage
+NUM_MEO_SATELLITES = 6   # Even distribution
+NUM_GEO_SATELLITES = 3   # Equatorial coverage
+NUM_GROUND_STATIONS = 20 # Strategic locations
+NUM_TERMINALS = 30       # Diverse scenarios
+
+# Deterministic seed for reproducibility
+DETERMINISTIC_SEED = 42
+
+
+def calculate_orbital_velocity(altitude_km: float) -> float:
+    """Calculate orbital velocity using vis-viva equation"""
     r = EARTH_RADIUS_KM + altitude_km
     return math.sqrt(EARTH_MU / r)
 
-def calculate_orbital_period(altitude_km):
-    """
-    Calculate orbital period in minutes
-    T = 2π * sqrt(r³/μ)
-    """
+
+def calculate_orbital_period(altitude_km: float) -> float:
+    """Calculate orbital period in minutes"""
     r = EARTH_RADIUS_KM + altitude_km
     period_seconds = 2 * math.pi * math.sqrt(r**3 / EARTH_MU)
-    return period_seconds / 60  # Convert to minutes
+    return period_seconds / 60
 
-def generate_terminal_id(index: int) -> str:
-    """Generate a unique terminal ID"""
-    timestamp = int(datetime.now().timestamp() * 1000)
-    return f"TERM-{timestamp}-{index:04d}"
 
 def generate_node_id(index: int, node_type: str) -> str:
-    """Generate a unique node ID"""
+    """Generate deterministic node ID"""
     prefix = {
         'LEO_SATELLITE': 'LEO',
-        'MEO_SATELLITE': 'MEO', 
+        'MEO_SATELLITE': 'MEO',
         'GEO_SATELLITE': 'GEO',
         'GROUND_STATION': 'GS'
     }.get(node_type, 'NODE')
     return f"{prefix}-{index:03d}"
 
-def generate_realistic_qos(service_type):
-    """
-    Generate realistic QoS requirements based on service type
-    Based on ITU-T Y.1541 and 3GPP QoS standards
-    """
-    qos_profiles = {
-        'VIDEO_STREAM': {
-            'maxLatencyMs': round(random.uniform(100, 300), 2),
-            'minBandwidthMbps': round(random.uniform(5, 25), 2),
-            'maxLossRate': round(random.uniform(0.001, 0.01), 4),  # 0.1-1%
-            'priority': random.randint(6, 8)
-        },
-        'AUDIO_CALL': {
-            'maxLatencyMs': round(random.uniform(50, 150), 2),
-            'minBandwidthMbps': round(random.uniform(0.064, 1), 3),  # 64 kbps - 1 Mbps
-            'maxLossRate': round(random.uniform(0.001, 0.01), 4),
-            'priority': random.randint(8, 10)
-        },
-        'IMAGE_TRANSFER': {
-            'maxLatencyMs': round(random.uniform(200, 1000), 2),
-            'minBandwidthMbps': round(random.uniform(1, 10), 2),
-            'maxLossRate': round(random.uniform(0.001, 0.02), 4),
-            'priority': random.randint(4, 6)
-        },
-        'TEXT_MESSAGE': {
-            'maxLatencyMs': round(random.uniform(500, 2000), 2),
-            'minBandwidthMbps': round(random.uniform(0.01, 0.1), 3),
-            'maxLossRate': round(random.uniform(0.01, 0.05), 4),
-            'priority': random.randint(2, 4)
-        },
-        'FILE_TRANSFER': {
-            'maxLatencyMs': round(random.uniform(1000, 5000), 2),
-            'minBandwidthMbps': round(random.uniform(10, 100), 2),
-            'maxLossRate': round(random.uniform(0.001, 0.03), 4),
-            'priority': random.randint(3, 5)
-        }
-    }
-    return qos_profiles.get(service_type, qos_profiles['FILE_TRANSFER'])
 
-def generate_random_qos():
-    """Generate random QoS with realistic service type"""
-    service_types = ['VIDEO_STREAM', 'AUDIO_CALL', 'IMAGE_TRANSFER', 'TEXT_MESSAGE', 'FILE_TRANSFER']
-    service_type = random.choice(service_types)
-    qos = generate_realistic_qos(service_type)
-    qos['serviceType'] = service_type
-    return qos
+def generate_terminal_id(index: int) -> str:
+    """Generate deterministic terminal ID"""
+    return f"TERM-{index:04d}"
 
-def generate_leo_position(index: int, total: int, plane: int = 0):
+
+def generate_leo_constellation() -> List[Dict]:
     """
-    Generate LEO satellite position with inclined orbit
-    Using walker-delta constellation pattern (similar to Starlink)
+    Generate LEO satellites in Walker-Delta constellation pattern
+    Deterministic positions for consistent training
     """
-    # Distribute satellites in multiple orbital planes
-    num_planes = min(6, total)  # 6 orbital planes (tăng từ 4) để coverage tốt hơn
-    sats_per_plane = total // num_planes
-    
-    current_plane = index // sats_per_plane
-    sat_in_plane = index % sats_per_plane
-    
-    # RAAN spacing between planes
-    raan = current_plane * (360 / num_planes)
-    
-    # True anomaly spacing within plane
-    true_anomaly = sat_in_plane * (360 / sats_per_plane)
-    
-    # Inclined orbit (like Starlink: 53°)
+    satellites = []
+    num_planes = 4
+    sats_per_plane = NUM_LEO_SATELLITES // num_planes
+    altitude_km = 550
     inclination = 53.0
-    altitude = 550  # km
     
-    # Calculate position from orbital elements (simplified)
-    # For demonstration, we'll use a simplified circular orbit
-    lon = raan + true_anomaly
-    lat = math.sin(math.radians(true_anomaly)) * inclination
+    for plane in range(num_planes):
+        for sat_in_plane in range(sats_per_plane):
+            index = plane * sats_per_plane + sat_in_plane
+            
+            # Walker-Delta pattern
+            raan = plane * (360.0 / num_planes)
+            true_anomaly = sat_in_plane * (360.0 / sats_per_plane)
+            
+            # Convert to lat/lon (simplified for deterministic positions)
+            lon = (raan + true_anomaly) % 360 - 180
+            lat = math.sin(math.radians(true_anomaly)) * inclination
+            
+            velocity_orbital = calculate_orbital_velocity(altitude_km)
+            velocity_ms = velocity_orbital * 1000
+            
+            angle_rad = math.radians(true_anomaly)
+            raan_rad = math.radians(raan)
+            
+            satellites.append({
+                'index': index,
+                'plane': plane,
+                'sat_in_plane': sat_in_plane,
+                'position': {
+                    'latitude': round(lat, 4),
+                    'longitude': round(lon, 4),
+                    'altitude': altitude_km * 1000
+                },
+                'velocity': {
+                    'velocityX': round(velocity_ms * math.cos(angle_rad) * math.cos(raan_rad), 3),
+                    'velocityY': round(velocity_ms * math.cos(angle_rad) * math.sin(raan_rad), 3),
+                    'velocityZ': round(velocity_ms * math.sin(angle_rad) * math.sin(math.radians(inclination)), 3)
+                },
+                'altitude_km': altitude_km,
+                'orbital_period': calculate_orbital_period(altitude_km)
+            })
     
-    return {
-        'latitude': round(lat, 4),
-        'longitude': round(lon % 360 - 180, 4),  # -180 to 180
-        'altitude': altitude * 1000  # Convert to meters
-    }
+    return satellites
 
-def generate_leo_velocity(index: int, total: int, altitude_km: float):
-    """
-    Generate realistic LEO satellite velocity vector
-    LEO at 550km has velocity ~7.6 km/s
-    """
-    v_orbital = calculate_orbital_velocity(altitude_km)  # km/s
-    v_ms = v_orbital * 1000  # Convert to m/s
-    
-    # Distribute satellites in orbital planes
-    num_planes = min(6, total)  # 6 planes (tăng từ 4)
-    sats_per_plane = total // num_planes
-    current_plane = index // sats_per_plane
-    sat_in_plane = index % sats_per_plane
-    
-    # Velocity direction based on position in orbit
-    angle = (sat_in_plane * 360 / sats_per_plane) * math.pi / 180
-    raan_angle = (current_plane * 360 / num_planes) * math.pi / 180
-    
-    # Velocity components (simplified for circular orbit)
-    vx = v_ms * math.cos(angle) * math.cos(raan_angle)
-    vy = v_ms * math.cos(angle) * math.sin(raan_angle)
-    vz = v_ms * math.sin(angle) * math.sin(math.radians(53.0))  # Inclination component
-    
-    return {
-        'velocityX': round(vx, 3),
-        'velocityY': round(vy, 3),
-        'velocityZ': round(vz, 3)
-    }
 
-def generate_meo_position(index: int, total: int):
-    """
-    Generate MEO satellite position (like O3b constellation)
-    Typically at ~8,000 km or ~20,000 km altitude
-    """
-    longitude = ((index * 360 / total) % 360) - 180
-    # MEO often uses inclined orbits for better coverage
-    inclination = 70.0  # degrees
-    true_anomaly = (index * 360 / total) % 360
-    latitude = math.sin(math.radians(true_anomaly)) * inclination
-    altitude = 8000  # km (O3b uses ~8,000 km, GPS uses ~20,000 km)
+def generate_meo_constellation() -> List[Dict]:
+    """Generate MEO satellites in deterministic pattern"""
+    satellites = []
+    altitude_km = 8000
+    inclination = 70.0
     
-    return {
-        'latitude': round(latitude, 4),
-        'longitude': round(longitude, 4),
-        'altitude': altitude * 1000
-    }
-
-def generate_meo_velocity(index: int, total: int, altitude_km: float):
-    """Generate realistic MEO satellite velocity"""
-    v_orbital = calculate_orbital_velocity(altitude_km)  # km/s
-    v_ms = v_orbital * 1000  # Convert to m/s (~3.9 km/s for 8000km altitude)
-    
-    angle = (index * 360 / total) * math.pi / 180
-    
-    # Velocity perpendicular to radius vector
-    vx = v_ms * math.cos(angle)
-    vy = v_ms * math.sin(angle)
-    vz = v_ms * 0.3  # Small z-component due to inclination
-    
-    return {
-        'velocityX': round(vx, 3),
-        'velocityY': round(vy, 3),
-        'velocityZ': round(vz, 3)
-    }
-
-def generate_geo_position(index: int, total: int):
-    """
-    Generate GEO satellite position
-    Geostationary orbit at 35,786 km altitude, 0° inclination
-    """
-    # Distribute GEO satellites along equator
-    longitude = -180 + (index * 360 / total)
-    latitude = 0  # Geostationary at equator
-    altitude = 35786  # km
-    
-    return {
-        'latitude': latitude,
-        'longitude': round(longitude, 4),
-        'altitude': altitude * 1000
-    }
-
-def generate_geo_velocity():
-    """
-    GEO satellite velocity relative to Earth (appears stationary)
-    Actual velocity is ~3.07 km/s but matches Earth rotation
-    """
-    # In Earth-centered, Earth-fixed (ECEF) frame, GEO appears stationary
-    return {
-        'velocityX': 0.0,
-        'velocityY': 0.0,
-        'velocityZ': 0.0
-    }
-
-def generate_ground_station_position(index: int):
-    """Generate ground station position at major locations - tăng coverage"""
-    # Real ground station locations - thêm nhiều stations hơn để có coverage tốt
-    major_stations = [
-        # North America
-        {'lat': 40.7128, 'lon': -74.0060, 'name': 'New York', 'alt': 10},
-        {'lat': 34.0522, 'lon': -118.2437, 'name': 'Los Angeles', 'alt': 100},
-        {'lat': 41.8781, 'lon': -87.6298, 'name': 'Chicago', 'alt': 180},
-        {'lat': 29.7604, 'lon': -95.3698, 'name': 'Houston', 'alt': 15},
-        {'lat': 45.5017, 'lon': -73.5673, 'name': 'Montreal', 'alt': 36},
-        # Europe
-        {'lat': 51.5074, 'lon': -0.1278, 'name': 'London', 'alt': 15},
-        {'lat': 48.8566, 'lon': 2.3522, 'name': 'Paris', 'alt': 35},
-        {'lat': 52.5200, 'lon': 13.4050, 'name': 'Berlin', 'alt': 34},
-        {'lat': 55.7558, 'lon': 37.6173, 'name': 'Moscow', 'alt': 156},
-        {'lat': 41.9028, 'lon': 12.4964, 'name': 'Rome', 'alt': 57},
-        # Asia
-        {'lat': 35.6762, 'lon': 139.6503, 'name': 'Tokyo', 'alt': 40},
-        {'lat': 22.3193, 'lon': 114.1694, 'name': 'Hong Kong', 'alt': 5},
-        {'lat': 1.3521, 'lon': 103.8198, 'name': 'Singapore', 'alt': 15},
-        {'lat': 28.6139, 'lon': 77.2090, 'name': 'New Delhi', 'alt': 216},
-        {'lat': 31.2304, 'lon': 121.4737, 'name': 'Shanghai', 'alt': 4},
-        # Oceania & Others
-        {'lat': -33.8688, 'lon': 151.2093, 'name': 'Sydney', 'alt': 25},
-        {'lat': -37.8136, 'lon': 144.9631, 'name': 'Melbourne', 'alt': 31},
-        # South America
-        {'lat': -23.5505, 'lon': -46.6333, 'name': 'Sao Paulo', 'alt': 760},
-        {'lat': -34.6037, 'lon': -58.3816, 'name': 'Buenos Aires', 'alt': 25},
-        # Africa
-        {'lat': -1.2921, 'lon': 36.8219, 'name': 'Nairobi', 'alt': 1795},
-        {'lat': -26.2041, 'lon': 28.0473, 'name': 'Johannesburg', 'alt': 1753},
-    ]
-    
-    station = major_stations[index % len(major_stations)]
-    
-    # Add small random offset for variation (giảm offset để stations gần nhau hơn)
-    lat_offset = random.uniform(-0.3, 0.3)  # Giảm từ 0.5 xuống 0.3
-    lon_offset = random.uniform(-0.3, 0.3)
-    
-    return {
-        'latitude': round(station['lat'] + lat_offset, 4),
-        'longitude': round(station['lon'] + lon_offset, 4),
-        'altitude': station['alt'] + random.uniform(-5, 5),  # meters
-        'name': station['name']
-    }
-
-def calculate_propagation_delay(distance_km):
-    """Calculate signal propagation delay in ms"""
-    delay_s = distance_km / SPEED_OF_LIGHT
-    return round(delay_s * 1000, 2)  # Convert to ms
-
-def create_sample_nodes(db):
-    """Create sample nodes (satellites and ground stations) with realistic parameters"""
-    nodes_collection = db['nodes']
-    
-    # Clear existing nodes
-    nodes_collection.delete_many({})
-    
-    nodes = []
-    
-    # ===== LEO Satellites (30 satellites in 6 orbital planes for 80% coverage) =====
-    num_leo = 30  # Tăng từ 12 lên 30 để đạt 80% success rate
-    leo_altitude = 550  # km
-    leo_velocity_orbital = calculate_orbital_velocity(leo_altitude)
-    leo_period = calculate_orbital_period(leo_altitude)
-    
-    print(f"LEO orbital velocity: {leo_velocity_orbital:.2f} km/s ({leo_velocity_orbital*3600:.0f} km/h)")
-    print(f"LEO orbital period: {leo_period:.1f} minutes")
-    
-    for i in range(num_leo):
-        position = generate_leo_position(i, num_leo)
-        velocity = generate_leo_velocity(i, num_leo, leo_altitude)
+    for i in range(NUM_MEO_SATELLITES):
+        longitude = -180 + (i * 360.0 / NUM_MEO_SATELLITES)
+        true_anomaly = i * (360.0 / NUM_MEO_SATELLITES)
+        latitude = math.sin(math.radians(true_anomaly)) * inclination
         
-        # Orbital elements - 6 planes cho 30 satellites
-        num_planes = 6  # Tăng từ 4 lên 6
-        sats_per_plane = num_leo // num_planes  # 5 sats per plane
-        current_plane = i // sats_per_plane
-        sat_in_plane = i % sats_per_plane
+        velocity_orbital = calculate_orbital_velocity(altitude_km)
+        velocity_ms = velocity_orbital * 1000
+        angle_rad = math.radians(true_anomaly)
         
-        node = {
-            'id': generate_node_id(i, 'LEO_SATELLITE'),
-            'nodeId': generate_node_id(i, 'LEO_SATELLITE'),
-            'nodeName': f'LEO Satellite {i+1} (Plane {current_plane+1})',
-            'nodeType': 'LEO_SATELLITE',
-            'position': position,
-            'velocity': velocity,
-            'orbit': {
-                'semiMajorAxisKm': EARTH_RADIUS_KM + leo_altitude,
-                'eccentricity': 0.0001,  # Nearly circular
-                'inclinationDeg': 53.0,  # Starlink-like inclination
-                'raanDeg': current_plane * (360 / num_planes),
-                'argumentOfPerigeeDeg': 0.0,
-                'trueAnomalyDeg': sat_in_plane * (360 / sats_per_plane),
-                'orbitalPeriodMin': round(leo_period, 2)
-            },
-            'communication': {
-                'frequencyGHz': round(random.uniform(10.7, 12.75), 2),  # Ku-band downlink
-                'bandwidthMHz': round(random.uniform(250, 500), 1),  # Modern LEO bandwidth
-                'transmitPowerDbW': round(random.uniform(37, 43), 1),  # 5-20 kW
-                'antennaGainDb': round(random.uniform(28, 32), 1),
-                'beamWidthDeg': round(random.uniform(8, 15), 1),
-                'maxRangeKm': 2500.0,
-                'minElevationDeg': 25.0,  # Typical minimum for LEO
-                'protocol': 'DVB-S2X',
-                'ipAddress': f'10.1.{i//256}.{i%256}',
-                'port': 8080 + i
-            },
-            'isOperational': random.choice([True, True, True, True, False]),  # 80% operational
-            'batteryChargePercent': round(random.uniform(75, 100), 1),
-            'nodeProcessingDelayMs': round(random.uniform(2, 8), 2),
-            'packetLossRate': round(random.uniform(0.0001, 0.005), 4),
-            'resourceUtilization': round(random.uniform(20, 75), 1),
-            'packetBufferCapacity': 5000,
-            'currentPacketCount': random.randint(0, 3000),
-            'lastUpdated': datetime.now().isoformat(),
-            'healthy': True,
-            'maxDopplerShiftKhz': round(leo_velocity_orbital * (12.5 / SPEED_OF_LIGHT) * 1e6 / 1000, 2)  # Doppler at 12.5 GHz
-        }
-        nodes.append(node)
-    
-    # ===== MEO Satellites (8 satellites for better coverage) =====
-    num_meo = 8  # Tăng từ 6 lên 8
-    meo_altitude = 8000  # km (O3b altitude)
-    meo_velocity_orbital = calculate_orbital_velocity(meo_altitude)
-    meo_period = calculate_orbital_period(meo_altitude)
-    
-    print(f"\nMEO orbital velocity: {meo_velocity_orbital:.2f} km/s")
-    print(f"MEO orbital period: {meo_period:.1f} minutes")
-    
-    for i in range(num_meo):
-        position = generate_meo_position(i, num_meo)
-        velocity = generate_meo_velocity(i, num_meo, meo_altitude)
-        
-        node = {
-            'id': generate_node_id(i, 'MEO_SATELLITE'),
-            'nodeId': generate_node_id(i, 'MEO_SATELLITE'),
-            'nodeName': f'MEO Satellite {i+1}',
-            'nodeType': 'MEO_SATELLITE',
-            'position': position,
-            'velocity': velocity,
-            'orbit': {
-                'semiMajorAxisKm': EARTH_RADIUS_KM + meo_altitude,
-                'eccentricity': 0.0001,
-                'inclinationDeg': 70.0,  # O3b-like inclination
-                'raanDeg': i * (360 / num_meo),
-                'argumentOfPerigeeDeg': 0.0,
-                'trueAnomalyDeg': i * (360 / num_meo),
-                'orbitalPeriodMin': round(meo_period, 2)
-            },
-            'communication': {
-                'frequencyGHz': round(random.uniform(17.7, 20.2), 2),  # Ka-band
-                'bandwidthMHz': round(random.uniform(400, 800), 1),
-                'transmitPowerDbW': round(random.uniform(43, 47), 1),  # 20-50 kW
-                'antennaGainDb': round(random.uniform(33, 38), 1),
-                'beamWidthDeg': round(random.uniform(4, 8), 1),
-                'maxRangeKm': 10000.0,
-                'minElevationDeg': 20.0,
-                'protocol': 'DVB-S2X',
-                'ipAddress': f'10.2.{i//256}.{i%256}',
-                'port': 8080 + i
-            },
-            'isOperational': True,
-            'batteryChargePercent': round(random.uniform(80, 98), 1),
-            'nodeProcessingDelayMs': round(random.uniform(5, 15), 2),
-            'packetLossRate': round(random.uniform(0.0001, 0.002), 4),
-            'resourceUtilization': round(random.uniform(30, 65), 1),
-            'packetBufferCapacity': 10000,
-            'currentPacketCount': random.randint(0, 6000),
-            'lastUpdated': datetime.now().isoformat(),
-            'healthy': True,
-            'maxDopplerShiftKhz': round(meo_velocity_orbital * (18.0 / SPEED_OF_LIGHT) * 1e6 / 1000, 2)
-        }
-        nodes.append(node)
-    
-    # ===== GEO Satellites (3 satellites) =====
-    num_geo = 3
-    geo_altitude = 35786  # km
-    geo_period = calculate_orbital_period(geo_altitude)
-    
-    print(f"\nGEO orbital period: {geo_period:.1f} minutes (~24 hours)")
-    
-    for i in range(num_geo):
-        position = generate_geo_position(i, num_geo)
-        velocity = generate_geo_velocity()
-        
-        # One-way propagation delay from GEO to ground
-        one_way_delay = calculate_propagation_delay(geo_altitude)
-        
-        node = {
-            'id': generate_node_id(i, 'GEO_SATELLITE'),
-            'nodeId': generate_node_id(i, 'GEO_SATELLITE'),
-            'nodeName': f'GEO Satellite {i+1}',
-            'nodeType': 'GEO_SATELLITE',
-            'position': position,
-            'velocity': velocity,  # Stationary relative to Earth
-            'orbit': {
-                'semiMajorAxisKm': EARTH_RADIUS_KM + geo_altitude,
-                'eccentricity': 0.0001,
-                'inclinationDeg': 0.0,  # Equatorial
-                'raanDeg': 0.0,
-                'argumentOfPerigeeDeg': 0.0,
-                'trueAnomalyDeg': i * (360 / num_geo),
-                'orbitalPeriodMin': round(geo_period, 2)
-            },
-            'communication': {
-                'frequencyGHz': round(random.uniform(19.7, 20.2), 2),  # Ka-band downlink
-                'bandwidthMHz': round(random.uniform(500, 1000), 1),  # GEO typically has more bandwidth
-                'transmitPowerDbW': round(random.uniform(47, 52), 1),  # 50-150 kW
-                'antennaGainDb': round(random.uniform(38, 45), 1),
-                'beamWidthDeg': round(random.uniform(0.5, 3), 1),  # Narrow beams
-                'maxRangeKm': 40000.0,
-                'minElevationDeg': 10.0,  # Lower elevation OK for GEO
-                'protocol': 'DVB-S2X',
-                'ipAddress': f'10.3.{i//256}.{i%256}',
-                'port': 8080 + i
-            },
-            'isOperational': True,
-            'batteryChargePercent': round(random.uniform(85, 100), 1),
-            'nodeProcessingDelayMs': round(random.uniform(8, 20), 2),
-            'packetLossRate': round(random.uniform(0.00001, 0.0005), 5),  # Very low loss
-            'resourceUtilization': round(random.uniform(40, 80), 1),
-            'packetBufferCapacity': 20000,
-            'currentPacketCount': random.randint(0, 12000),
-            'lastUpdated': datetime.now().isoformat(),
-            'healthy': True,
-            'propagationDelayMs': round(one_way_delay, 2),  # One-way delay
-            'maxDopplerShiftKhz': 0.0  # Negligible for GEO
-        }
-        nodes.append(node)
-    
-    # ===== Ground Stations (40 stations for 80% success rate) =====
-    num_ground = 40  # Tăng từ 20 lên 40 để đạt 80% success rate
-    weather_conditions = ['CLEAR', 'CLEAR', 'CLEAR', 'CLEAR', 'CLEAR', 
-                          'LIGHT_RAIN', 'RAIN', 'CLOUDY', 'FOG']
-    
-    for i in range(num_ground):
-        position_data = generate_ground_station_position(i)
-        
-        node = {
-            'id': generate_node_id(i, 'GROUND_STATION'),
-            'nodeId': generate_node_id(i, 'GROUND_STATION'),
-            'nodeName': f'Ground Station {position_data["name"]}',
-            'nodeType': 'GROUND_STATION',
+        satellites.append({
+            'index': i,
             'position': {
-                'latitude': position_data['latitude'],
-                'longitude': position_data['longitude'],
-                'altitude': position_data['altitude']
+                'latitude': round(latitude, 4),
+                'longitude': round(longitude, 4),
+                'altitude': altitude_km * 1000
+            },
+            'velocity': {
+                'velocityX': round(velocity_ms * math.cos(angle_rad), 3),
+                'velocityY': round(velocity_ms * math.sin(angle_rad), 3),
+                'velocityZ': round(velocity_ms * 0.3, 3)
+            },
+            'altitude_km': altitude_km,
+            'orbital_period': calculate_orbital_period(altitude_km)
+        })
+    
+    return satellites
+
+
+def generate_geo_constellation() -> List[Dict]:
+    """Generate GEO satellites at fixed equatorial positions"""
+    satellites = []
+    altitude_km = 35786
+    
+    longitudes = [-120.0, 0.0, 120.0]  # Americas, Europe/Africa, Asia/Pacific
+    
+    for i, lon in enumerate(longitudes):
+        satellites.append({
+            'index': i,
+            'position': {
+                'latitude': 0.0,
+                'longitude': lon,
+                'altitude': altitude_km * 1000
             },
             'velocity': {
                 'velocityX': 0.0,
                 'velocityY': 0.0,
                 'velocityZ': 0.0
             },
+            'altitude_km': altitude_km,
+            'orbital_period': calculate_orbital_period(altitude_km)
+        })
+    
+    return satellites
+
+
+def generate_ground_stations() -> List[Dict]:
+    """
+    Generate ground stations at strategic locations
+    Distributed globally for good coverage
+    """
+    # Strategic locations for training scenarios
+    locations = [
+        # North America - Easy scenarios
+        {'lat': 40.7128, 'lon': -74.0060, 'name': 'New York', 'alt': 10, 'region': 'NA'},
+        {'lat': 34.0522, 'lon': -118.2437, 'name': 'Los Angeles', 'alt': 100, 'region': 'NA'},
+        {'lat': 41.8781, 'lon': -87.6298, 'name': 'Chicago', 'alt': 180, 'region': 'NA'},
+        {'lat': 29.7604, 'lon': -95.3698, 'name': 'Houston', 'alt': 15, 'region': 'NA'},
+        {'lat': 45.5017, 'lon': -73.5673, 'name': 'Montreal', 'alt': 36, 'region': 'NA'},
+        
+        # Europe - Medium scenarios
+        {'lat': 51.5074, 'lon': -0.1278, 'name': 'London', 'alt': 15, 'region': 'EU'},
+        {'lat': 48.8566, 'lon': 2.3522, 'name': 'Paris', 'alt': 35, 'region': 'EU'},
+        {'lat': 52.5200, 'lon': 13.4050, 'name': 'Berlin', 'alt': 34, 'region': 'EU'},
+        {'lat': 55.7558, 'lon': 37.6173, 'name': 'Moscow', 'alt': 156, 'region': 'EU'},
+        {'lat': 41.9028, 'lon': 12.4964, 'name': 'Rome', 'alt': 57, 'region': 'EU'},
+        
+        # Asia - Hard scenarios (long distances)
+        {'lat': 35.6762, 'lon': 139.6503, 'name': 'Tokyo', 'alt': 40, 'region': 'ASIA'},
+        {'lat': 22.3193, 'lon': 114.1694, 'name': 'Hong Kong', 'alt': 5, 'region': 'ASIA'},
+        {'lat': 1.3521, 'lon': 103.8198, 'name': 'Singapore', 'alt': 15, 'region': 'ASIA'},
+        {'lat': 28.6139, 'lon': 77.2090, 'name': 'New Delhi', 'alt': 216, 'region': 'ASIA'},
+        {'lat': 31.2304, 'lon': 121.4737, 'name': 'Shanghai', 'alt': 4, 'region': 'ASIA'},
+        
+        # Oceania & Others - Cross-continental scenarios
+        {'lat': -33.8688, 'lon': 151.2093, 'name': 'Sydney', 'alt': 25, 'region': 'OCEANIA'},
+        {'lat': -37.8136, 'lon': 144.9631, 'name': 'Melbourne', 'alt': 31, 'region': 'OCEANIA'},
+        {'lat': -23.5505, 'lon': -46.6333, 'name': 'Sao Paulo', 'alt': 760, 'region': 'SA'},
+        {'lat': -34.6037, 'lon': -58.3816, 'name': 'Buenos Aires', 'alt': 25, 'region': 'SA'},
+        {'lat': -1.2921, 'lon': 36.8219, 'name': 'Nairobi', 'alt': 1795, 'region': 'AFRICA'},
+    ]
+    
+    return locations[:NUM_GROUND_STATIONS]
+
+
+def get_deterministic_qos(service_type: str, index: int) -> Dict:
+    """
+    Generate deterministic QoS based on service type and index
+    Creates consistent requirements for training
+    """
+    base_profiles = {
+        'VIDEO_STREAM': {
+            'maxLatencyMs': 200.0,
+            'minBandwidthMbps': 15.0,
+            'maxLossRate': 0.005,
+            'priority': 7
+        },
+        'AUDIO_CALL': {
+            'maxLatencyMs': 100.0,
+            'minBandwidthMbps': 0.5,
+            'maxLossRate': 0.01,
+            'priority': 9
+        },
+        'IMAGE_TRANSFER': {
+            'maxLatencyMs': 500.0,
+            'minBandwidthMbps': 5.0,
+            'maxLossRate': 0.01,
+            'priority': 5
+        },
+        'TEXT_MESSAGE': {
+            'maxLatencyMs': 1000.0,
+            'minBandwidthMbps': 0.05,
+            'maxLossRate': 0.05,
+            'priority': 3
+        },
+        'FILE_TRANSFER': {
+            'maxLatencyMs': 3000.0,
+            'minBandwidthMbps': 50.0,
+            'maxLossRate': 0.02,
+            'priority': 4
+        }
+    }
+    
+    qos = base_profiles.get(service_type, base_profiles['FILE_TRANSFER']).copy()
+    qos['serviceType'] = service_type
+    
+    # Add small deterministic variations based on index
+    variation = (index % 10) / 100.0
+    qos['maxLatencyMs'] = round(qos['maxLatencyMs'] * (1 + variation * 0.1), 2)
+    qos['minBandwidthMbps'] = round(qos['minBandwidthMbps'] * (1 + variation * 0.1), 2)
+    
+    return qos
+
+
+def get_node_attributes(node_type: str, index: int, total: int) -> Dict:
+    """
+    Generate deterministic node attributes for training
+    Creates patterns: some nodes are better, some have constraints
+    """
+    # Base attributes by node type
+    if node_type == 'LEO_SATELLITE':
+        base_utilization = 30.0 + (index % 5) * 10.0  # 30-70%
+        base_battery = 85.0 + (index % 3) * 5.0  # 85-95%
+        base_loss = 0.001 + (index % 3) * 0.002  # 0.001-0.005
+        processing_delay = 3.0 + (index % 4) * 1.5  # 3-9ms
+        buffer_capacity = 5000
+        current_packets = int(buffer_capacity * (0.2 + (index % 5) * 0.15))
+        
+    elif node_type == 'MEO_SATELLITE':
+        base_utilization = 40.0 + (index % 4) * 10.0  # 40-70%
+        base_battery = 90.0 + (index % 2) * 5.0  # 90-95%
+        base_loss = 0.0005 + (index % 2) * 0.001  # 0.0005-0.0015
+        processing_delay = 8.0 + (index % 3) * 3.0  # 8-14ms
+        buffer_capacity = 10000
+        current_packets = int(buffer_capacity * (0.15 + (index % 4) * 0.1))
+        
+    elif node_type == 'GEO_SATELLITE':
+        base_utilization = 50.0 + (index % 3) * 15.0  # 50-80%
+        base_battery = 95.0 + (index % 2) * 2.5  # 95-97.5%
+        base_loss = 0.0001 + (index % 2) * 0.0002  # 0.0001-0.0003
+        processing_delay = 12.0 + (index % 2) * 4.0  # 12-16ms
+        buffer_capacity = 20000
+        current_packets = int(buffer_capacity * (0.1 + (index % 3) * 0.05))
+        
+    else:  # GROUND_STATION
+        base_utilization = 20.0 + (index % 6) * 8.0  # 20-60%
+        base_battery = 100.0  # Always full
+        base_loss = 0.0001 + (index % 3) * 0.0002  # 0.0001-0.0005
+        processing_delay = 1.0 + (index % 3) * 0.5  # 1-2.5ms
+        buffer_capacity = 10000
+        current_packets = int(buffer_capacity * (0.1 + (index % 5) * 0.08))
+    
+    # Resource breakdown (for Dijkstra features)
+    cpu_util = base_utilization + (index % 3) * 5.0
+    mem_util = base_utilization - (index % 3) * 3.0
+    bw_util = base_utilization + (index % 2) * 4.0
+    
+    return {
+        'resourceUtilization': round(base_utilization, 1),
+        'cpu': {'utilization': round(min(100.0, cpu_util), 1)},
+        'memory': {'utilization': round(min(100.0, mem_util), 1)},
+        'bandwidth': {'utilization': round(min(100.0, bw_util), 1)},
+        'batteryChargePercent': round(base_battery, 1),
+        'packetLossRate': round(base_loss, 5),
+        'nodeProcessingDelayMs': round(processing_delay, 2),
+        'packetBufferCapacity': buffer_capacity,
+        'currentPacketCount': current_packets,
+        'isOperational': True  # All operational for training
+    }
+
+
+def create_nodes(db) -> List[str]:
+    """
+    Create deterministic nodes optimized for training
+    Note: Assumes existing data has already been cleared
+    """
+    nodes_collection = db['nodes']
+    nodes = []
+    node_index = 0
+    
+    # LEO Satellites
+    leo_constellation = generate_leo_constellation()
+    for leo_data in leo_constellation:
+        attrs = get_node_attributes('LEO_SATELLITE', leo_data['index'], NUM_LEO_SATELLITES)
+        
+        node = {
+            'id': generate_node_id(node_index, 'LEO_SATELLITE'),
+            'nodeId': generate_node_id(node_index, 'LEO_SATELLITE'),
+            'nodeName': f'LEO Satellite {leo_data["index"]+1} (Plane {leo_data["plane"]+1})',
+            'nodeType': 'LEO_SATELLITE',
+            'position': leo_data['position'],
+            'velocity': leo_data['velocity'],
+            'orbit': {
+                'semiMajorAxisKm': EARTH_RADIUS_KM + leo_data['altitude_km'],
+                'eccentricity': 0.0001,
+                'inclinationDeg': 53.0,
+                'raanDeg': leo_data['plane'] * (360.0 / 4),
+                'argumentOfPerigeeDeg': 0.0,
+                'trueAnomalyDeg': leo_data['sat_in_plane'] * (360.0 / 6),
+                'orbitalPeriodMin': round(leo_data['orbital_period'], 2)
+            },
+            'communication': {
+                'frequencyGHz': 11.7 + (leo_data['index'] % 3) * 0.5,
+                'bandwidthMHz': 300 + (leo_data['index'] % 4) * 50,
+                'transmitPowerDbW': 40.0 + (leo_data['index'] % 3) * 1.0,
+                'antennaGainDb': 30.0 + (leo_data['index'] % 2) * 1.0,
+                'beamWidthDeg': 10.0 + (leo_data['index'] % 3) * 2.0,
+                'maxRangeKm': 2500.0,
+                'minElevationDeg': 25.0,
+                'protocol': 'DVB-S2X',
+                'ipAddress': f'10.1.{leo_data["index"]//256}.{leo_data["index"]%256}',
+                'port': 8080 + leo_data['index']
+            },
+            **attrs,
+            'lastUpdated': datetime.now().isoformat(),
+            'healthy': True
+        }
+        nodes.append(node)
+        node_index += 1
+    
+    # MEO Satellites
+    meo_constellation = generate_meo_constellation()
+    for meo_data in meo_constellation:
+        attrs = get_node_attributes('MEO_SATELLITE', meo_data['index'], NUM_MEO_SATELLITES)
+        
+        node = {
+            'id': generate_node_id(node_index, 'MEO_SATELLITE'),
+            'nodeId': generate_node_id(node_index, 'MEO_SATELLITE'),
+            'nodeName': f'MEO Satellite {meo_data["index"]+1}',
+            'nodeType': 'MEO_SATELLITE',
+            'position': meo_data['position'],
+            'velocity': meo_data['velocity'],
+            'orbit': {
+                'semiMajorAxisKm': EARTH_RADIUS_KM + meo_data['altitude_km'],
+                'eccentricity': 0.0001,
+                'inclinationDeg': 70.0,
+                'raanDeg': meo_data['index'] * (360.0 / NUM_MEO_SATELLITES),
+                'argumentOfPerigeeDeg': 0.0,
+                'trueAnomalyDeg': meo_data['index'] * (360.0 / NUM_MEO_SATELLITES),
+                'orbitalPeriodMin': round(meo_data['orbital_period'], 2)
+            },
+            'communication': {
+                'frequencyGHz': 18.0 + (meo_data['index'] % 2) * 1.0,
+                'bandwidthMHz': 500 + (meo_data['index'] % 3) * 100,
+                'transmitPowerDbW': 45.0 + (meo_data['index'] % 2) * 1.0,
+                'antennaGainDb': 35.0 + (meo_data['index'] % 2) * 1.5,
+                'beamWidthDeg': 6.0 + (meo_data['index'] % 2) * 1.0,
+                'maxRangeKm': 10000.0,
+                'minElevationDeg': 20.0,
+                'protocol': 'DVB-S2X',
+                'ipAddress': f'10.2.{meo_data["index"]//256}.{meo_data["index"]%256}',
+                'port': 8080 + meo_data['index']
+            },
+            **attrs,
+            'lastUpdated': datetime.now().isoformat(),
+            'healthy': True
+        }
+        nodes.append(node)
+        node_index += 1
+    
+    # GEO Satellites
+    geo_constellation = generate_geo_constellation()
+    for geo_data in geo_constellation:
+        attrs = get_node_attributes('GEO_SATELLITE', geo_data['index'], NUM_GEO_SATELLITES)
+        
+        node = {
+            'id': generate_node_id(node_index, 'GEO_SATELLITE'),
+            'nodeId': generate_node_id(node_index, 'GEO_SATELLITE'),
+            'nodeName': f'GEO Satellite {geo_data["index"]+1}',
+            'nodeType': 'GEO_SATELLITE',
+            'position': geo_data['position'],
+            'velocity': geo_data['velocity'],
+            'orbit': {
+                'semiMajorAxisKm': EARTH_RADIUS_KM + geo_data['altitude_km'],
+                'eccentricity': 0.0001,
+                'inclinationDeg': 0.0,
+                'raanDeg': 0.0,
+                'argumentOfPerigeeDeg': 0.0,
+                'trueAnomalyDeg': geo_data['index'] * (360.0 / NUM_GEO_SATELLITES),
+                'orbitalPeriodMin': round(geo_data['orbital_period'], 2)
+            },
+            'communication': {
+                'frequencyGHz': 20.0,
+                'bandwidthMHz': 750 + geo_data['index'] * 100,
+                'transmitPowerDbW': 50.0 + geo_data['index'] * 1.0,
+                'antennaGainDb': 40.0 + geo_data['index'] * 2.0,
+                'beamWidthDeg': 1.0 + geo_data['index'] * 0.5,
+                'maxRangeKm': 40000.0,
+                'minElevationDeg': 10.0,
+                'protocol': 'DVB-S2X',
+                'ipAddress': f'10.3.{geo_data["index"]//256}.{geo_data["index"]%256}',
+                'port': 8080 + geo_data['index']
+            },
+            **attrs,
+            'lastUpdated': datetime.now().isoformat(),
+            'healthy': True,
+            'propagationDelayMs': round(geo_data['altitude_km'] / SPEED_OF_LIGHT_KM_S, 2)
+        }
+        nodes.append(node)
+        node_index += 1
+    
+    # Ground Stations
+    gs_locations = generate_ground_stations()
+    for i, location in enumerate(gs_locations):
+        attrs = get_node_attributes('GROUND_STATION', i, NUM_GROUND_STATIONS)
+        
+        node = {
+            'id': generate_node_id(node_index, 'GROUND_STATION'),
+            'nodeId': generate_node_id(node_index, 'GROUND_STATION'),
+            'nodeName': f'Ground Station {location["name"]}',
+            'nodeType': 'GROUND_STATION',
+            'position': {
+                'latitude': location['lat'],
+                'longitude': location['lon'],
+                'altitude': location['alt']
+            },
+            'velocity': {'velocityX': 0.0, 'velocityY': 0.0, 'velocityZ': 0.0},
             'orbit': None,
             'communication': {
-                'frequencyGHz': round(random.uniform(10.7, 14.5), 2),  # Ku/Ka-band uplink
-                'bandwidthMHz': round(random.uniform(100, 500), 1),
-                'transmitPowerDbW': round(random.uniform(50, 55), 1),  # 100-300 kW
-                'antennaGainDb': round(random.uniform(45, 60), 1),  # Large parabolic antennas
-                'beamWidthDeg': round(random.uniform(0.2, 2.0), 2),
-                'maxRangeKm': 40000.0,  # Can reach GEO
+                'frequencyGHz': 12.5 + (i % 3) * 0.5,
+                'bandwidthMHz': 200 + (i % 5) * 50,
+                'transmitPowerDbW': 52.0 + (i % 2) * 1.0,
+                'antennaGainDb': 50.0 + (i % 3) * 3.0,
+                'beamWidthDeg': 1.0 + (i % 3) * 0.5,
+                'maxRangeKm': 40000.0,
                 'minElevationDeg': 10.0,
                 'protocol': 'TCP/IP',
                 'ipAddress': f'10.10.{i//256}.{i%256}',
                 'port': 8080 + i
             },
-            'isOperational': True,
-            'batteryChargePercent': 100.0,  # Mains powered, backup battery
-            'nodeProcessingDelayMs': round(random.uniform(0.5, 3), 2),
-            'packetLossRate': round(random.uniform(0.00001, 0.0005), 5),
-            'resourceUtilization': round(random.uniform(15, 55), 1),
-            'packetBufferCapacity': 10000,
-            'currentPacketCount': random.randint(0, 4000),
-            'weather': random.choice(weather_conditions),  # Only ground stations have weather
+            **attrs,
             'lastUpdated': datetime.now().isoformat(),
             'healthy': True,
-            'location': position_data['name'],
-            'host': f'gs-{position_data["name"].lower().replace(" ", "-")}.aiprancs.local',
-            'port': 8080 + i
+            'location': location['name'],
+            'region': location['region'],
+            'host': f'gs-{location["name"].lower().replace(" ", "-")}.aiprancs.local'
         }
         nodes.append(node)
+        node_index += 1
     
     # Insert all nodes
     if nodes:
         result = nodes_collection.insert_many(nodes)
-        print(f"\n✅ Created {len(result.inserted_ids)} nodes:")
-        print(f"   - LEO satellites: {num_leo}")
-        print(f"   - MEO satellites: {num_meo}")
-        print(f"   - GEO satellites: {num_geo}")
-        print(f"   - Ground stations: {num_ground}")
+        print(f"✅ Created {len(result.inserted_ids)} nodes:")
+        print(f"   - LEO satellites: {NUM_LEO_SATELLITES}")
+        print(f"   - MEO satellites: {NUM_MEO_SATELLITES}")
+        print(f"   - GEO satellites: {NUM_GEO_SATELLITES}")
+        print(f"   - Ground stations: {NUM_GROUND_STATIONS}")
         return [str(id) for id in result.inserted_ids]
     return []
 
-def create_sample_terminals(db, count=30):
-    """Create sample terminals with realistic positions and QoS requirements"""
+
+def calculate_distance_km(pos1: Dict, pos2: Dict) -> float:
+    """Calculate distance in km using Haversine formula"""
+    lat1 = math.radians(pos1['latitude'])
+    lon1 = math.radians(pos1['longitude'])
+    lat2 = math.radians(pos2['latitude'])
+    lon2 = math.radians(pos2['longitude'])
+    
+    dlat = lat2 - lat1
+    dlon = lon2 - lon1
+    
+    a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
+    c = 2 * math.asin(math.sqrt(a))
+    
+    return EARTH_RADIUS_KM * c
+
+
+def create_terminals(db) -> List[str]:
+    """
+    Create terminals with training-optimized scenarios:
+    - Easy: Short distances, good coverage
+    - Medium: Medium distances, some constraints
+    - Hard: Long distances, challenging paths
+    
+    Note: This function assumes data has already been cleared
+    """
     terminals_collection = db['terminals']
     
-    # Clear existing terminals
-    terminals_collection.delete_many({})
-    
-    # Get available nodes for connection
     nodes_collection = db['nodes']
-    available_nodes = list(nodes_collection.find({
-        'isOperational': True,
-        'nodeType': {'$in': ['LEO_SATELLITE', 'MEO_SATELLITE', 'GEO_SATELLITE']}
-    }, {'nodeId': 1, 'nodeType': 1, 'position': 1}))
-    
-    terminals = []
-    terminal_types = ['MOBILE', 'FIXED', 'VEHICLE', 'AIRCRAFT', 'MARITIME']
-    
-    # Service type distribution (realistic usage)
-    service_distributions = {
-        'MOBILE': ['VIDEO_STREAM', 'AUDIO_CALL', 'TEXT_MESSAGE', 'IMAGE_TRANSFER'],
-        'FIXED': ['VIDEO_STREAM', 'FILE_TRANSFER', 'AUDIO_CALL'],
-        'VEHICLE': ['TEXT_MESSAGE', 'AUDIO_CALL', 'IMAGE_TRANSFER'],
-        'AIRCRAFT': ['AUDIO_CALL', 'TEXT_MESSAGE', 'VIDEO_STREAM'],
-        'MARITIME': ['TEXT_MESSAGE', 'AUDIO_CALL', 'IMAGE_TRANSFER']
-    }
-    
-    # Geographic regions with realistic distribution
-    regions = [
-        {'minLat': 30, 'maxLat': 50, 'minLon': -125, 'maxLon': -70, 'name': 'North America', 'terminals': 8},
-        {'minLat': 40, 'maxLat': 60, 'minLon': -10, 'maxLon': 30, 'name': 'Europe', 'terminals': 7},
-        {'minLat': 20, 'maxLat': 45, 'minLon': 100, 'maxLon': 145, 'name': 'East Asia', 'terminals': 6},
-        {'minLat': -40, 'maxLat': -10, 'minLon': 110, 'maxLon': 155, 'name': 'Australia', 'terminals': 4},
-        {'minLat': -35, 'maxLat': 35, 'minLon': -20, 'maxLon': 50, 'name': 'Africa', 'terminals': 3},
-        {'minLat': -55, 'maxLat': 10, 'minLon': -80, 'maxLon': -35, 'name': 'South America', 'terminals': 2},
-    ]
-    
-    # Calculate how many terminals should be connected
-    connected_count = 0
-    max_connected = min(int(count * 0.6), len(available_nodes) * 3)  # 60% connected, max 3 per node
-    
-    terminal_index = 0
-    
-    # Get ground stations để đảm bảo terminals gần ground stations
     ground_stations = list(nodes_collection.find(
-        {'nodeType': 'GROUND_STATION', 'isOperational': True},
-        {'nodeId': 1, 'position': 1}
+        {'nodeType': 'GROUND_STATION'},
+        {'nodeId': 1, 'position': 1, 'region': 1}
+    ))
+    satellites = list(nodes_collection.find(
+        {'nodeType': {'$in': ['LEO_SATELLITE', 'MEO_SATELLITE', 'GEO_SATELLITE']}},
+        {'nodeId': 1, 'nodeType': 1, 'position': 1}
     ))
     
-    # Helper function để tính khoảng cách (Haversine)
-    def calculate_distance_km(pos1, pos2):
-        """Calculate distance in km between two positions"""
-        import math
-        lat1 = math.radians(pos1['latitude'])
-        lon1 = math.radians(pos1['longitude'])
-        lat2 = math.radians(pos2['latitude'])
-        lon2 = math.radians(pos2['longitude'])
-        
-        dlat = lat2 - lat1
-        dlon = lon2 - lon1
-        
-        a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
-        c = 2 * math.asin(math.sqrt(a))
-        
-        R = 6371  # Earth radius in km
-        return R * c
+    terminals = []
     
-    # Helper function để tìm ground stations trong phạm vi
-    def find_nearby_ground_stations(lat, lon, max_range_km=100):
-        """Tìm ground stations trong phạm vi max_range_km"""
-        nearby = []
-        terminal_pos = {'latitude': lat, 'longitude': lon}
-        for gs in ground_stations:
-            if gs.get('position'):
-                distance = calculate_distance_km(terminal_pos, gs['position'])
-                if distance <= max_range_km:
-                    nearby.append((gs, distance))
-        return nearby
+    # Training scenarios: Easy (0-9), Medium (10-19), Hard (20-29)
+    service_types = ['VIDEO_STREAM', 'AUDIO_CALL', 'IMAGE_TRANSFER', 'TEXT_MESSAGE', 'FILE_TRANSFER']
+    terminal_types = ['MOBILE', 'FIXED', 'VEHICLE', 'AIRCRAFT', 'MARITIME']
     
-    # Phân bố thực tế hơn: 20% có 1 GS, 60% có 2 GS, 20% có 3 GS trong phạm vi
-    # Giảm target 3 GS để tránh warnings
-    terminal_gs_distribution = []
-    for i in range(count):
-        rand = random.random()
-        if rand < 0.2:
-            terminal_gs_distribution.append(1)  # 1 GS - 20%
-        elif rand < 0.8:
-            terminal_gs_distribution.append(2)  # 2 GS - 60%
+    if not ground_stations:
+        print("⚠️  Warning: No ground stations found. Cannot create terminals.")
+        return []
+    
+    if not satellites:
+        print("⚠️  Warning: No satellites found. Terminals will be created without connections.")
+    
+    print(f"Creating {NUM_TERMINALS} terminals...")
+    
+    for i in range(NUM_TERMINALS):
+        if (i + 1) % 10 == 0:
+            print(f"   Progress: {i + 1}/{NUM_TERMINALS} terminals created...")
+        scenario_type = 'EASY' if i < 10 else 'MEDIUM' if i < 20 else 'HARD'
+        service_type = service_types[i % len(service_types)]
+        terminal_type = terminal_types[i % len(terminal_types)]
+        
+        # Select source and destination based on scenario (deterministic)
+        if scenario_type == 'EASY':
+            # Same region, close ground stations
+            source_idx = i % len(ground_stations)
+            source_gs = ground_stations[source_idx]
+            
+            # Find closest ground station (deterministic search with limit)
+            best_dest_idx = (source_idx + 1) % len(ground_stations)
+            best_distance = calculate_distance_km(source_gs['position'], ground_stations[best_dest_idx]['position'])
+            
+            # Check next few stations to find closest (max 5 attempts)
+            for offset in range(2, min(7, len(ground_stations))):
+                candidate_idx = (source_idx + offset) % len(ground_stations)
+                candidate_distance = calculate_distance_km(source_gs['position'], ground_stations[candidate_idx]['position'])
+                if candidate_distance < best_distance and candidate_distance < 2000:
+                    best_dest_idx = candidate_idx
+                    best_distance = candidate_distance
+            
+            dest_gs = ground_stations[best_dest_idx]
+            
+        elif scenario_type == 'MEDIUM':
+            # Different regions, medium distance
+            source_idx = i % len(ground_stations)
+            source_gs = ground_stations[source_idx]
+            dest_gs = ground_stations[(source_idx + 10) % len(ground_stations)]
+            
+        else:  # HARD
+            # Cross-continental, long distance
+            source_idx = i % len(ground_stations)
+            source_gs = ground_stations[source_idx]
+            
+            # Find farthest ground station (deterministic search with limit)
+            best_dest_idx = (source_idx + 15) % len(ground_stations)
+            best_distance = calculate_distance_km(source_gs['position'], ground_stations[best_dest_idx]['position'])
+            
+            # Check next few stations to find farthest (max 5 attempts)
+            for offset in range(12, min(20, len(ground_stations))):
+                candidate_idx = (source_idx + offset) % len(ground_stations)
+                candidate_distance = calculate_distance_km(source_gs['position'], ground_stations[candidate_idx]['position'])
+                if candidate_distance > best_distance and candidate_distance > 5000:
+                    best_dest_idx = candidate_idx
+                    best_distance = candidate_distance
+            
+            dest_gs = ground_stations[best_dest_idx]
+        
+        # Position terminal near source ground station
+        source_pos = source_gs['position']
+        offset_lat = (i % 5) * 0.1 - 0.2  # -0.2 to 0.2 degrees
+        offset_lon = ((i // 5) % 5) * 0.1 - 0.2
+        
+        terminal_lat = source_pos['latitude'] + offset_lat
+        terminal_lon = source_pos['longitude'] + offset_lon
+        
+        # Altitude based on type
+        if terminal_type == 'AIRCRAFT':
+            altitude = 10000 + (i % 3) * 1000
+        elif terminal_type == 'MARITIME':
+            altitude = (i % 3) * 10
+        elif terminal_type == 'VEHICLE':
+            altitude = (i % 5) * 200
         else:
-            terminal_gs_distribution.append(3)  # 3 GS - 20%
-    
-    for region in regions:
-        num_terminals = region['terminals']
+            altitude = (i % 3) * 50
         
-        for i in range(num_terminals):
-            if terminal_index >= count:
-                break
-                
-            terminal_type = random.choice(terminal_types)
-            
-            # Tìm ground stations trong region
-            suitable_stations = [
-                gs for gs in ground_stations
-                if gs.get('position') and
-                   region['minLat'] - 10 <= gs['position'].get('latitude', 0) <= region['maxLat'] + 10 and
-                   region['minLon'] - 10 <= gs['position'].get('longitude', 0) <= region['maxLon'] + 10
-            ]
-            if not suitable_stations:
-                suitable_stations = [gs for gs in ground_stations if gs.get('position')]
-            
-            if not suitable_stations:
-                # Nếu không có GS trong region, tìm GS gần nhất
-                all_gs = [gs for gs in ground_stations if gs.get('position')]
-                if all_gs:
-                    # Tìm GS gần nhất với center của region
-                    region_center_lat = (region['minLat'] + region['maxLat']) / 2
-                    region_center_lon = (region['minLon'] + region['maxLon']) / 2
-                    region_center = {'latitude': region_center_lat, 'longitude': region_center_lon}
-                    
-                    closest_gs = min(all_gs, key=lambda gs: calculate_distance_km(region_center, gs['position']))
-                    base_lat = closest_gs['position']['latitude']
-                    base_lon = closest_gs['position']['longitude']
-                    
-                    # Tạo terminal gần GS này (trong 50-80km)
-                    lat_offset = random.uniform(0.45, 0.72)  # ~50-80km
-                    lon_offset = random.uniform(0.45, 0.72) / math.cos(math.radians(base_lat))
-                    
-                    lat = base_lat + random.choice([-1, 1]) * lat_offset
-                    lon = base_lon + random.choice([-1, 1]) * lon_offset
-                    
-                    # Đảm bảo trong region bounds
-                    lat = max(region['minLat'], min(region['maxLat'], lat))
-                    lon = max(region['minLon'], min(region['maxLon'], lon))
-                else:
-                    # Fallback cuối cùng: random trong region
-                    lat = random.uniform(region['minLat'], region['maxLat'])
-                    lon = random.uniform(region['minLon'], region['maxLon'])
-            else:
-                # Chọn số lượng GS mong muốn cho terminal này
-                target_gs_count = terminal_gs_distribution[terminal_index] if terminal_index < len(terminal_gs_distribution) else 2
-                
-                # Tìm vị trí sao cho có đủ số lượng GS trong phạm vi 50-100km
-                max_attempts = 150  # Tăng số lần thử
-                lat, lon = None, None
-                nearby_count = 0
-                best_position = None
-                best_count = 0
-                
-                # Thử nhiều chiến lược khác nhau
-                strategies = [
-                    # Strategy 1: Gần một GS (dễ có 1-2 GS)
-                    lambda: (random.choice(suitable_stations), 0.45, 0.72),  # 50-80km
-                    # Strategy 2: Trung bình (có thể có 2-3 GS)
-                    lambda: (random.choice(suitable_stations), 0.6, 0.9),   # 65-100km
-                    # Strategy 3: Giữa 2 GS (dễ có 2 GS)
-                    lambda: (random.choice(suitable_stations[:min(2, len(suitable_stations))]), 0.5, 0.8),
-                ]
-                
-                for attempt in range(max_attempts):
-                    # Chọn strategy dựa trên target
-                    if target_gs_count == 1:
-                        strategy_idx = 0  # Gần một GS
-                    elif target_gs_count == 2:
-                        strategy_idx = random.choice([0, 2])  # Gần một GS hoặc giữa 2 GS
-                    else:
-                        strategy_idx = random.choice([1, 2])  # Trung bình hoặc giữa 2 GS
-                    
-                    base_station, min_offset, max_offset = strategies[strategy_idx]()
-                    base_lat = base_station['position']['latitude']
-                    base_lon = base_station['position']['longitude']
-                    
-                    # Tạo terminal trong vòng offset của ground station
-                    lat_offset = random.uniform(min_offset, max_offset)
-                    lon_offset = random.uniform(min_offset, max_offset) / max(math.cos(math.radians(base_lat)), 0.1)
-                    
-                    # Random direction (có thể thử nhiều hướng)
-                    angle = random.uniform(0, 2 * math.pi)
-                    lat = base_lat + lat_offset * math.cos(angle)
-                    lon = base_lon + lon_offset * math.sin(angle)
-                    
-                    # Đảm bảo trong region bounds
-                    lat = max(region['minLat'], min(region['maxLat'], lat))
-                    lon = max(region['minLon'], min(region['maxLon'], lon))
-                    
-                    # Kiểm tra số lượng GS trong phạm vi
-                    nearby_gs = find_nearby_ground_stations(lat, lon, max_range_km=100)
-                    nearby_count = len(nearby_gs)
-                    
-                    # Lưu vị trí tốt nhất (ưu tiên đủ target, sau đó là nhiều nhất)
-                    if nearby_count >= target_gs_count:
-                        # Tìm được đủ target, chấp nhận ngay
-                        break
-                    elif nearby_count >= 1:
-                        # Lưu vị trí tốt nhất (có ít nhất 1 GS)
-                        if best_count == 0 or (nearby_count >= best_count and nearby_count < target_gs_count):
-                            best_position = (lat, lon)
-                            best_count = nearby_count
-                
-                # Nếu không tìm được vị trí với đủ số lượng GS, dùng vị trí tốt nhất
-                if nearby_count < target_gs_count:
-                    if best_position and best_count >= 1:
-                        lat, lon = best_position
-                        nearby_count = best_count
-                        # Chỉ warning nếu target > 1 và không đạt được
-                        if target_gs_count > 1 and nearby_count < target_gs_count:
-                            pass  # Không log warning nữa để giảm noise
-                    elif nearby_count < 1:
-                        # Nếu vẫn không có GS, đặt terminal ngay tại một GS
-                        base_station = random.choice(suitable_stations)
-                        lat = base_station['position']['latitude'] + random.uniform(-0.1, 0.1)
-                        lon = base_station['position']['longitude'] + random.uniform(-0.1, 0.1)
-                        nearby_gs = find_nearby_ground_stations(lat, lon, max_range_km=100)
-                        nearby_count = len(nearby_gs)
-                
-                # Log kết quả (chỉ log success, không log warnings nữa)
-                if nearby_count >= 1:
-                    status = "✅" if nearby_count >= target_gs_count else "✓"
-                    print(f"{status} Terminal {terminal_index} at ({lat:.2f}, {lon:.2f}) has {nearby_count} GS in range")
-                else:
-                    print(f"❌ ERROR: Terminal {terminal_index} at ({lat:.2f}, {lon:.2f}) has {nearby_count} GS in range - THIS SHOULD NOT HAPPEN!")
-            
-            # Altitude based on terminal type
-            if terminal_type == 'AIRCRAFT':
-                altitude = random.uniform(8000, 13000)  # Commercial flight altitude
-            elif terminal_type == 'MARITIME':
-                altitude = random.uniform(0, 50)  # Sea level
-            elif terminal_type == 'VEHICLE':
-                altitude = random.uniform(0, 2000)  # Ground to mountains
-            else:
-                altitude = random.uniform(0, 500)  # Fixed/Mobile
-            
-            # Decide if this terminal should be connected
-            should_connect = connected_count < max_connected and available_nodes and random.random() < 0.6
-            status = 'connected' if should_connect else 'idle'
-            connected_node = None
-            connection_metrics = None
-            
-            if should_connect and available_nodes:
-                # Select node based on terminal type preference
-                # LEO for latency-sensitive, GEO for high bandwidth, MEO for balance
-                node_preferences = {
-                    'AIRCRAFT': ['LEO_SATELLITE', 'MEO_SATELLITE'],
-                    'MOBILE': ['LEO_SATELLITE', 'MEO_SATELLITE'],
-                    'FIXED': ['GEO_SATELLITE', 'MEO_SATELLITE', 'LEO_SATELLITE'],
-                    'VEHICLE': ['LEO_SATELLITE', 'MEO_SATELLITE'],
-                    'MARITIME': ['GEO_SATELLITE', 'LEO_SATELLITE']
-                }
-                
-                preferred_types = node_preferences.get(terminal_type, ['LEO_SATELLITE'])
-                
-                # Try to find a preferred node type
-                suitable_nodes = [n for n in available_nodes if n['nodeType'] in preferred_types]
-                if not suitable_nodes:
-                    suitable_nodes = available_nodes
-                
-                node = random.choice(suitable_nodes)
-                connected_node = node['nodeId']
-                
-                # Calculate realistic connection metrics based on node type
-                node_type = node['nodeType']
-                
-                if node_type == 'LEO_SATELLITE':
-                    base_latency = random.uniform(20, 40)
-                    bandwidth = random.uniform(50, 150)
-                    loss_rate = random.uniform(0.001, 0.01)
-                    signal = random.uniform(-75, -55)
-                elif node_type == 'MEO_SATELLITE':
-                    base_latency = random.uniform(70, 120)
-                    bandwidth = random.uniform(30, 100)
-                    loss_rate = random.uniform(0.001, 0.008)
-                    signal = random.uniform(-80, -60)
-                else:  # GEO
-                    base_latency = random.uniform(240, 280)  # ~250ms one-way
-                    bandwidth = random.uniform(20, 80)
-                    loss_rate = random.uniform(0.0001, 0.005)
-                    signal = random.uniform(-85, -70)
-                
-                connection_metrics = {
-                    'latencyMs': round(base_latency, 2),
-                    'bandwidthMbps': round(bandwidth, 2),
-                    'packetLossRate': round(loss_rate, 4),
-                    'signalStrength': round(signal, 1),
-                    'snrDb': round(random.uniform(5, 20), 1),
-                    'jitterMs': round(random.uniform(2, 15), 2)
-                }
-                connected_count += 1
-            
-            # Select service type based on terminal type
-            possible_services = service_distributions.get(terminal_type, ['TEXT_MESSAGE'])
-            service_type = random.choice(possible_services)
-            
-            terminal = {
-                'id': generate_terminal_id(terminal_index),
-                'terminalId': generate_terminal_id(terminal_index),
-                'terminalName': f'{terminal_type} Terminal {terminal_index + 1}',
-                'terminalType': terminal_type,
-                'position': {
-                    'latitude': round(lat, 4),
-                    'longitude': round(lon, 4),
-                    'altitude': round(altitude, 2)
-                },
-                'status': status,
-                'connectedNodeId': connected_node,
-                'qosRequirements': generate_realistic_qos(service_type),
-                'metadata': {
-                    'description': f'{terminal_type} terminal in {region["name"]}',
-                    'region': region['name'],
-                    'serviceType': service_type,
-                    'mobility': terminal_type in ['MOBILE', 'VEHICLE', 'AIRCRAFT', 'MARITIME']
-                },
-                'lastUpdated': datetime.now().isoformat()
+        # Connection status: 60% connected for training diversity
+        is_connected = (i % 10) < 6
+        connected_node = None
+        connection_metrics = None
+        
+        if is_connected and satellites:
+            # Select appropriate satellite based on terminal type
+            preferred_types = {
+                'AIRCRAFT': ['LEO_SATELLITE', 'MEO_SATELLITE'],
+                'MOBILE': ['LEO_SATELLITE'],
+                'FIXED': ['GEO_SATELLITE', 'MEO_SATELLITE'],
+                'VEHICLE': ['LEO_SATELLITE'],
+                'MARITIME': ['GEO_SATELLITE', 'LEO_SATELLITE']
             }
             
-            # Add connection metrics if connected
-            if connection_metrics:
-                terminal['connectionMetrics'] = connection_metrics
+            preferred = preferred_types.get(terminal_type, ['LEO_SATELLITE'])
+            suitable = [s for s in satellites if s['nodeType'] in preferred]
+            if not suitable:
+                suitable = satellites
             
-            terminals.append(terminal)
-            terminal_index += 1
+            connected_node = suitable[i % len(suitable)]['nodeId']
+            node_type = suitable[i % len(suitable)]['nodeType']
+            
+            # Deterministic connection metrics
+            if node_type == 'LEO_SATELLITE':
+                connection_metrics = {
+                    'latencyMs': 30.0 + (i % 5) * 2.0,
+                    'bandwidthMbps': 100.0 + (i % 3) * 20.0,
+                    'packetLossRate': 0.003 + (i % 3) * 0.002,
+                    'signalStrength': -70.0 + (i % 5) * 2.0,
+                    'snrDb': 12.0 + (i % 4) * 2.0,
+                    'jitterMs': 5.0 + (i % 3) * 2.0
+                }
+            elif node_type == 'MEO_SATELLITE':
+                connection_metrics = {
+                    'latencyMs': 90.0 + (i % 4) * 5.0,
+                    'bandwidthMbps': 60.0 + (i % 3) * 15.0,
+                    'packetLossRate': 0.002 + (i % 2) * 0.003,
+                    'signalStrength': -75.0 + (i % 4) * 2.0,
+                    'snrDb': 10.0 + (i % 3) * 2.0,
+                    'jitterMs': 8.0 + (i % 2) * 2.0
+                }
+            else:  # GEO
+                connection_metrics = {
+                    'latencyMs': 260.0 + (i % 3) * 5.0,
+                    'bandwidthMbps': 40.0 + (i % 3) * 10.0,
+                    'packetLossRate': 0.0005 + (i % 2) * 0.0005,
+                    'signalStrength': -80.0 + (i % 3) * 2.0,
+                    'snrDb': 8.0 + (i % 2) * 2.0,
+                    'jitterMs': 12.0 + (i % 2) * 1.0
+                }
+        
+        qos = get_deterministic_qos(service_type, i)
+        
+        terminal = {
+            'id': generate_terminal_id(i),
+            'terminalId': generate_terminal_id(i),
+            'terminalName': f'{terminal_type} Terminal {i+1} ({scenario_type})',
+            'terminalType': terminal_type,
+            'position': {
+                'latitude': round(terminal_lat, 4),
+                'longitude': round(terminal_lon, 4),
+                'altitude': round(altitude, 2)
+            },
+            'status': 'connected' if is_connected else 'idle',
+            'connectedNodeId': connected_node,
+            'qosRequirements': qos,
+            'metadata': {
+                'description': f'{terminal_type} terminal - {scenario_type} scenario',
+                'scenarioType': scenario_type,
+                'serviceType': service_type,
+                'mobility': terminal_type in ['MOBILE', 'VEHICLE', 'AIRCRAFT', 'MARITIME']
+            },
+            'lastUpdated': datetime.now().isoformat()
+        }
+        
+        if connection_metrics:
+            terminal['connectionMetrics'] = connection_metrics
+        
+        terminals.append(terminal)
     
-    # Insert all terminals
     if terminals:
         result = terminals_collection.insert_many(terminals)
-        print(f"\n✅ Created {len(result.inserted_ids)} terminals:")
-        print(f"   - Connected: {connected_count}")
-        print(f"   - Idle: {len(result.inserted_ids) - connected_count}")
-        
-        # Print distribution by type
-        type_counts = {}
-        for t in terminals:
-            type_counts[t['terminalType']] = type_counts.get(t['terminalType'], 0) + 1
-        print(f"   - Distribution: {type_counts}")
-        
+        print(f"✅ Created {len(result.inserted_ids)} terminals:")
+        print(f"   - Easy scenarios: 10")
+        print(f"   - Medium scenarios: 10")
+        print(f"   - Hard scenarios: 10")
+        print(f"   - Connected: {sum(1 for t in terminals if t['status'] == 'connected')}")
+        print(f"   - Idle: {sum(1 for t in terminals if t['status'] == 'idle')}")
         return [str(id) for id in result.inserted_ids]
     return []
+
 
 def create_indexes(db):
     """Create indexes for better query performance"""
     try:
-        # Nodes indexes
         nodes_collection = db['nodes']
         nodes_collection.create_index('nodeId', unique=True)
         nodes_collection.create_index('nodeType')
@@ -863,7 +720,6 @@ def create_indexes(db):
         nodes_collection.create_index([('position.latitude', 1), ('position.longitude', 1)])
         nodes_collection.create_index('healthy')
         
-        # Terminals indexes
         terminals_collection = db['terminals']
         terminals_collection.create_index('terminalId', unique=True)
         terminals_collection.create_index('terminalType')
@@ -872,10 +728,12 @@ def create_indexes(db):
         terminals_collection.create_index('lastUpdated')
         terminals_collection.create_index([('position.latitude', 1), ('position.longitude', 1)])
         terminals_collection.create_index('qosRequirements.serviceType')
+        terminals_collection.create_index('metadata.scenarioType')
         
         print("✅ Created database indexes successfully")
     except Exception as e:
         print(f"⚠️  Index creation warning: {e}")
+
 
 def print_summary_statistics(db):
     """Print summary statistics of the seeded data"""
@@ -886,7 +744,6 @@ def print_summary_statistics(db):
     print("DATABASE SUMMARY STATISTICS")
     print("="*60)
     
-    # Node statistics
     total_nodes = nodes_collection.count_documents({})
     operational_nodes = nodes_collection.count_documents({'isOperational': True})
     
@@ -896,17 +753,22 @@ def print_summary_statistics(db):
         if count > 0:
             print(f"   - {node_type}: {count}")
     
-    # Terminal statistics
     total_terminals = terminals_collection.count_documents({})
     connected_terminals = terminals_collection.count_documents({'status': 'connected'})
     
     print(f"\n📱 TERMINALS: {total_terminals} total ({connected_terminals} connected)")
+    
     for term_type in ['MOBILE', 'FIXED', 'VEHICLE', 'AIRCRAFT', 'MARITIME']:
         count = terminals_collection.count_documents({'terminalType': term_type})
         if count > 0:
             print(f"   - {term_type}: {count}")
     
-    # Service type distribution
+    print(f"\n📊 SCENARIOS:")
+    for scenario in ['EASY', 'MEDIUM', 'HARD']:
+        count = terminals_collection.count_documents({'metadata.scenarioType': scenario})
+        if count > 0:
+            print(f"   - {scenario}: {count}")
+    
     print(f"\n🔧 SERVICE TYPES:")
     for service in ['VIDEO_STREAM', 'AUDIO_CALL', 'FILE_TRANSFER', 'IMAGE_TRANSFER', 'TEXT_MESSAGE']:
         count = terminals_collection.count_documents({'qosRequirements.serviceType': service})
@@ -915,10 +777,58 @@ def print_summary_statistics(db):
     
     print("\n" + "="*60)
 
-def main():
-    """Main function to seed database"""
+
+def clear_existing_data(db, force: bool = False):
+    """
+    Clear all existing nodes and terminals from database
+    Returns True if data was cleared, False if no data existed
+    """
+    nodes_collection = db['nodes']
+    terminals_collection = db['terminals']
+    
+    node_count = nodes_collection.count_documents({})
+    terminal_count = terminals_collection.count_documents({})
+    
+    if node_count == 0 and terminal_count == 0:
+        print("ℹ️  No existing data found. Starting fresh seed.")
+        return False
+    
+    print(f"\n⚠️  Existing data found:")
+    print(f"   - Nodes: {node_count}")
+    print(f"   - Terminals: {terminal_count}")
+    
+    if force:
+        print("\n🗑️  Clearing existing data...")
+        nodes_collection.delete_many({})
+        terminals_collection.delete_many({})
+        print("✅ All existing data cleared successfully")
+        return True
+    else:
+        print("\n🔄 Auto-clearing existing data for fresh seed...")
+        nodes_collection.delete_many({})
+        terminals_collection.delete_many({})
+        print("✅ All existing data cleared successfully")
+        return True
+
+
+def main(force_clear: bool = True):
+    """
+    Main function to seed database with deterministic training data
+    Automatically clears existing data before seeding
+    
+    Args:
+        force_clear: If True, automatically clear existing data without prompt
+    """
     print("="*60)
-    print("🌱 SEEDING SAGIN DATABASE WITH REALISTIC DATA")
+    print("🌱 SEEDING SAGIN DATABASE WITH DETERMINISTIC TRAINING DATA")
+    print("="*60)
+    print(f"Configuration:")
+    print(f"   - LEO Satellites: {NUM_LEO_SATELLITES}")
+    print(f"   - MEO Satellites: {NUM_MEO_SATELLITES}")
+    print(f"   - GEO Satellites: {NUM_GEO_SATELLITES}")
+    print(f"   - Ground Stations: {NUM_GROUND_STATIONS}")
+    print(f"   - Terminals: {NUM_TERMINALS}")
+    print(f"   - Deterministic Seed: {DETERMINISTIC_SEED}")
     print("="*60)
     
     try:
@@ -927,20 +837,27 @@ def main():
         
         # Test connection
         client.server_info()
-        print("✅ Connected to MongoDB successfully\n")
+        print("✅ Connected to MongoDB successfully")
         
-        # Create indexes first
+        # Clear existing data if any
+        data_existed = clear_existing_data(db, force=force_clear)
+        
+        if data_existed:
+            print("\n" + "-" * 60)
+        
+        # Create indexes first (will recreate if needed)
+        print("\n📑 Creating/updating database indexes...")
         create_indexes(db)
         
         # Create sample nodes
-        print("\n📡 Creating sample nodes (satellites & ground stations)...")
+        print("\n📡 Creating deterministic nodes...")
         print("-" * 60)
-        node_ids = create_sample_nodes(db)
+        node_ids = create_nodes(db)
         
         # Create sample terminals
-        print("\n📱 Creating sample terminals...")
+        print("\n📱 Creating training-optimized terminals...")
         print("-" * 60)
-        terminal_ids = create_sample_terminals(db, count=30)
+        terminal_ids = create_terminals(db)
         
         # Print summary
         print_summary_statistics(db)
@@ -948,6 +865,13 @@ def main():
         print("\n✅ Database seeding completed successfully!")
         print(f"   MongoDB URI: {MONGODB_URI}")
         print(f"   Database: {DB_NAME}")
+        print(f"\n💡 This data is optimized for RL training:")
+        print(f"   - All values are deterministic and reproducible")
+        print(f"   - Scenarios range from Easy to Hard")
+        print(f"   - Nodes have varied but predictable attributes")
+        print(f"   - Terminals cover diverse service types and distances")
+        print(f"   - Model can be trained and evaluated on this same data")
+        print(f"\n🔄 To reseed: Run this script again (will auto-clear existing data)")
         
         client.close()
         
@@ -955,6 +879,10 @@ def main():
         print(f"\n❌ Error seeding database: {e}")
         import traceback
         traceback.print_exc()
+        return 1
+    
+    return 0
+
 
 if __name__ == '__main__':
     main()
