@@ -52,15 +52,19 @@ rl_agent:
       use_layer_norm: true  # Training stability
 
 # Optimized State Builder Configuration
+# Phase 1 Enhancement: Increased features for Dijkstra-like state representation
 state_builder:
   # Optimized dimensions
   max_nodes: 30  # Reduced from 50 for performance
   max_terminals: 2  # Only need source + destination
   
-  # Feature optimization
-  node_feature_dim: 12  # Optimized from 15
+  # Phase 1: Enhanced feature dimensions
+  node_feature_dim: 18  # Increased from 12 to include Dijkstra-like features
   terminal_feature_dim: 6  # Optimized from 8
   global_feature_dim: 8  # Optimized from 10
+  
+  # Phase 1: Enable Dijkstra-aware features
+  include_dijkstra_features: true
   
   # Performance features
   use_caching: true
@@ -136,13 +140,22 @@ multi_objective:
   energy_weight: 0.3
   adaptive_weights: true  # Adapt weights based on performance
 
-# Optimized Reward Function Configuration - Nới lỏng để tăng success rate
+# Optimized Reward Function Configuration
+# Phase 1 Enhancement: Dijkstra-aligned rewards
 reward:
+  # Phase 1: Enable Dijkstra-aligned reward calculation
+  dijkstra_aligned: true  # NEW: Use Dijkstra's edge weight logic for rewards
+  
+  # Phase 1: Dijkstra parameters (match calculate_path_dijkstra)
+  drop_threshold: 95.0  # Drop nodes with utilization >= 95%
+  penalty_threshold: 80.0  # Apply penalty for utilization >= 80%
+  penalty_multiplier: 3.0  # Multiplier for penalty (3.0x)
+  
   # Primary Rewards (optimized scales)
   success_reward: 200.0
   failure_penalty: -10.0  # Giảm từ -30.0 xuống -10.0
-  step_penalty: -0.1  # Giảm từ -0.5 xuống -0.1
-  hop_penalty: -0.5  # Giảm từ -2.0 xuống -0.5
+  step_penalty: -10.0  # Phase 1: Increased for Dijkstra alignment
+  hop_penalty: -15.0  # Phase 1: Increased for Dijkstra alignment
   
   # Progressive Rewards - Tăng để khuyến khích progress
   progress_reward_scale: 100.0  # Tăng từ 15.0 lên 100.0

@@ -79,12 +79,20 @@ class RoutingEnvironment(gym.Env):
         self.service_qos = None
         self.terminated = False  # Track if episode terminated successfully
         
-        # Optimized reward configuration - ƯU TIÊN GIẢM HOP/DISTANCE/LATENCY
+        # Phase 1 Enhancement: Dijkstra-aligned reward configuration
         reward_config = self.config.get('reward', {})
+        self.use_dijkstra_aligned_rewards = reward_config.get('dijkstra_aligned', True)
+        
+        # Dijkstra parameters (match calculate_path_dijkstra)
+        self.drop_threshold = reward_config.get('drop_threshold', 95.0)
+        self.penalty_threshold = reward_config.get('penalty_threshold', 80.0)
+        self.penalty_multiplier = reward_config.get('penalty_multiplier', 3.0)
+        
+        # Reward configuration
         self.success_reward = reward_config.get('success_reward', 200.0)
-        self.failure_penalty = reward_config.get('failure_penalty', -10.0)  # Giảm từ -30 xuống -10
-        self.step_penalty = reward_config.get('step_penalty', -10.0)  # TĂNG: -8.0 → -10.0 - MỖI STEP ĐỀU TỐN KÉM
-        self.hop_penalty = reward_config.get('hop_penalty', -15.0)  # TĂNG: -12.0 → -15.0 - HOP LÀ TỐN KÉM NHẤT
+        self.failure_penalty = reward_config.get('failure_penalty', -10.0)
+        self.step_penalty = reward_config.get('step_penalty', -10.0)
+        self.hop_penalty = reward_config.get('hop_penalty', -15.0)
         self.ground_station_hop_penalty = reward_config.get('ground_station_hop_penalty', -25.0)  # TĂNG: -20 → -25
         self.progress_reward_scale = reward_config.get('progress_reward_scale', 80.0)  # GIẢM: 150 → 80 - Không thưởng quá nhiều cho progress
         self.distance_reward_scale = reward_config.get('distance_reward_scale', 10.0)  # Tăng từ 5.0 → 10.0: Distance quan trọng
@@ -367,77 +375,86 @@ class RoutingEnvironment(gym.Env):
                 reward += 50.0
                 
         else:
-            # Still routing - tính progressive reward với proximity bonus
-            prev_dist = self._calculate_distance(
-                self.current_node.get('position'), dest_pos
-            )
-            progress = prev_dist - dist_to_dest
-            
-            # Progressive rewards với detour penalty
-            if progress > 0:
-                # Progress reward - khuyến khích tiến gần destination
-                reward += progress / 100000.0 * self.progress_reward_scale  # Scale đã giảm xuống 80.0
+            # Phase 1 Enhancement: Use Dijkstra-aligned reward if enabled
+            if self.use_dijkstra_aligned_rewards:
+                reward = self._calculate_dijkstra_aligned_reward(
+                    self.current_node, next_node, hop_distance, dest_pos
+                )
+                # Still apply step and hop penalties
+                reward += self.step_penalty
+                reward += self.hop_penalty
             else:
-                # 🔥 DETOUR PENALTY: Đi xa destination = penalty MỰC NẶNG
-                detour_penalty = abs(progress) / 50000.0 * 30.0  # Penalty lớn hơn progress reward
-                reward -= detour_penalty
-                logger.debug(f"⚠️ Detour penalty: -{detour_penalty:.2f} (moved away from dest by {abs(progress)/1000:.1f}km)")
-            
-            # Distance penalty
-            reward -= hop_distance / 10000000.0 * self.distance_reward_scale
-            # Step và hop penalties (tăng để tránh quá nhiều hops)
-            reward += self.step_penalty  # Full penalty cho mỗi step
-            reward += self.hop_penalty  # Full penalty cho mỗi hop
-            
-            # Satellite bonus GIẢM MẠNH: Ưu tiên satellites nhưng KHÔNG override hop penalty
-            # Net effect: satellite hop = -15 (hop) + 5 (satellite) = -10 (vẫn penalty)
-            if next_node_type in ['LEO_SATELLITE', 'MEO_SATELLITE', 'GEO_SATELLITE']:
-                satellite_bonus = 3.0  # GIẢM từ 15.0 → 3.0 - Chỉ bonus nhỏ
-                if next_node_type == 'LEO_SATELLITE':
-                    satellite_bonus = 5.0  # GIẢM từ 20.0 → 5.0 (LEO tốt hơn nhưng vẫn bị hop penalty)
-                elif next_node_type == 'MEO_SATELLITE':
-                    satellite_bonus = 4.0  # GIẢM từ 18.0 → 4.0
-                reward += satellite_bonus
-                logger.debug(f"✅ Satellite hop bonus: {satellite_bonus} for {next_node_type} (net với hop penalty: {satellite_bonus - 15.0})")
-            
-            # Penalty tăng dần cho nhiều hops (exponential penalty) - CỰC KỲ NGHIÊM KHẮC
-            num_hops = len(self.path) - 1
-            if num_hops > 3:  # GIẢM threshold từ 4 xuống 3 - Force RL học đường ngắn
-                excess_hops = num_hops - 3
-                excess_penalty = excess_hops * excess_hops * 20.0  # TĂNG: 10.0 → 20.0 - PENALTY CỰC LỚN
-                reward -= excess_penalty
-                logger.debug(f"⚠️ Excess hops penalty: -{excess_penalty} for {num_hops} hops (threshold=3)")
-            
-            # Proximity bonus - thưởng khi đến gần destination (tăng scale)
-            if dist_to_dest < 1000000:  # Trong 1000km
-                proximity_bonus = (1000000 - dist_to_dest) / 1000000.0 * self.proximity_bonus_scale * 2.0
-                reward += proximity_bonus
-            elif dist_to_dest < 2000000:  # Trong 2000km
-                proximity_bonus = (2000000 - dist_to_dest) / 2000000.0 * self.proximity_bonus_scale
-                reward += proximity_bonus
-            
-            # Node quality reward - MỤC TIÊU THỨ 2 (sau khi giảm hop/distance)
-            node_quality = self.state_builder._compute_node_quality(next_node)
-            quality_reward = node_quality * self.quality_reward_scale  # 0-10.0 points
-            reward += quality_reward
-            
-            # Extra bonus for EXCELLENT nodes (quality > 0.8) - Giảm để không override hop penalty
-            if node_quality > 0.8:
-                excellent_bonus = 5.0  # Giảm từ 15.0 → 5.0
-                reward += excellent_bonus
-                logger.debug(f"✨ Excellent node bonus: {excellent_bonus} (quality={node_quality:.2f})")
-            # Bonus for GOOD nodes (quality > 0.6)
-            elif node_quality > 0.6:
-                good_bonus = 3.0  # Giảm từ 8.0 → 3.0
-                reward += good_bonus
-                logger.debug(f"✅ Good node bonus: {good_bonus} (quality={node_quality:.2f})")
-            # Penalty for BAD nodes (quality < 0.3) - GIỮNGUYÊN vì tránh node tồi vẫn quan trọng
-            elif node_quality < 0.3:
-                bad_penalty = -20.0  # Giữ nguyên
-                reward += bad_penalty
-                logger.debug(f"❌ Bad node penalty: {bad_penalty} (quality={node_quality:.2f})")
-            
-            # Resource utilization penalty - SỬ DỤNG UTILIZATION THỰC TẾ
+                # Still routing - tính progressive reward với proximity bonus (legacy)
+                prev_dist = self._calculate_distance(
+                    self.current_node.get('position'), dest_pos
+                )
+                progress = prev_dist - dist_to_dest
+                
+                # Progressive rewards với detour penalty
+                if progress > 0:
+                    # Progress reward - khuyến khích tiến gần destination
+                    reward += progress / 100000.0 * self.progress_reward_scale  # Scale đã giảm xuống 80.0
+                else:
+                    # 🔥 DETOUR PENALTY: Đi xa destination = penalty MỰC NẶNG
+                    detour_penalty = abs(progress) / 50000.0 * 30.0  # Penalty lớn hơn progress reward
+                    reward -= detour_penalty
+                    logger.debug(f"⚠️ Detour penalty: -{detour_penalty:.2f} (moved away from dest by {abs(progress)/1000:.1f}km)")
+                
+                # Distance penalty
+                reward -= hop_distance / 10000000.0 * self.distance_reward_scale
+                # Step và hop penalties (tăng để tránh quá nhiều hops)
+                reward += self.step_penalty  # Full penalty cho mỗi step
+                reward += self.hop_penalty  # Full penalty cho mỗi hop
+                
+                # Satellite bonus GIẢM MẠNH: Ưu tiên satellites nhưng KHÔNG override hop penalty
+                # Net effect: satellite hop = -15 (hop) + 5 (satellite) = -10 (vẫn penalty)
+                if next_node_type in ['LEO_SATELLITE', 'MEO_SATELLITE', 'GEO_SATELLITE']:
+                    satellite_bonus = 3.0  # GIẢM từ 15.0 → 3.0 - Chỉ bonus nhỏ
+                    if next_node_type == 'LEO_SATELLITE':
+                        satellite_bonus = 5.0  # GIẢM từ 20.0 → 5.0 (LEO tốt hơn nhưng vẫn bị hop penalty)
+                    elif next_node_type == 'MEO_SATELLITE':
+                        satellite_bonus = 4.0  # GIẢM từ 18.0 → 4.0
+                    reward += satellite_bonus
+                    logger.debug(f"✅ Satellite hop bonus: {satellite_bonus} for {next_node_type} (net với hop penalty: {satellite_bonus - 15.0})")
+                
+                # Penalty tăng dần cho nhiều hops (exponential penalty) - CỰC KỲ NGHIÊM KHẮC
+                num_hops = len(self.path) - 1
+                if num_hops > 3:  # GIẢM threshold từ 4 xuống 3 - Force RL học đường ngắn
+                    excess_hops = num_hops - 3
+                    excess_penalty = excess_hops * excess_hops * 20.0  # TĂNG: 10.0 → 20.0 - PENALTY CỰC LỚN
+                    reward -= excess_penalty
+                    logger.debug(f"⚠️ Excess hops penalty: -{excess_penalty} for {num_hops} hops (threshold=3)")
+                
+                # Proximity bonus - thưởng khi đến gần destination (tăng scale)
+                if dist_to_dest < 1000000:  # Trong 1000km
+                    proximity_bonus = (1000000 - dist_to_dest) / 1000000.0 * self.proximity_bonus_scale * 2.0
+                    reward += proximity_bonus
+                elif dist_to_dest < 2000000:  # Trong 2000km
+                    proximity_bonus = (2000000 - dist_to_dest) / 2000000.0 * self.proximity_bonus_scale
+                    reward += proximity_bonus
+                
+                # Node quality reward - MỤC TIÊU THỨ 2 (sau khi giảm hop/distance)
+                node_quality = self.state_builder._compute_node_quality(next_node)
+                quality_reward = node_quality * self.quality_reward_scale  # 0-10.0 points
+                reward += quality_reward
+                
+                # Extra bonus for EXCELLENT nodes (quality > 0.8) - Giảm để không override hop penalty
+                if node_quality > 0.8:
+                    excellent_bonus = 5.0  # Giảm từ 15.0 → 5.0
+                    reward += excellent_bonus
+                    logger.debug(f"✨ Excellent node bonus: {excellent_bonus} (quality={node_quality:.2f})")
+                # Bonus for GOOD nodes (quality > 0.6)
+                elif node_quality > 0.6:
+                    good_bonus = 3.0  # Giảm từ 8.0 → 3.0
+                    reward += good_bonus
+                    logger.debug(f"✅ Good node bonus: {good_bonus} (quality={node_quality:.2f})")
+                # Penalty for BAD nodes (quality < 0.3) - GIỮNGUYÊN vì tránh node tồi vẫn quan trọng
+                elif node_quality < 0.3:
+                    bad_penalty = -20.0  # Giữ nguyên
+                    reward += bad_penalty
+                    logger.debug(f"❌ Bad node penalty: {bad_penalty} (quality={node_quality:.2f})")
+                
+                # Resource utilization penalty - SỬ DỤNG UTILIZATION THỰC TẾ
             # Nhiều terminals quanh GS → utilization cao → RL nên tìm đường vòng qua GS khác
             # next_node_utilization đã được tính ở trên (bao gồm connection count)
             estimated_utilization = min(100.0, next_node_utilization)
@@ -699,6 +716,66 @@ class RoutingEnvironment(gym.Env):
             filtered = nodes_sorted[:max(3, len(nodes) // 2)]
         
         return filtered
+    
+    def _calculate_dijkstra_aligned_reward(
+        self,
+        current_node: Dict,
+        next_node: Dict,
+        distance: float,
+        dest_terminal_pos: Dict
+    ) -> float:
+        """
+        Phase 1 Enhancement: Calculate reward aligned với Dijkstra's edge weights
+        Match logic từ calculate_path_dijkstra()
+        
+        Args:
+            current_node: Current node in path
+            next_node: Next node to visit
+            distance: Distance from current to next (in meters)
+            dest_terminal_pos: Destination terminal position
+            
+        Returns:
+            Reward value (negative = cost, positive = bonus)
+        """
+        # Base reward = negative distance (giống Dijkstra's base weight)
+        base_distance_km = distance / 1000.0
+        base_reward = -base_distance_km  # Negative distance as base cost
+        
+        # Get max utilization (match Dijkstra's get_node_utilization)
+        cpu = next_node.get('cpu', {}).get('utilization', 0)
+        mem = next_node.get('memory', {}).get('utilization', 0)
+        bw = next_node.get('bandwidth', {}).get('utilization', 0)
+        max_util = max(cpu, mem, bw)
+        
+        # Drop penalty (match drop_threshold = 95%)
+        if max_util >= self.drop_threshold:
+            return -1000.0  # Huge penalty, effectively drop node
+        
+        # Resource penalty (match penalty_threshold = 80%, multiplier = 3.0x)
+        if max_util >= self.penalty_threshold:
+            excess = (max_util - self.penalty_threshold) / (100 - self.penalty_threshold)  # 0.0 to 1.0
+            penalty = base_distance_km * (self.penalty_multiplier - 1.0) * excess
+            base_reward -= penalty
+        
+        # Progress reward (closer to destination = better)
+        current_pos = current_node.get('position')
+        next_pos = next_node.get('position')
+        
+        if current_pos and next_pos and dest_terminal_pos:
+            current_to_dest = self._calculate_distance(current_pos, dest_terminal_pos)
+            next_to_dest = self._calculate_distance(next_pos, dest_terminal_pos)
+            
+            progress_km = (current_to_dest - next_to_dest) / 1000.0  # km
+            progress_reward = progress_km * 10.0  # Scale: 10 points per km progress
+            
+            # Success reward (reached destination)
+            if next_to_dest < 1000:  # Within 1km of destination
+                return 200.0  # Large success reward
+            
+            return base_reward + progress_reward
+        
+        # Fallback if positions not available
+        return base_reward
     
     def get_path_result(self) -> Dict:
         """Get final path result - đảm bảo format đúng và đầy đủ"""

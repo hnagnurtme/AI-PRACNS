@@ -24,10 +24,14 @@ class RoutingStateBuilder:
         self.max_nodes = state_config.get('max_nodes', 30)  # Cân bằng giữa info và performance
         self.max_terminals = state_config.get('max_terminals', 2)
         
-        # Tinh gọn features nhưng vẫn giữ thông tin quan trọng
-        self.node_feature_dim = 12  # Tối ưu từ 15
-        self.terminal_feature_dim = 6  # Tối ưu từ 8  
-        self.global_feature_dim = 8  # Tối ưu từ 10
+        # Phase 1 Enhancement: Thêm Dijkstra-like features
+        # Tăng node_feature_dim từ 12 → 18 để capture đủ thông tin như Dijkstra
+        self.node_feature_dim = state_config.get('node_feature_dim', 18)  # Increased from 12
+        self.terminal_feature_dim = 6  # Giữ nguyên
+        self.global_feature_dim = 8  # Giữ nguyên
+        
+        # Enable Dijkstra-aware features
+        self.include_dijkstra_features = state_config.get('include_dijkstra_features', True)
         
         self.state_dim = (
             self.max_nodes * self.node_feature_dim +
@@ -251,7 +255,10 @@ class RoutingStateBuilder:
         current_node: Optional[Dict],
         visited_nodes: Optional[List[str]]
     ) -> np.ndarray:
-        """Xây dựng features node tối ưu"""
+        """
+        Xây dựng features node tối ưu với Dijkstra-like features (Phase 1 Enhancement)
+        Features: 18 dimensions (increased from 12)
+        """
         features = np.zeros((self.max_nodes, self.node_feature_dim))
         
         source_pos = source_terminal.get('position')
@@ -266,7 +273,8 @@ class RoutingStateBuilder:
             pos = node.get('position', {})
             node_id = node.get('nodeId')
             
-            # 1. Resource features (tối ưu hóa)
+            # ===== EXISTING FEATURES (0-11) =====
+            # 1. Resource features
             features[i, 0] = node.get('resourceUtilization', 0) / 100.0
             capacity = max(node.get('packetBufferCapacity', 1000), 1)
             features[i, 1] = min(node.get('currentPacketCount', 0) / capacity, 1.0)
@@ -282,7 +290,7 @@ class RoutingStateBuilder:
             features[i, 6] = 1.0 if node.get('isOperational', True) else 0.0
             features[i, 7] = 1.0 if node_id in visited_set else 0.0
             
-            # 4. Position features (tối ưu)
+            # 4. Position features
             if dest_pos and pos:
                 dist_to_dest = self._calculate_distance(pos, dest_pos)
                 features[i, 8] = min(dist_to_dest / 20000000.0, 1.0)
@@ -291,7 +299,7 @@ class RoutingStateBuilder:
                 dist_to_current = self._calculate_distance(current_pos, pos)
                 features[i, 9] = min(dist_to_current / 1000000.0, 1.0)
             
-            # 5. Node type (optimized encoding)
+            # 5. Node type (legacy encoding - will be replaced by one-hot)
             node_type = node.get('nodeType', 'UNKNOWN')
             type_encoding = {
                 'SATELLITE': 0.2,
@@ -303,7 +311,78 @@ class RoutingStateBuilder:
             # 6. Quality score tổng hợp
             features[i, 11] = self._compute_node_quality(node)
             
+            # ===== NEW DIJKSTRA-LIKE FEATURES (12-17) =====
+            if self.include_dijkstra_features and self.node_feature_dim >= 18:
+                # 12. Separate CPU utilization (match Dijkstra's get_node_utilization)
+                cpu_util = node.get('cpu', {}).get('utilization', 0) / 100.0
+                features[i, 12] = cpu_util
+                
+                # 13. Separate Memory utilization
+                mem_util = node.get('memory', {}).get('utilization', 0) / 100.0
+                features[i, 13] = mem_util
+                
+                # 14. Separate Bandwidth utilization
+                bw_util = node.get('bandwidth', {}).get('utilization', 0) / 100.0
+                features[i, 14] = bw_util
+                
+                # 15. Max utilization (like Dijkstra's max(cpu, mem, bw))
+                max_util = max(cpu_util, mem_util, bw_util)
+                features[i, 15] = max_util
+                
+                # 16. Dijkstra edge weight estimate (normalized)
+                if current_node and current_pos and pos:
+                    dijkstra_weight = self._estimate_dijkstra_edge_weight(
+                        current_node, node, current_pos, pos
+                    )
+                    features[i, 16] = min(dijkstra_weight / 10000.0, 10.0)  # Cap at 10.0
+                else:
+                    features[i, 16] = 0.0
+                
+                # 17. Distance to source (normalized)
+                if source_pos and pos:
+                    dist_to_source = self._calculate_distance(pos, source_pos)
+                    features[i, 17] = min(dist_to_source / 20000000.0, 1.0)
+                else:
+                    features[i, 17] = 0.0
+            
         return features
+    
+    def _estimate_dijkstra_edge_weight(
+        self,
+        current_node: Dict,
+        next_node: Dict,
+        current_pos: Dict,
+        next_pos: Dict,
+        drop_threshold: float = 95.0,
+        penalty_threshold: float = 80.0,
+        penalty_multiplier: float = 3.0
+    ) -> float:
+        """
+        Estimate Dijkstra edge weight cho next_node
+        Match logic từ calculate_path_dijkstra()
+        """
+        # Base distance (in km)
+        distance_m = self._calculate_distance(current_pos, next_pos)
+        base_distance_km = distance_m / 1000.0
+        
+        # Get max utilization (like Dijkstra's get_node_utilization)
+        cpu = next_node.get('cpu', {}).get('utilization', 0)
+        mem = next_node.get('memory', {}).get('utilization', 0)
+        bw = next_node.get('bandwidth', {}).get('utilization', 0)
+        max_util = max(cpu, mem, bw)
+        
+        # Drop check (match drop_threshold = 95%)
+        if max_util >= drop_threshold:
+            return float('inf')  # Effectively drop node
+        
+        # Resource penalty (match penalty_threshold = 80%, multiplier = 3.0x)
+        if max_util >= penalty_threshold:
+            excess = (max_util - penalty_threshold) / (100 - penalty_threshold)
+            penalty = base_distance_km * (penalty_multiplier - 1.0) * excess
+            return base_distance_km + penalty
+        
+        # No penalty
+        return base_distance_km
     
     def _build_optimized_terminal_features(
         self,
