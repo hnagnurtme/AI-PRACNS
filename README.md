@@ -13,7 +13,7 @@ A **Deep Reinforcement Learning-based routing system** for optimizing routing in
 >
 > <h4 align="center">
 >   <a href="#" target="_blank">
->     Project-Based Learning 3 (PBL3) – DUT
+>     Project-Based Learning 4 (PBL4) – DUT
 >   </a>
 > </h4>
 
