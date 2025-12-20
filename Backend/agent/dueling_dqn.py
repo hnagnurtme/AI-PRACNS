@@ -439,6 +439,14 @@ class DuelingDQNAgent:
                 action = torch.multinomial(action_probs, 1).item()
             else:
                 action = q_values.argmax().item()
+            
+            if deterministic:
+                max_q = q_values.max().item()
+                if max_q < -100:
+                    logger.warning(
+                        f"All Q-values are very low in deterministic mode: {max_q:.2f}. "
+                        f"This may indicate the model needs more training or the state is problematic."
+                    )
         
         return action
     
