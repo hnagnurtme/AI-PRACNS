@@ -78,10 +78,10 @@ state_builder:
 
 # Optimized Training Configuration
 training:
-  # Episode Settings
-  max_episodes: 2000  # More episodes for better learning
-  max_steps_per_episode: 15  # Reduced for faster episodes
-  eval_frequency: 50  # More frequent evaluation
+  max_episodes: 5000
+  max_steps_per_episode: 15
+  eval_frequency: 25
+  adaptive_max_steps: true
   
   # Advanced Training Features
   target_update_frequency: 100
@@ -126,9 +126,11 @@ curriculum:
 # Imitation Learning Configuration
 imitation_learning:
   enabled: true
-  use_dagger: true  # Dataset Aggregation
-  expert_ratio: 0.3  # 30% expert actions initially
-  bc_loss_weight: 0.5  # Behavior Cloning loss weight
+  use_dagger: true
+  expert_ratio: 0.3
+  bc_loss_weight: 0.5
+  num_demos: 500
+  use_weighted_demos: true
 
 # Multi-objective Optimization Configuration
 multi_objective:

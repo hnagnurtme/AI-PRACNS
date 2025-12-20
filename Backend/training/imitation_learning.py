@@ -8,6 +8,17 @@ import torch.nn.functional as F
 from typing import Dict, List, Tuple, Optional
 import logging
 from collections import deque
+from environment.constants import (
+    STRATIFIED_NEAR_RATIO, STRATIFIED_MEDIUM_RATIO, STRATIFIED_FAR_RATIO,
+    STRATIFIED_VERY_FAR_RATIO, STRATIFIED_NEAR_DISTANCE_KM,
+    STRATIFIED_MEDIUM_DISTANCE_KM, STRATIFIED_FAR_DISTANCE_KM,
+    DEMO_SIMILARITY_THRESHOLD, DEMO_LOG_FREQUENCY, M_TO_KM,
+    PATH_QUALITY_LONG_THRESHOLD, PATH_QUALITY_MEDIUM_THRESHOLD,
+    PATH_QUALITY_SHORT_THRESHOLD, PATH_QUALITY_LONG_MULTIPLIER,
+    PATH_QUALITY_MEDIUM_MULTIPLIER, PATH_QUALITY_SHORT_MULTIPLIER,
+    PATH_QUALITY_UTIL_HIGH_THRESHOLD, PATH_QUALITY_UTIL_MEDIUM_THRESHOLD,
+    PATH_QUALITY_UTIL_LOW_THRESHOLD
+)
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +38,9 @@ class ExpertDemonstration:
         self.actions = actions
         self.rewards = rewards
         self.path = path
-        self.algorithm = algorithm  # 'dijkstra' or 'astar'
+        self.algorithm = algorithm
+        self.weight = 1.0
+        self.category = None
 
 
 class ImitationLearning:
@@ -54,6 +67,131 @@ class ImitationLearning:
         self.mixing_ratio = 1.0  # Start with 100% expert
         
         logger.info(f"Imitation Learning initialized (DAGGER: {self.use_dagger})")
+    
+    def generate_comprehensive_demos(
+        self,
+        terminals: List[Dict],
+        nodes: List[Dict],
+        num_demos: int = 500
+    ) -> int:
+        """Generate diverse expert demonstrations with stratified sampling"""
+        logger.info(f"Generating {num_demos} comprehensive expert demonstrations...")
+        
+        scenarios = []
+        terminal_pairs = []
+        
+        for i, source in enumerate(terminals):
+            for j, dest in enumerate(terminals):
+                if i != j:
+                    distance = self._calculate_terminal_distance(source, dest)
+                    terminal_pairs.append((source, dest, distance))
+        
+        if len(terminal_pairs) == 0:
+            logger.warning("No terminal pairs available for demonstrations")
+            return 0
+        
+        near_pairs = [(s, d) for s, d, dist in terminal_pairs if dist < STRATIFIED_NEAR_DISTANCE_KM]
+        medium_pairs = [(s, d) for s, d, dist in terminal_pairs 
+                        if STRATIFIED_NEAR_DISTANCE_KM <= dist < STRATIFIED_MEDIUM_DISTANCE_KM]
+        far_pairs = [(s, d) for s, d, dist in terminal_pairs 
+                     if STRATIFIED_MEDIUM_DISTANCE_KM <= dist < STRATIFIED_FAR_DISTANCE_KM]
+        very_far_pairs = [(s, d) for s, d, dist in terminal_pairs if dist >= STRATIFIED_FAR_DISTANCE_KM]
+        
+        import random
+        
+        num_near = int(num_demos * STRATIFIED_NEAR_RATIO)
+        num_medium = int(num_demos * STRATIFIED_MEDIUM_RATIO)
+        num_far = int(num_demos * STRATIFIED_FAR_RATIO)
+        num_very_far = int(num_demos * STRATIFIED_VERY_FAR_RATIO)
+        
+        for _ in range(num_near):
+            if near_pairs:
+                scenarios.append((*random.choice(near_pairs), 'near'))
+        
+        for _ in range(num_medium):
+            if medium_pairs:
+                scenarios.append((*random.choice(medium_pairs), 'medium'))
+            elif near_pairs:
+                scenarios.append((*random.choice(near_pairs), 'medium'))
+        
+        for _ in range(num_far):
+            if far_pairs:
+                scenarios.append((*random.choice(far_pairs), 'far'))
+            elif medium_pairs:
+                scenarios.append((*random.choice(medium_pairs), 'far'))
+        
+        for _ in range(num_very_far):
+            if very_far_pairs:
+                scenarios.append((*random.choice(very_far_pairs), 'very_far'))
+            elif far_pairs:
+                scenarios.append((*random.choice(far_pairs), 'very_far'))
+        
+        while len(scenarios) < num_demos:
+            source, dest = random.choice(terminal_pairs)[:2]
+            scenarios.append((source, dest, 'random'))
+        
+        successful_demos = 0
+        for i, (source, dest, category) in enumerate(scenarios):
+            if (i + 1) % DEMO_LOG_FREQUENCY == 0:
+                logger.info(f"Generated {i + 1}/{len(scenarios)} demonstrations...")
+            
+            demo = self.generate_expert_demonstration(
+                source, dest, nodes, algorithm='dijkstra'
+            )
+            
+            if demo:
+                quality = self._calculate_path_quality(demo.path, nodes)
+                demo.weight = quality
+                demo.category = category
+                self.add_demonstration(demo)
+                successful_demos += 1
+        
+        logger.info(f"Successfully generated {successful_demos}/{num_demos} demonstrations")
+        return successful_demos
+    
+    def _calculate_terminal_distance(self, source: Dict, dest: Dict) -> float:
+        """Calculate distance between two terminals in km"""
+        from environment.state_builder import RoutingStateBuilder
+        state_builder = RoutingStateBuilder(self.config)
+        
+        source_pos = source.get('position')
+        dest_pos = dest.get('position')
+        
+        if not source_pos or not dest_pos:
+            return float('inf')
+        
+        distance_m = state_builder._calculate_distance(source_pos, dest_pos)
+        return distance_m / M_TO_KM
+    
+    def _calculate_path_quality(self, path: List[Dict], nodes: List[Dict]) -> float:
+        """Calculate path quality score (0.0 to 1.0)"""
+        if not path or len(path) < 3:
+            return 0.0
+        
+        quality_score = 1.0
+        
+        if len(path) > PATH_QUALITY_LONG_THRESHOLD:
+            quality_score *= PATH_QUALITY_LONG_MULTIPLIER
+        elif len(path) > PATH_QUALITY_MEDIUM_THRESHOLD:
+            quality_score *= PATH_QUALITY_MEDIUM_MULTIPLIER
+        elif len(path) > PATH_QUALITY_SHORT_THRESHOLD:
+            quality_score *= PATH_QUALITY_SHORT_MULTIPLIER
+        
+        node_map = {n['nodeId']: n for n in nodes}
+        for path_item in path:
+            if path_item.get('type') == 'node':
+                node_id = path_item.get('id')
+                node = node_map.get(node_id)
+                if node:
+                    utilization = node.get('resourceUtilization', 0)
+                    if utilization > PATH_QUALITY_UTIL_HIGH_THRESHOLD:
+                        quality_score *= PATH_QUALITY_LONG_MULTIPLIER
+                    elif utilization > PATH_QUALITY_UTIL_MEDIUM_THRESHOLD:
+                        quality_score *= PATH_QUALITY_MEDIUM_MULTIPLIER
+                    elif utilization > PATH_QUALITY_UTIL_LOW_THRESHOLD:
+                        quality_score *= PATH_QUALITY_SHORT_MULTIPLIER
+        
+        return max(0.0, min(1.0, quality_score))
     
     def generate_expert_demonstration(
         self,
@@ -349,7 +487,7 @@ class ImitationLearning:
                     best_demo = demo
                     best_idx = i
         
-        if best_demo and best_similarity > 0.7:  # Threshold
+        if best_demo and best_similarity > DEMO_SIMILARITY_THRESHOLD:
             if best_idx < len(best_demo.actions):
                 return best_demo.actions[best_idx]
         

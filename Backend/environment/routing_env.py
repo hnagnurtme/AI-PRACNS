@@ -32,7 +32,10 @@ from environment.constants import (
     UTILIZATION_MEDIUM_PERCENT, UTILIZATION_MAX_PERCENT,
     TERMINAL_UTILIZATION_IMPACT, GS_CONNECTION_OVERLOADED, GS_CONNECTION_HIGH,
     BATTERY_MAX_PERCENT, DIJKSTRA_DROP_THRESHOLD, DIJKSTRA_PENALTY_THRESHOLD,
-    DIJKSTRA_PENALTY_MULTIPLIER, DIJKSTRA_PROGRESS_SCALE
+    DIJKSTRA_PENALTY_MULTIPLIER, DIJKSTRA_PROGRESS_SCALE,
+    PROGRESS_CHECK_MIN_STEPS, PROGRESS_CHECK_WINDOW_SIZE,
+    PROGRESS_MIN_THRESHOLD_M, PROGRESS_NO_PROGRESS_PENALTY,
+    ADAPTIVE_MAX_STEPS_NETWORK_DIVISOR, ADAPTIVE_MAX_STEPS_MULTIPLIER
 )
 
 logger = logging.getLogger(__name__)
@@ -73,7 +76,23 @@ class RoutingEnvironment(gym.Env):
         self.config = config or {}
         self.nodes = nodes
         self.terminals = terminals
-        self.max_steps = max_steps
+        
+        training_config = self.config.get('training', {})
+        adaptive_max_steps = training_config.get('adaptive_max_steps', True)
+        
+        if adaptive_max_steps:
+            base_max_steps = max_steps
+            network_size = len(nodes)
+            estimated_max_hops = min(
+                network_size // ADAPTIVE_MAX_STEPS_NETWORK_DIVISOR,
+                base_max_steps * ADAPTIVE_MAX_STEPS_MULTIPLIER
+            )
+            self.max_steps = max(base_max_steps, estimated_max_hops)
+            self.adaptive_max_steps = True
+            logger.info(f"Dynamic max_steps: {self.max_steps} (network_size={network_size}, base={base_max_steps})")
+        else:
+            self.max_steps = max_steps
+            self.adaptive_max_steps = False
         
         self.state_builder = RoutingStateBuilder(config)
         
@@ -184,6 +203,13 @@ class RoutingEnvironment(gym.Env):
         self.total_distance = 0.0
         self.total_latency = 0.0
         
+        self.recent_distances = deque(maxlen=PROGRESS_CHECK_WINDOW_SIZE)
+        initial_dist = self._calculate_distance(
+            self.current_node.get('position'),
+            self.dest_terminal.get('position')
+        )
+        self.recent_distances.append(initial_dist)
+        
         state = self.state_builder.build_state(
             nodes=self.nodes,
             source_terminal=self.source_terminal,
@@ -281,6 +307,25 @@ class RoutingEnvironment(gym.Env):
         
         dest_pos = self.dest_terminal.get('position')
         dist_to_dest = self._calculate_distance(next_pos, dest_pos)
+        
+        if self.step_count > PROGRESS_CHECK_MIN_STEPS:
+            recent_progress = self._check_recent_progress(dist_to_dest)
+            if not recent_progress:
+                state = self.state_builder.build_state(
+                    self.nodes, self.source_terminal, self.dest_terminal,
+                    self.current_node, self.service_qos, list(self.visited_nodes)
+                )
+                info = {
+                    'path': self.path.copy(),
+                    'current_node': next_node_id,
+                    'distance_to_dest': dist_to_dest,
+                    'hops': len(self.path) - 1,
+                    'reason': 'no_progress'
+                }
+                return state, PROGRESS_NO_PROGRESS_PENALTY, False, True, info
+        
+        # Update recent distances tracking
+        self.recent_distances.append(dist_to_dest)
         
         reached_dest_gs = False
         if hasattr(self, 'dest_ground_station') and self.dest_ground_station:
@@ -694,6 +739,20 @@ class RoutingEnvironment(gym.Env):
             return base_reward + progress_reward
         
         return base_reward
+    
+    def _check_recent_progress(self, current_dist: float) -> bool:
+        """Check if agent is making progress towards destination"""
+        if len(self.recent_distances) < PROGRESS_CHECK_WINDOW_SIZE:
+            return True
+        
+        last_distances = list(self.recent_distances)[-PROGRESS_CHECK_WINDOW_SIZE:]
+        total_progress = last_distances[0] - current_dist
+        
+        if total_progress < PROGRESS_MIN_THRESHOLD_M:
+            logger.debug(f"No progress detected: {total_progress:.1f}m in last {PROGRESS_CHECK_WINDOW_SIZE} steps")
+            return False
+        
+        return True
     
     def get_path_result(self) -> Dict:
         """Get final path result - đảm bảo format đúng và đầy đủ"""

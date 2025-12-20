@@ -90,10 +90,11 @@ class EnhancedRoutingTrainer(RoutingTrainer):
         logger.info(f"Starting enhanced training: {max_episodes} episodes")
         logger.info(f"State dim: {state_dim}, Action dim: {action_dim}")
         
-        # Generate expert demonstrations nếu dùng imitation learning
         if self.use_imitation and len(self.imitation.expert_demos) == 0:
             logger.info("Generating expert demonstrations...")
-            self._generate_expert_demos(terminals, nodes, num_demos=50)
+            imitation_config = self.config.get('imitation_learning', {})
+            num_demos = imitation_config.get('num_demos', 500)
+            self.imitation.generate_comprehensive_demos(terminals, nodes, num_demos=num_demos)
         
         # Training loop
         for episode in range(max_episodes):
@@ -344,33 +345,8 @@ class EnhancedRoutingTrainer(RoutingTrainer):
         self,
         terminals: List[Dict],
         nodes: List[Dict],
-        num_demos: int = 50
+        num_demos: int = 500
     ):
-        """Generate expert demonstrations"""
-        logger.info(f"Generating {num_demos} expert demonstrations...")
-        
-        demo_count = 0
-        attempts = 0
-        max_attempts = num_demos * 3
-        
-        while demo_count < num_demos and attempts < max_attempts:
-            attempts += 1
-            
-            if len(terminals) < 2:
-                break
-            
-            indices = np.random.choice(len(terminals), size=2, replace=False)
-            source = terminals[indices[0]]
-            dest = terminals[indices[1]]
-            
-            # Generate Dijkstra demonstration
-            demo = self.imitation.generate_expert_demonstration(
-                source, dest, nodes, algorithm='dijkstra'
-            )
-            
-            if demo:
-                self.imitation.add_demonstration(demo)
-                demo_count += 1
-        
-        logger.info(f"Generated {demo_count} expert demonstrations")
+        """Generate expert demonstrations using comprehensive method"""
+        self.imitation.generate_comprehensive_demos(terminals, nodes, num_demos=num_demos)
 

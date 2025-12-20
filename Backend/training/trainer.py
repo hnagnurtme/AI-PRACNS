@@ -30,18 +30,16 @@ class RoutingTrainer:
     def __init__(self, config: Dict = None):
         self.config = config or Config.get_yaml_config()
         
-        # Training config với optimizations
         training_config = self.config.get('training', {})
-        self.max_episodes = training_config.get('max_episodes', 2000)  # Tăng episodes
+        self.max_episodes = training_config.get('max_episodes', 5000)
         self.max_steps_per_episode = training_config.get('max_steps_per_episode', 15)
-        self.eval_frequency = training_config.get('eval_frequency', 50)  # Thường xuyên hơn
-        self.eval_episodes = training_config.get('eval_episodes', 20)  # Nhiều episodes hơn
+        self.eval_frequency = training_config.get('eval_frequency', 25)
+        self.eval_episodes = training_config.get('eval_episodes', 20)
         self.save_frequency = training_config.get('save_frequency', 100)
         
-        # Advanced training parameters
         self.target_update_frequency = training_config.get('target_update_frequency', 100)
         self.gradient_clip = training_config.get('gradient_clip', 1.0)
-        self.early_stopping_patience = training_config.get('early_stopping_patience', 50)
+        self.early_stopping_patience = training_config.get('early_stopping_patience', 100)
         
         # Model paths
         rl_config = self.config.get('rl_agent', {})
