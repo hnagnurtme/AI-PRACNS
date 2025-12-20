@@ -86,7 +86,7 @@ training:
   # Advanced Training Features
   target_update_frequency: 100
   gradient_clip: 1.0
-  early_stopping_patience: 50
+  early_stopping_patience: 100  # Phase 2: Increased from 50 to 100
   
   # Evaluation
   eval_episodes: 20  # More episodes for stable metrics

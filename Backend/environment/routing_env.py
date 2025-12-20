@@ -80,19 +80,22 @@ class RoutingEnvironment(gym.Env):
         training_config = self.config.get('training', {})
         adaptive_max_steps = training_config.get('adaptive_max_steps', True)
         
+        base_max_steps = max_steps
+        network_size = len(nodes)
+        
         if adaptive_max_steps:
-            base_max_steps = max_steps
-            network_size = len(nodes)
             estimated_max_hops = min(
                 network_size // ADAPTIVE_MAX_STEPS_NETWORK_DIVISOR,
                 base_max_steps * ADAPTIVE_MAX_STEPS_MULTIPLIER
             )
             self.max_steps = max(base_max_steps, estimated_max_hops)
             self.adaptive_max_steps = True
-            logger.info(f"Dynamic max_steps: {self.max_steps} (network_size={network_size}, base={base_max_steps})")
+            if self.max_steps > base_max_steps:
+                logger.info(f"Dynamic max_steps: {self.max_steps} (network_size={network_size}, base={base_max_steps})")
         else:
             self.max_steps = max_steps
             self.adaptive_max_steps = False
+            logger.debug(f"Fixed max_steps: {self.max_steps} (adaptive disabled)")
         
         self.state_builder = RoutingStateBuilder(config)
         
@@ -235,6 +238,9 @@ class RoutingEnvironment(gym.Env):
         """Step function with reward engineering"""
         self.step_count += 1
         
+        # Initialize progress to 0.0 to avoid UnboundLocalError
+        progress = 0.0
+        
         filtered_nodes = self.state_builder._smart_node_filtering(
             self.nodes, self.source_terminal, self.dest_terminal, 
             self.current_node, list(self.visited_nodes)
@@ -251,7 +257,16 @@ class RoutingEnvironment(gym.Env):
                     self.nodes, self.source_terminal, self.dest_terminal,
                     self.current_node, self.service_qos, list(self.visited_nodes)
                 )
-                return state, self.failure_penalty, True, False, {'error': 'no_valid_nodes'}
+                info = {
+                    'path': self.path.copy(),
+                    'current_node': self.current_node.get('nodeId') if self.current_node else None,
+                    'distance_to_dest': 0.0,
+                    'hops': len(self.path) - 1,
+                    'terminated': True,
+                    'progress': 0.0,
+                    'error': 'no_valid_nodes'
+                }
+                return state, self.failure_penalty, True, False, info
         else:
             next_node = filtered_nodes[action]
         
@@ -260,6 +275,18 @@ class RoutingEnvironment(gym.Env):
             reward = REWARD_LOOP_PENALTY
             terminated = False
             truncated = self.step_count >= self.max_steps
+            
+            # Calculate progress for loop case
+            dest_pos = self.dest_terminal.get('position')
+            next_pos = next_node.get('position')
+            if dest_pos and self.current_node and self.current_node.get('position') and next_pos:
+                current_dist = self._calculate_distance(
+                    self.current_node.get('position'), dest_pos
+                )
+                next_dist = self._calculate_distance(next_pos, dest_pos)
+                progress = current_dist - next_dist
+            else:
+                progress = 0.0
             
             state = self.state_builder.build_state(
                 self.nodes, self.source_terminal, self.dest_terminal,
@@ -270,7 +297,9 @@ class RoutingEnvironment(gym.Env):
                 'path': self.path.copy(),
                 'loop_detected': True,
                 'current_node': next_node_id,
-                'hops': len(self.path) - 1
+                'hops': len(self.path) - 1,
+                'terminated': terminated,
+                'progress': progress
             }
             return state, reward, terminated, truncated, info
         
@@ -308,6 +337,12 @@ class RoutingEnvironment(gym.Env):
         dest_pos = self.dest_terminal.get('position')
         dist_to_dest = self._calculate_distance(next_pos, dest_pos)
         
+        # Calculate progress for info dict (used in all cases)
+        prev_dist = self._calculate_distance(
+            self.current_node.get('position'), dest_pos
+        )
+        progress = prev_dist - dist_to_dest
+        
         if self.step_count > PROGRESS_CHECK_MIN_STEPS:
             recent_progress = self._check_recent_progress(dist_to_dest)
             if not recent_progress:
@@ -320,6 +355,8 @@ class RoutingEnvironment(gym.Env):
                     'current_node': next_node_id,
                     'distance_to_dest': dist_to_dest,
                     'hops': len(self.path) - 1,
+                    'terminated': False,
+                    'progress': progress,
                     'reason': 'no_progress'
                 }
                 return state, PROGRESS_NO_PROGRESS_PENALTY, False, True, info
@@ -398,11 +435,7 @@ class RoutingEnvironment(gym.Env):
                 reward += self.step_penalty
                 reward += self.hop_penalty
             else:
-                prev_dist = self._calculate_distance(
-                    self.current_node.get('position'), dest_pos
-                )
-                progress = prev_dist - dist_to_dest
-                
+                # Progress already calculated above, reuse it
                 if progress > 0:
                     reward += progress / PROGRESS_DIVISOR_M * self.progress_reward_scale
                 else:
