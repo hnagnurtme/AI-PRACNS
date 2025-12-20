@@ -1,9 +1,9 @@
 """
 Network Analyzer Service
-Sử dụng RL model để phân tích network và đưa ra recommendations:
-- Phát hiện nodes quá tải
-- Đề xuất vị trí thêm nodes
-- Dự đoán chất lượng liên kết theo thời gian
+Analyzes network using RL insights and provides recommendations:
+- Detect overloaded nodes
+- Recommend node placement locations
+- Predict link quality over time
 """
 import numpy as np
 import logging
@@ -12,7 +12,59 @@ from datetime import datetime, timedelta
 import math
 from collections import defaultdict
 
+from environment.constants import (
+    EARTH_RADIUS_M, M_TO_KM, KM_TO_M,
+    UTILIZATION_HIGH_PERCENT, UTILIZATION_MEDIUM_PERCENT,
+    UTILIZATION_CRITICAL_PERCENT, UTILIZATION_MAX_PERCENT,
+    BATTERY_MAX_PERCENT, PACKET_LOSS_HIGH,
+    DISTANCE_NEAR_DEST_M, DISTANCE_CLOSE_DEST_M, DISTANCE_FAR_DEST_M,
+    SPEED_OF_LIGHT_MPS, MS_PER_SECOND
+)
+
 logger = logging.getLogger(__name__)
+
+# Network Analyzer specific constants
+OVERLOAD_SCORE_WEIGHT_UTILIZATION = 0.4
+OVERLOAD_SCORE_WEIGHT_PACKET_LOSS = 0.3
+OVERLOAD_SCORE_WEIGHT_QUEUE = 0.2
+OVERLOAD_SCORE_WEIGHT_BATTERY = 0.1
+AT_RISK_SCORE_THRESHOLD = 0.6
+
+OVERLOAD_UTILIZATION_THRESHOLD = UTILIZATION_HIGH_PERCENT
+OVERLOAD_PACKET_LOSS_THRESHOLD = 0.05
+OVERLOAD_QUEUE_RATIO_THRESHOLD = 0.7
+OVERLOAD_UTILIZATION_MEDIUM = UTILIZATION_MEDIUM_PERCENT
+OVERLOAD_PACKET_LOSS_MEDIUM = 0.03
+
+NEARBY_TERMINAL_RANGE_KM = 500
+NEARBY_NODE_RANGE_KM = 1000
+COVERAGE_GAP_DISTANCE_KM = 2000
+COVERAGE_CHECK_DISTANCE_KM = 2000
+
+LINK_QUALITY_WEIGHT_DISTANCE = 0.4
+LINK_QUALITY_WEIGHT_ELEVATION = 0.3
+LINK_QUALITY_WEIGHT_TYPE = 0.2
+LINK_QUALITY_WEIGHT_ATMOSPHERIC = 0.1
+
+LINK_QUALITY_EXCELLENT = 0.8
+LINK_QUALITY_GOOD = 0.6
+LINK_QUALITY_MODERATE = 0.4
+LINK_LATENCY_EXCELLENT_MS = 100.0
+
+LEO_ORBITAL_VELOCITY_DEG_PER_HOUR = 225.0
+MEO_ORBITAL_VELOCITY_DEG_PER_HOUR = 30.0
+LEO_ORBIT_PERIOD_HOURS = 1.5
+LEO_LATITUDE_VARIATION_DEG = 30.0
+
+GEO_SATELLITE_TYPE_BONUS = 0.35
+MEO_SATELLITE_TYPE_BONUS = 0.25
+LEO_SATELLITE_TYPE_BONUS = 0.15
+
+GEO_BASE_SNR_DB = 25.0
+MEO_BASE_SNR_DB = 20.0
+LEO_BASE_SNR_DB = 15.0
+
+PROCESSING_DELAY_MS = 5.0
 
 
 class NetworkAnalyzer:
@@ -26,8 +78,8 @@ class NetworkAnalyzer:
         nodes: List[Dict],
         terminals: List[Dict],
         db=None,
-        threshold_utilization: float = 0.8,
-        threshold_packet_loss: float = 0.05,
+        threshold_utilization: float = OVERLOAD_UTILIZATION_THRESHOLD / 100.0,
+        threshold_packet_loss: float = OVERLOAD_PACKET_LOSS_THRESHOLD,
         focus_ground_stations: bool = True
     ) -> Dict:
         """
@@ -61,19 +113,18 @@ class NetworkAnalyzer:
             if not node.get('isOperational', True):
                 continue
             
-            utilization = node.get('resourceUtilization', 0) / 100.0
+            utilization = node.get('resourceUtilization', 0) / UTILIZATION_MAX_PERCENT
             packet_loss = node.get('packetLossRate', 0)
-            battery = node.get('batteryChargePercent', 100)
+            battery = node.get('batteryChargePercent', BATTERY_MAX_PERCENT)
             queue_length = node.get('currentPacketCount', 0)
             capacity = node.get('packetBufferCapacity', 1000)
             queue_ratio = queue_length / max(capacity, 1)
             
-            # Tính overload score
             overload_score = (
-                utilization * 0.4 +
-                packet_loss * 0.3 +
-                queue_ratio * 0.2 +
-                (1.0 - battery / 100.0) * 0.1
+                utilization * OVERLOAD_SCORE_WEIGHT_UTILIZATION +
+                packet_loss * OVERLOAD_SCORE_WEIGHT_PACKET_LOSS +
+                queue_ratio * OVERLOAD_SCORE_WEIGHT_QUEUE +
+                (1.0 - battery / BATTERY_MAX_PERCENT) * OVERLOAD_SCORE_WEIGHT_BATTERY
             )
             
             # Get traffic data nếu có
@@ -102,7 +153,7 @@ class NetworkAnalyzer:
             
             if utilization > threshold_utilization or packet_loss > threshold_packet_loss:
                 overloaded.append(node_info)
-            elif overload_score > 0.6:  # At risk
+            elif overload_score > AT_RISK_SCORE_THRESHOLD:
                 at_risk.append(node_info)
         
         # Sort by overload score
@@ -336,14 +387,20 @@ class NetworkAnalyzer:
                 gs_traffic = traffic_analysis['ground_station_traffic'].get(gs.get('nodeId'), {})
                 traffic_load = gs_traffic.get('total_packets', 0) + gs_traffic.get('total_bytes', 0) / 1000
             
-            if utilization > 70 or packet_loss > 0.03 or queue_ratio > 0.7:
+            if (utilization > OVERLOAD_UTILIZATION_MEDIUM or 
+                packet_loss > OVERLOAD_PACKET_LOSS_MEDIUM or 
+                queue_ratio > OVERLOAD_QUEUE_RATIO_THRESHOLD):
                 overloaded_ground_stations.append({
                     'node': gs,
                     'utilization': utilization,
                     'packet_loss': packet_loss,
                     'queue_ratio': queue_ratio,
                     'traffic_load': traffic_load,
-                    'overload_score': (utilization / 100.0) * 0.5 + (packet_loss) * 0.3 + (queue_ratio) * 0.2
+                    'overload_score': (
+                        (utilization / UTILIZATION_MAX_PERCENT) * 0.5 + 
+                        packet_loss * 0.3 + 
+                        queue_ratio * 0.2
+                    )
                 })
         
         # Sort by overload score
@@ -365,23 +422,21 @@ class NetworkAnalyzer:
             if not gs_pos:
                 continue
             
-            # Tìm terminals trong vùng 500km của ground station này
             nearby_terminals = []
             for term in terminals:
                 term_pos = term.get('position')
                 if term_pos:
                     dist = self._haversine_distance(gs_pos, term_pos)
-                    if dist < 500:  # Terminals trong 500km
+                    if dist < NEARBY_TERMINAL_RANGE_KM:
                         nearby_terminals.append({
                             'terminal': term,
                             'position': term_pos,
                             'distance_to_gs': dist
                         })
             
-            # Đếm nodes gần đó (trong 1000km)
             nearby_nodes = sum(
                 1 for np in node_positions
-                if self._haversine_distance(gs_pos, np) < 1000
+                if self._haversine_distance(gs_pos, np) < NEARBY_NODE_RANGE_KM
             )
             
             # Đề xuất vị trí mới để giảm tải
@@ -389,11 +444,10 @@ class NetworkAnalyzer:
             for term_info in nearby_terminals[:3]:  # Top 3 terminals gần nhất
                 term_pos = term_info['position']
                 
-                # Tính priority: cao hơn nếu có nhiều terminals và ít nodes
                 priority = (
-                    len(nearby_terminals) * 10 +  # Nhiều terminals = cao priority
-                    (500 - term_info['distance_to_gs']) / 10 +  # Gần terminals = tốt
-                    -nearby_nodes * 5  # Ít nodes = cao priority
+                    len(nearby_terminals) * 10 +
+                    (NEARBY_TERMINAL_RANGE_KM - term_info['distance_to_gs']) / 10 +
+                    -nearby_nodes * 5
                 )
                 
                 coverage_gaps.append({
@@ -417,15 +471,15 @@ class NetworkAnalyzer:
                     default=float('inf')
                 )
                 
-                if min_dist > 2000:  # > 2000km từ node gần nhất
+                if min_dist > COVERAGE_GAP_DISTANCE_KM:
                     nearby_terminals = sum(
                         1 for tp in terminal_positions
-                        if self._haversine_distance(term_pos, tp) < 1000
+                        if self._haversine_distance(term_pos, tp) < NEARBY_NODE_RANGE_KM
                     )
                     
                     nearby_nodes = sum(
                         1 for np in node_positions
-                        if self._haversine_distance(term_pos, np) < 2000
+                        if self._haversine_distance(term_pos, np) < COVERAGE_GAP_DISTANCE_KM
                     )
                     
                     coverage_gaps.append({
@@ -479,7 +533,7 @@ class NetworkAnalyzer:
         if node_positions:
             covered_terminals = sum(
                 1 for term_pos in terminal_positions
-                if min((self._haversine_distance(term_pos, np) for np in node_positions), default=float('inf')) < 2000
+                if min((self._haversine_distance(term_pos, np) for np in node_positions), default=float('inf')) < COVERAGE_CHECK_DISTANCE_KM
             )
             coverage_percentage = covered_terminals / max(total_terminals, 1) * 100
         else:
@@ -606,7 +660,8 @@ class NetworkAnalyzer:
         a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
         
-        return 6371 * c  # Earth radius in km
+        earth_radius_km = EARTH_RADIUS_M / M_TO_KM
+        return earth_radius_km * c
     
     def _recommend_node_type(self, position: Dict, existing_nodes: List[Dict]) -> str:
         """Đề xuất loại node dựa trên vị trí và existing nodes"""
@@ -649,18 +704,14 @@ class NetworkAnalyzer:
         # Tính thời gian từ hiện tại (sử dụng time_offset_hours từ prediction)
         time_diff_hours = (target_time - datetime.now()).total_seconds() / 3600.0
         
-        # Orbital velocity (degrees per hour) - thêm randomness để tạo variation
         if sat_type == 'LEO_SATELLITE':
-            # LEO: ~15 orbits per day = 360° * 15 / 24 = 225°/hour
-            base_velocity = 225.0
-            # Add some variation based on satellite ID to avoid all sats having same position
+            base_velocity = LEO_ORBITAL_VELOCITY_DEG_PER_HOUR
             sat_id_hash = hash(satellite.get('nodeId', '')) % 100
-            angular_velocity = base_velocity + (sat_id_hash - 50) * 2.0  # ±100°/hour variation
+            angular_velocity = base_velocity + (sat_id_hash - 50) * 2.0
         else:  # MEO
-            # MEO: ~2 orbits per day = 360° * 2 / 24 = 30°/hour
-            base_velocity = 30.0
+            base_velocity = MEO_ORBITAL_VELOCITY_DEG_PER_HOUR
             sat_id_hash = hash(satellite.get('nodeId', '')) % 100
-            angular_velocity = base_velocity + (sat_id_hash - 50) * 0.5  # ±25°/hour variation
+            angular_velocity = base_velocity + (sat_id_hash - 50) * 0.5
         
         # Update longitude
         new_lon = current_pos.get('longitude', 0) + angular_velocity * time_diff_hours
@@ -668,13 +719,11 @@ class NetworkAnalyzer:
         # Normalize longitude to [-180, 180]
         new_lon = ((new_lon + 180) % 360) - 180
         
-        # Add slight latitude oscillation for LEO (inclined orbits)
         base_lat = current_pos.get('latitude', 0)
         if sat_type == 'LEO_SATELLITE':
-            # Oscillate ±30° over orbit period (~90 min)
-            orbit_phase = (time_diff_hours * 360.0 / 1.5) % 360  # degrees
-            lat_variation = 30.0 * math.sin(math.radians(orbit_phase))
-            new_lat = max(-85, min(85, base_lat + lat_variation))  # Clamp to avoid poles
+            orbit_phase = (time_diff_hours * 360.0 / LEO_ORBIT_PERIOD_HOURS) % 360
+            lat_variation = LEO_LATITUDE_VARIATION_DEG * math.sin(math.radians(orbit_phase))
+            new_lat = max(-85, min(85, base_lat + lat_variation))
         else:
             new_lat = base_lat
         
@@ -697,11 +746,10 @@ class NetworkAnalyzer:
         max_distance = 40000.0  # Max possible distance (half Earth circumference)
         distance_quality = 1.0 - min(total_distance_km / max_distance, 1.0)
         
-        # Satellite type bonus (stability and power)
         type_bonus = {
-            'GEO_SATELLITE': 0.35,  # Stable but far
-            'MEO_SATELLITE': 0.25,  # Balanced
-            'LEO_SATELLITE': 0.15   # Close but moving
+            'GEO_SATELLITE': GEO_SATELLITE_TYPE_BONUS,
+            'MEO_SATELLITE': MEO_SATELLITE_TYPE_BONUS,
+            'LEO_SATELLITE': LEO_SATELLITE_TYPE_BONUS
         }.get(sat_type, 0.1)
         
         # Elevation angle factor (simplified - based on satellite position)
@@ -714,39 +762,34 @@ class NetworkAnalyzer:
         avg_lat_diff = abs(sat_lat - (source_lat + dest_lat) / 2.0)
         elevation_quality = 1.0 - min(avg_lat_diff / 90.0, 1.0)  # 0-90° range
         
-        # Atmospheric conditions (add some randomness for realism)
-        import random
-        atmospheric_factor = 0.85 + random.random() * 0.15  # 0.85-1.0
+        # Atmospheric conditions (deterministic based on position hash)
+        pos_hash = hash(f"{satellite_pos.get('latitude', 0)}_{satellite_pos.get('longitude', 0)}") % 100
+        atmospheric_factor = 0.85 + (pos_hash / 100.0) * 0.15
         
-        # Combined quality score
         quality = (
-            distance_quality * 0.4 +      # Distance is most important
-            elevation_quality * 0.3 +     # Elevation angle matters
-            type_bonus * 0.2 +            # Satellite type
-            atmospheric_factor * 0.1      # Environmental factors
+            distance_quality * LINK_QUALITY_WEIGHT_DISTANCE +
+            elevation_quality * LINK_QUALITY_WEIGHT_ELEVATION +
+            type_bonus * LINK_QUALITY_WEIGHT_TYPE +
+            atmospheric_factor * LINK_QUALITY_WEIGHT_ATMOSPHERIC
         )
         
         return max(0.0, min(1.0, quality))
     
     def _estimate_latency(self, distance_km: float) -> float:
         """Estimate latency in ms"""
-        speed_of_light = 299792.458  # km/s
-        propagation_delay = (distance_km / speed_of_light) * 1000  # ms
-        processing_delay = 5.0  # ms per hop
-        return propagation_delay + processing_delay
+        speed_of_light_km_s = SPEED_OF_LIGHT_MPS / M_TO_KM
+        propagation_delay = (distance_km / speed_of_light_km_s) * MS_PER_SECOND
+        return propagation_delay + PROCESSING_DELAY_MS
     
     def _estimate_snr(self, distance_km: float, sat_type: str) -> float:
         """Estimate Signal-to-Noise Ratio in dB"""
-        # Simplified model
         base_snr = {
-            'GEO_SATELLITE': 25.0,
-            'MEO_SATELLITE': 20.0,
-            'LEO_SATELLITE': 15.0
-        }.get(sat_type, 15.0)
+            'GEO_SATELLITE': GEO_BASE_SNR_DB,
+            'MEO_SATELLITE': MEO_BASE_SNR_DB,
+            'LEO_SATELLITE': LEO_BASE_SNR_DB
+        }.get(sat_type, LEO_BASE_SNR_DB)
         
-        # Path loss (simplified)
-        path_loss_db = 20 * math.log10(distance_km / 1000.0)  # Simplified free space path loss
-        
+        path_loss_db = 20 * math.log10(distance_km / M_TO_KM)
         snr = base_snr - path_loss_db
         
         return max(0.0, snr)
@@ -756,12 +799,12 @@ class NetworkAnalyzer:
         quality = link['quality_score']
         latency = link['estimated_latency_ms']
         
-        if quality > 0.8 and latency < 100:
-            return f"Excellent link quality - recommended time for transmission"
-        elif quality > 0.6:
-            return f"Good link quality - acceptable for transmission"
-        elif quality > 0.4:
-            return f"Moderate link quality - consider waiting for better conditions"
+        if quality > LINK_QUALITY_EXCELLENT and latency < LINK_LATENCY_EXCELLENT_MS:
+            return "Excellent link quality - recommended time for transmission"
+        elif quality > LINK_QUALITY_GOOD:
+            return "Good link quality - acceptable for transmission"
+        elif quality > LINK_QUALITY_MODERATE:
+            return "Moderate link quality - consider waiting for better conditions"
         else:
-            return f"Poor link quality - not recommended for transmission"
+            return "Poor link quality - not recommended for transmission"
 
