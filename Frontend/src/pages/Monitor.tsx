@@ -1,23 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { compareAlgorithms } from "../services/routingService";
 import { getUserTerminals } from "../services/userTerminalService";
-import { getScenarios } from "../services/simulationService";
 import { PacketRouteGraph } from "../components/chart/PacketRouteGraph";
 import { CombinedHopMetricsChart } from "../components/chart/CombinedHopMetricsChart";
 
 import type { AlgorithmComparison, CompareAlgorithmsRequest } from "../types/RoutingTypes";
 import type { UserTerminal, QoSRequirements } from "../types/UserTerminalTypes";
 import type { ComparisonData } from "../types/ComparisonTypes";
-import type { SimulationScenario } from "../types/SimulationTypes";
 
 export const ComparisonDashboard: React.FC = () => {
     // State for terminals
     const [ terminals, setTerminals ] = useState<UserTerminal[]>( [] );
     const [ loadingTerminals, setLoadingTerminals ] = useState( false );
-
-    // State for scenarios
-    const [ scenarios, setScenarios ] = useState<SimulationScenario[]>( [] );
-    const [ selectedScenario, setSelectedScenario ] = useState<string>( 'NORMAL' );
 
     // Form state
     const [ sourceTerminalId, setSourceTerminalId ] = useState<string>( "" );
@@ -37,20 +31,16 @@ export const ComparisonDashboard: React.FC = () => {
     const [ error, setError ] = useState<string | null>( null );
     const [ successMessage, setSuccessMessage ] = useState<string | null>( null );
 
-    // Load terminals and scenarios on mount
+    // Load terminals on mount
     useEffect( () => {
         const loadData = async () => {
             setLoadingTerminals( true );
             try {
-                const [ terminalsData, scenariosData ] = await Promise.all( [
-                    getUserTerminals(),
-                    getScenarios()
-                ] );
+                const terminalsData = await getUserTerminals();
                 setTerminals( terminalsData );
-                setScenarios( scenariosData );
             } catch ( err ) {
-                console.error( 'Failed to load data:', err );
-                setError( err instanceof Error ? err.message : 'Failed to load data' );
+                console.error( 'Failed to load terminals:', err );
+                setError( err instanceof Error ? err.message : 'Failed to load terminals' );
             } finally {
                 setLoadingTerminals( false );
             }
@@ -88,7 +78,7 @@ export const ComparisonDashboard: React.FC = () => {
                 algorithm1,
                 algorithm2,
                 serviceQos,
-                scenario: selectedScenario
+                scenario: 'NORMAL'
             };
 
             const result = await compareAlgorithms( request );
@@ -252,33 +242,6 @@ export const ComparisonDashboard: React.FC = () => {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {/* Scenario */ }
-                        <div>
-                            <label htmlFor="scenario" className="block text-sm font-semibold text-fuchsia-600 mb-2 uppercase tracking-wide">
-                                <span className="flex items-center gap-1">
-                                    <span>🌐</span>
-                                    <span>Scenario</span>
-                                </span>
-                            </label>
-                            <select
-                                id="scenario"
-                                value={ selectedScenario }
-                                onChange={ ( e ) => setSelectedScenario( e.target.value ) }
-                                className="block w-full px-4 py-3 border-2 border-violet-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 bg-white"
-                                disabled={ loading }
-                            >
-                                { scenarios.map( ( scenario ) => (
-                                    <option key={ scenario.name } value={ scenario.name }>
-                                        { scenario.displayName }
-                                    </option>
-                                ) ) }
-                            </select>
-                            { scenarios.find( s => s.name === selectedScenario ) && (
-                                <p className="mt-1 text-xs text-gray-500">
-                                    { scenarios.find( s => s.name === selectedScenario )?.description }
-                                </p>
-                            ) }
-                        </div>
 
                         {/* Algorithm 1 */ }
                         <div>

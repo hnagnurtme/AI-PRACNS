@@ -1065,15 +1065,9 @@ def calculate_path_rl(
         except:
             pass
         
-        # Get scenario if available
+        # Scenario removed - no longer using simulation scenarios
         scenario = None
-        try:
-            from api.simulation_bp import get_current_scenario
-            scenario_response = get_current_scenario()
-            if scenario_response:
-                scenario = scenario_response.get_json()
-        except:
-            pass
+
         
         # Use RL service with QoS
         path = rl_service.calculate_path_rl(

@@ -386,7 +386,11 @@ def _restore_baseline_nodes():
 
 
 def _apply_scenario_to_nodes(scenario_name: str, parameters = None):
-    """Apply scenario effects to nodes in database"""
+    """
+    Apply scenario effects ONLY to trap nodes in database.
+    Non-trap nodes remain at healthy baseline state.
+    This makes scenarios more realistic - trap nodes represent problematic nodes that RL should learn to avoid.
+    """
     try:
         # Store baseline before first modification
         _store_baseline_nodes()
@@ -394,363 +398,195 @@ def _apply_scenario_to_nodes(scenario_name: str, parameters = None):
         nodes_collection = db.get_collection('nodes')
         parameters = parameters or {}
         
+        # Separate trap nodes from normal nodes
+        trap_nodes = list(nodes_collection.find({'isTrapNode': True}))
+        normal_nodes = list(nodes_collection.find({'isTrapNode': {'$ne': True}}))
+        
+        logger.info(f"Applying scenario {scenario_name}: {len(trap_nodes)} trap nodes, {len(normal_nodes)} normal nodes")
+        
+        # Helper function to set healthy baseline for normal nodes
+        def set_healthy_baseline(node):
+            nodes_collection.update_one(
+                {'_id': node['_id']},
+                {'$set': {
+                    'resourceUtilization': random.uniform(5, 25),    # 5-25% utilization
+                    'packetLossRate': random.uniform(0, 0.005),      # 0-0.5% packet loss
+                    'bandwidthMbps': random.uniform(90, 100),        # 90-100 Mbps
+                    'queueLength': random.randint(0, 10),            # 0-10 packets
+                    'batteryChargePercent': random.uniform(85, 100), # 85-100% battery
+                    'signalStrengthDbm': random.uniform(-55, -45),   # Good signal
+                    'status': 'active'
+                }}
+            )
+        
         if scenario_name == 'NORMAL':
-            # Reset all nodes to healthy state with realistic random values
-            nodes = list(nodes_collection.find({}))
-            for node in nodes:
-                nodes_collection.update_one(
-                    {'_id': node['_id']},
-                    {'$set': {
-                        'resourceUtilization': random.uniform(5, 25),  # 5-25% utilization
-                        'packetLossRate': random.uniform(0, 0.005),    # 0-0.5% packet loss
-                        'bandwidthMbps': random.uniform(90, 100),      # 90-100 Mbps
-                        'queueLength': random.randint(0, 10),          # 0-10 packets in queue
-                        'batteryChargePercent': random.uniform(85, 100), # 85-100% battery
-                        'signalStrengthDbm': random.uniform(-55, -45), # Good signal strength
-                        'status': 'active'
-                    }}
-                )
-            logger.info(f"Reset {len(nodes)} nodes to healthy NORMAL state with realistic values")
+            # Reset ALL nodes to healthy state
+            all_nodes = list(nodes_collection.find({}))
+            for node in all_nodes:
+                set_healthy_baseline(node)
+            logger.info(f"Reset {len(all_nodes)} nodes to healthy NORMAL state")
             
         elif scenario_name == 'PEAK_HOURS':
-            # GLOBAL: Giờ cao điểm - tải cao đồng đều trên toàn hệ thống
-            nodes = list(nodes_collection.find({}))
-            for node in nodes:
+            # TRAP NODES: High load during peak hours
+            for node in trap_nodes:
                 nodes_collection.update_one(
                     {'_id': node['_id']},
                     {'$set': {
-                        'resourceUtilization': random.uniform(60, 85),  # Tải cao đồng đều
-                        'packetLossRate': random.uniform(0.01, 0.03),   # Mất gói tăng nhẹ
-                        'queueLength': random.randint(30, 80),          # Hàng đợi dài
-                        'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.7, 0.85), # Băng thông chia sẻ
+                        'resourceUtilization': random.uniform(75, 95),   # Very high load
+                        'packetLossRate': random.uniform(0.03, 0.08),    # Higher packet loss
+                        'queueLength': random.randint(50, 100),          # Long queue
+                        'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.5, 0.7),
                         'status': 'active'
                     }}
                 )
-            logger.info(f"Applied PEAK_HOURS (GLOBAL) to {len(nodes)} nodes")
+            # NORMAL NODES: Slightly elevated but still good
+            for node in normal_nodes:
+                nodes_collection.update_one(
+                    {'_id': node['_id']},
+                    {'$set': {
+                        'resourceUtilization': random.uniform(20, 40),   # Moderate load
+                        'packetLossRate': random.uniform(0.005, 0.015),  # Low packet loss
+                        'queueLength': random.randint(5, 20),
+                        'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.85, 0.95),
+                        'status': 'active'
+                    }}
+                )
+            logger.info(f"Applied PEAK_HOURS: {len(trap_nodes)} trap nodes affected, {len(normal_nodes)} normal")
             
         elif scenario_name == 'STORM_WEATHER':
-            # LOCAL: Thời tiết xấu - ảnh hưởng khu vực (30-50% nodes)
-            nodes = list(nodes_collection.find({}))
-            num_affected = int(len(nodes) * random.uniform(0.3, 0.5))  # 30-50% nodes bị ảnh hưởng
-            affected_nodes = set()
-            
-            # Chọn các cặp nodes gần nhau
-            available_nodes = nodes.copy()
-            while len(affected_nodes) < num_affected and available_nodes:
-                # Chọn node ngẫu nhiên
-                base_node = random.choice(available_nodes)
-                available_nodes.remove(base_node)
-                
-                # Lấy neighbor gần nhất
-                neighbors = _get_neighbor_nodes(base_node, nodes, max_distance_km=1500)
-                
-                if neighbors:
-                    neighbor = random.choice(neighbors)
-                    # 1 node tệ, 1 node ổn hơn
-                    bad_node = random.choice([base_node, neighbor])
-                    good_node = neighbor if bad_node == base_node else base_node
-                    
-                    # Node tệ - thời tiết xấu
-                    nodes_collection.update_one(
-                        {'_id': bad_node['_id']},
-                        {'$set': {
-                            'signalStrengthDbm': random.uniform(-95, -75),  # Tín hiệu rất yếu
-                            'packetLossRate': random.uniform(0.1, 0.2),     # Mất gói cao
-                            'resourceUtilization': random.uniform(50, 70),   # Tải cao do retry
-                            'queueLength': random.randint(40, 80),
-                            'status': 'active'
-                        }}
-                    )
-                    
-                    # Node ổn hơn - ảnh hưởng nhẹ
-                    nodes_collection.update_one(
-                        {'_id': good_node['_id']},
-                        {'$set': {
-                            'signalStrengthDbm': random.uniform(-70, -60),  # Tín hiệu yếu nhưng còn dùng được
-                            'packetLossRate': random.uniform(0.02, 0.05),   # Mất gói thấp
-                            'resourceUtilization': random.uniform(30, 50),
-                            'queueLength': random.randint(10, 30),
-                            'status': 'active'
-                        }}
-                    )
-                    
-                    affected_nodes.add(bad_node['_id'])
-                    affected_nodes.add(good_node['_id'])
-                else:
-                    # Không có neighbor, áp dụng cho node này thôi
-                    nodes_collection.update_one(
-                        {'_id': base_node['_id']},
-                        {'$set': {
-                            'signalStrengthDbm': random.uniform(-85, -65),
-                            'packetLossRate': random.uniform(0.05, 0.15),
-                            'resourceUtilization': random.uniform(40, 60),
-                            'queueLength': random.randint(20, 50),
-                            'status': 'active'
-                        }}
-                    )
-                    affected_nodes.add(base_node['_id'])
-            
-            # Các node còn lại giữ trạng thái bình thường
-            for node in nodes:
-                if node['_id'] not in affected_nodes:
-                    nodes_collection.update_one(
-                        {'_id': node['_id']},
-                        {'$set': {
-                            'signalStrengthDbm': random.uniform(-55, -45),
-                            'packetLossRate': random.uniform(0, 0.01),
-                            'resourceUtilization': random.uniform(10, 30),
-                            'queueLength': random.randint(0, 15),
-                            'status': 'active'
-                        }}
-                    )
-            
-            logger.info(f"Applied STORM_WEATHER (LOCAL) to {len(affected_nodes)} nodes, {len(nodes) - len(affected_nodes)} normal")
-            
-        elif scenario_name == 'HEAVY_TRAFFIC':
-            # GLOBAL: Lưu lượng lớn đồng đều - toàn hệ thống bị tắc nghẽn
-            nodes = list(nodes_collection.find({}))
-            for node in nodes:
+            # TRAP NODES: Severely affected by weather
+            for node in trap_nodes:
                 nodes_collection.update_one(
                     {'_id': node['_id']},
                     {'$set': {
-                        'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.3, 0.6), # Băng thông rất thấp
-                        'resourceUtilization': random.uniform(70, 90),   # Tải cao
-                        'packetLossRate': random.uniform(0.02, 0.06),    # Mất gói do tắc nghẽn
-                        'queueLength': random.randint(50, 120),          # Hàng đợi rất dài
+                        'signalStrengthDbm': random.uniform(-95, -75),   # Very weak signal
+                        'packetLossRate': random.uniform(0.15, 0.3),     # High packet loss
+                        'resourceUtilization': random.uniform(60, 80),   # High load due to retry
+                        'queueLength': random.randint(40, 80),
                         'status': 'active'
                     }}
                 )
-            logger.info(f"Applied HEAVY_TRAFFIC (GLOBAL) to {len(nodes)} nodes")
+            # NORMAL NODES: Healthy baseline
+            for node in normal_nodes:
+                set_healthy_baseline(node)
+            logger.info(f"Applied STORM_WEATHER: {len(trap_nodes)} trap nodes affected")
+            
+        elif scenario_name == 'HEAVY_TRAFFIC':
+            # TRAP NODES: Congested
+            for node in trap_nodes:
+                nodes_collection.update_one(
+                    {'_id': node['_id']},
+                    {'$set': {
+                        'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.2, 0.4),
+                        'resourceUtilization': random.uniform(80, 98),   # Almost full
+                        'packetLossRate': random.uniform(0.05, 0.12),    # High loss
+                        'queueLength': random.randint(80, 150),          # Very long queue
+                        'status': 'active'
+                    }}
+                )
+            # NORMAL NODES: Healthy baseline
+            for node in normal_nodes:
+                set_healthy_baseline(node)
+            logger.info(f"Applied HEAVY_TRAFFIC: {len(trap_nodes)} trap nodes affected")
             
         elif scenario_name == 'REMOTE_AREA':
-            # LOCAL: Vùng xa cụ thể - chỉ một số khu vực (20-35% nodes)
-            nodes = list(nodes_collection.find({}))
-            num_affected = int(len(nodes) * random.uniform(0.2, 0.35))  # 20-35% nodes
-            affected_nodes = set()
-            
-            available_nodes = nodes.copy()
-            while len(affected_nodes) < num_affected and available_nodes:
-                base_node = random.choice(available_nodes)
-                available_nodes.remove(base_node)
-                
-                neighbors = _get_neighbor_nodes(base_node, nodes, max_distance_km=2000)
-                
-                if neighbors:
-                    neighbor = random.choice(neighbors)
-                    bad_node = random.choice([base_node, neighbor])
-                    good_node = neighbor if bad_node == base_node else base_node
-                    
-                    # Node tệ - vùng xa, tín hiệu rất yếu
-                    nodes_collection.update_one(
-                        {'_id': bad_node['_id']},
-                        {'$set': {
-                            'signalStrengthDbm': random.uniform(-100, -85),  # Tín hiệu cực yếu
-                            'packetLossRate': random.uniform(0.15, 0.3),     # Mất gói rất cao
-                            'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.15, 0.35),
-                            'resourceUtilization': random.uniform(40, 60),
-                            'queueLength': random.randint(30, 70),
-                            'status': 'active'
-                        }}
-                    )
-                    
-                    # Node ổn hơn - biên vùng xa
-                    nodes_collection.update_one(
-                        {'_id': good_node['_id']},
-                        {'$set': {
-                            'signalStrengthDbm': random.uniform(-75, -60),   # Tín hiệu yếu nhưng dùng được
-                            'packetLossRate': random.uniform(0.03, 0.08),
-                            'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.5, 0.7),
-                            'resourceUtilization': random.uniform(25, 45),
-                            'queueLength': random.randint(10, 30),
-                            'status': 'active'
-                        }}
-                    )
-                    
-                    affected_nodes.add(bad_node['_id'])
-                    affected_nodes.add(good_node['_id'])
-                else:
-                    nodes_collection.update_one(
-                        {'_id': base_node['_id']},
-                        {'$set': {
-                            'signalStrengthDbm': random.uniform(-95, -75),
-                            'packetLossRate': random.uniform(0.08, 0.2),
-                            'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.2, 0.5),
-                            'resourceUtilization': random.uniform(30, 50),
-                            'status': 'active'
-                        }}
-                    )
-                    affected_nodes.add(base_node['_id'])
-            
-            # Các node còn lại bình thường
-            for node in nodes:
-                if node['_id'] not in affected_nodes:
-                    nodes_collection.update_one(
-                        {'_id': node['_id']},
-                        {'$set': {
-                            'signalStrengthDbm': random.uniform(-55, -45),
-                            'packetLossRate': random.uniform(0, 0.01),
-                            'bandwidthMbps': random.uniform(85, 100),
-                            'resourceUtilization': random.uniform(10, 30),
-                            'queueLength': random.randint(0, 15),
-                            'status': 'active'
-                        }}
-                    )
-            
-            logger.info(f"Applied REMOTE_AREA (LOCAL) to {len(affected_nodes)} nodes, {len(nodes) - len(affected_nodes)} normal")
+            # TRAP NODES: Poor connectivity
+            for node in trap_nodes:
+                nodes_collection.update_one(
+                    {'_id': node['_id']},
+                    {'$set': {
+                        'signalStrengthDbm': random.uniform(-100, -85),  # Extremely weak signal
+                        'packetLossRate': random.uniform(0.2, 0.35),     # Very high packet loss
+                        'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.1, 0.3),
+                        'resourceUtilization': random.uniform(50, 70),
+                        'queueLength': random.randint(30, 60),
+                        'status': 'active'
+                    }}
+                )
+            # NORMAL NODES: Healthy baseline
+            for node in normal_nodes:
+                set_healthy_baseline(node)
+            logger.info(f"Applied REMOTE_AREA: {len(trap_nodes)} trap nodes affected")
             
         elif scenario_name == 'EQUIPMENT_AGING':
-            # LOCAL: Thiết bị cũ - chỉ một số thiết bị cụ thể (25-40% nodes)
-            nodes = list(nodes_collection.find({}))
-            num_affected = int(len(nodes) * random.uniform(0.25, 0.4))  # 25-40% nodes
-            affected_nodes = set()
-            
-            available_nodes = nodes.copy()
-            while len(affected_nodes) < num_affected and available_nodes:
-                base_node = random.choice(available_nodes)
-                available_nodes.remove(base_node)
-                
-                neighbors = _get_neighbor_nodes(base_node, nodes, max_distance_km=1800)
-                
-                if neighbors:
-                    neighbor = random.choice(neighbors)
-                    bad_node = random.choice([base_node, neighbor])
-                    good_node = neighbor if bad_node == base_node else base_node
-                    
-                    # Node tệ - thiết bị cũ
-                    nodes_collection.update_one(
-                        {'_id': bad_node['_id']},
-                        {'$set': {
-                            'resourceUtilization': random.uniform(65, 85),   # Tải cao do xử lý chậm
-                            'packetLossRate': random.uniform(0.06, 0.12),    # Mất gói do lỗi phần cứng
-                            'batteryChargePercent': random.uniform(30, 55),  # Pin yếu
-                            'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.5, 0.7),
-                            'queueLength': random.randint(25, 60),
-                            'signalStrengthDbm': random.uniform(-70, -60),
-                            'status': 'active'
-                        }}
-                    )
-                    
-                    # Node ổn hơn - thiết bị mới hơn
-                    nodes_collection.update_one(
-                        {'_id': good_node['_id']},
-                        {'$set': {
-                            'resourceUtilization': random.uniform(20, 40),
-                            'packetLossRate': random.uniform(0.01, 0.03),
-                            'batteryChargePercent': random.uniform(70, 90),
-                            'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.8, 0.95),
-                            'queueLength': random.randint(5, 20),
-                            'signalStrengthDbm': random.uniform(-55, -48),
-                            'status': 'active'
-                        }}
-                    )
-                    
-                    affected_nodes.add(bad_node['_id'])
-                    affected_nodes.add(good_node['_id'])
-                else:
-                    nodes_collection.update_one(
-                        {'_id': base_node['_id']},
-                        {'$set': {
-                            'resourceUtilization': random.uniform(50, 75),
-                            'packetLossRate': random.uniform(0.03, 0.08),
-                            'batteryChargePercent': random.uniform(40, 70),
-                            'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.6, 0.8),
-                            'queueLength': random.randint(15, 40),
-                            'status': 'active'
-                        }}
-                    )
-                    affected_nodes.add(base_node['_id'])
-            
-            # Các node còn lại bình thường
-            for node in nodes:
-                if node['_id'] not in affected_nodes:
-                    nodes_collection.update_one(
-                        {'_id': node['_id']},
-                        {'$set': {
-                            'resourceUtilization': random.uniform(10, 30),
-                            'packetLossRate': random.uniform(0, 0.01),
-                            'batteryChargePercent': random.uniform(80, 100),
-                            'bandwidthMbps': random.uniform(85, 100),
-                            'queueLength': random.randint(0, 15),
-                            'signalStrengthDbm': random.uniform(-55, -45),
-                            'status': 'active'
-                        }}
-                    )
-            
-            logger.info(f"Applied EQUIPMENT_AGING (LOCAL) to {len(affected_nodes)} nodes, {len(nodes) - len(affected_nodes)} normal")
+            # TRAP NODES: Degraded equipment
+            for node in trap_nodes:
+                nodes_collection.update_one(
+                    {'_id': node['_id']},
+                    {'$set': {
+                        'resourceUtilization': random.uniform(70, 90),    # High load due to slow processing
+                        'packetLossRate': random.uniform(0.08, 0.15),     # Hardware errors
+                        'batteryChargePercent': random.uniform(20, 45),   # Low battery
+                        'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.4, 0.6),
+                        'queueLength': random.randint(35, 70),
+                        'signalStrengthDbm': random.uniform(-75, -60),
+                        'status': 'active'
+                    }}
+                )
+            # NORMAL NODES: Healthy baseline
+            for node in normal_nodes:
+                set_healthy_baseline(node)
+            logger.info(f"Applied EQUIPMENT_AGING: {len(trap_nodes)} trap nodes affected")
             
         elif scenario_name == 'MAINTENANCE_MODE':
-            # LOCAL: Bảo trì - một số node offline, neighbors chịu tải
-            nodes = list(nodes_collection.find({}))
-            num_maintenance = int(len(nodes) * random.uniform(0.15, 0.3))  # 15-30% nodes bảo trì
-            maintenance_nodes = random.sample(nodes, num_maintenance)
-            high_load_neighbors = set()
-            
-            # Các node bảo trì
-            for node in maintenance_nodes:
+            # TRAP NODES: Offline for maintenance
+            for node in trap_nodes:
                 nodes_collection.update_one(
                     {'_id': node['_id']},
                     {'$set': {
                         'status': 'maintenance',
                         'resourceUtilization': 0,
-                        'packetLossRate': 1.0,  # Không hoạt động
+                        'packetLossRate': 1.0,  # Cannot route through
                         'bandwidthMbps': 0,
                         'queueLength': 0
                     }}
                 )
-                
-                # Tìm neighbors của node bảo trì - họ sẽ chịu tải cao hơn
-                neighbors = _get_neighbor_nodes(node, nodes, max_distance_km=1500)
-                for neighbor in neighbors:
-                    if neighbor not in maintenance_nodes:
-                        high_load_neighbors.add(neighbor['_id'])
-            
-            # Các node neighbors của nodes bảo trì - chịu tải cao
-            for node in nodes:
-                if node['_id'] in high_load_neighbors:
-                    nodes_collection.update_one(
-                        {'_id': node['_id']},
-                        {'$set': {
-                            'resourceUtilization': random.uniform(70, 90),  # Tải rất cao
-                            'packetLossRate': random.uniform(0.03, 0.07),
-                            'queueLength': random.randint(40, 80),
-                            'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.6, 0.8),
-                            'status': 'active'
-                        }}
-                    )
-                elif node not in maintenance_nodes:
-                    # Các node khác - tải tăng nhẹ
-                    nodes_collection.update_one(
-                        {'_id': node['_id']},
-                        {'$set': {
-                            'resourceUtilization': random.uniform(35, 55),
-                            'packetLossRate': random.uniform(0.01, 0.03),
-                            'queueLength': random.randint(15, 35),
-                            'status': 'active'
-                        }}
-                    )
-            
-            logger.info(f"Applied MAINTENANCE_MODE (LOCAL): {num_maintenance} maintenance, {len(high_load_neighbors)} high-load neighbors, others moderate")
-            
-        elif scenario_name == 'EMERGENCY_LOAD':
-            # GLOBAL: Tải khẩn cấp - quá tải toàn hệ thống
-            nodes = list(nodes_collection.find({}))
-            for node in nodes:
+            # NORMAL NODES: Slightly elevated load due to rerouting
+            for node in normal_nodes:
                 nodes_collection.update_one(
                     {'_id': node['_id']},
                     {'$set': {
-                        'resourceUtilization': random.uniform(85, 98),   # Quá tải đồng đều
-                        'packetLossRate': random.uniform(0.1, 0.25),     # Mất gói rất cao
-                        'queueLength': random.randint(100, 200),         # Hàng đợi cực dài
-                        'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.4, 0.6), # Băng thông khan hiếm
-                        'signalStrengthDbm': random.uniform(-70, -55),   # Tín hiệu giảm do nhiễu
-                        'batteryChargePercent': random.uniform(30, 60),  # Pin hao nhanh
+                        'resourceUtilization': random.uniform(25, 45),   # Moderate load increase
+                        'packetLossRate': random.uniform(0.01, 0.02),
+                        'queueLength': random.randint(10, 30),
+                        'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.8, 0.92),
                         'status': 'active'
                     }}
                 )
-            logger.info(f"Applied EMERGENCY_LOAD (GLOBAL) to {len(nodes)} nodes")
+            logger.info(f"Applied MAINTENANCE_MODE: {len(trap_nodes)} trap nodes offline")
+            
+        elif scenario_name == 'EMERGENCY_LOAD':
+            # TRAP NODES: Completely overloaded
+            for node in trap_nodes:
+                nodes_collection.update_one(
+                    {'_id': node['_id']},
+                    {'$set': {
+                        'resourceUtilization': random.uniform(92, 99),    # Near 100%
+                        'packetLossRate': random.uniform(0.2, 0.4),       # Extreme packet loss
+                        'queueLength': random.randint(150, 250),          # Extremely long queue
+                        'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.1, 0.25),
+                        'signalStrengthDbm': random.uniform(-80, -65),
+                        'batteryChargePercent': random.uniform(15, 35),
+                        'status': 'active'
+                    }}
+                )
+            # NORMAL NODES: Elevated but manageable
+            for node in normal_nodes:
+                nodes_collection.update_one(
+                    {'_id': node['_id']},
+                    {'$set': {
+                        'resourceUtilization': random.uniform(35, 55),
+                        'packetLossRate': random.uniform(0.015, 0.03),
+                        'queueLength': random.randint(20, 40),
+                        'bandwidthMbps': node.get('bandwidthMbps', 100) * random.uniform(0.7, 0.85),
+                        'status': 'active'
+                    }}
+                )
+            logger.info(f"Applied EMERGENCY_LOAD: {len(trap_nodes)} trap nodes severely affected")
         
         return True
         
     except Exception as e:
         logger.error(f"Error applying scenario {scenario_name}: {e}")
         return False
+
