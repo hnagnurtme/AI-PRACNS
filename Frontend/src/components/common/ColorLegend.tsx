@@ -21,10 +21,6 @@ export const ColorLegend: React.FC<ColorLegendProps> = ( { className = '' } ) =>
                         <div className="w-8 h-1 rounded-full bg-orange-600"></div>
                         <span className="text-xs text-gray-700">Dijkstra (Shortest Path)</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                        <div className="w-8 h-1 rounded-full bg-teal-500"></div>
-                        <span className="text-xs text-gray-700">Simple Routing</span>
-                    </div>
                 </div>
             </div>
 

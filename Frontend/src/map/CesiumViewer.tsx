@@ -113,8 +113,6 @@ const createCircularOrbit = (
 // Algorithm color mapping - DISTINCT COLORS for RL vs Dijkstra
 const getAlgorithmColor = ( algorithm?: string ): Cesium.Color => {
     switch ( algorithm ) {
-        case 'simple':
-            return Cesium.Color.LIGHTSEAGREEN;  // Xanh lục nhạt - simple routing
         case 'dijkstra':
             return Cesium.Color.ORANGERED;      // ĐỎ CAM - Dijkstra shortest path (picks traps)
         case 'rl':

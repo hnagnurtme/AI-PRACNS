@@ -15,8 +15,8 @@ const Comparison: React.FC = () => {
     // Form state
     const [ sourceTerminalId, setSourceTerminalId ] = useState<string>( "" );
     const [ destinationTerminalId, setDestinationTerminalId ] = useState<string>( "" );
-    const [ algorithm1, setAlgorithm1 ] = useState<'simple' | 'dijkstra' | 'rl'>( 'dijkstra' );
-    const [ algorithm2, setAlgorithm2 ] = useState<'simple' | 'dijkstra' | 'rl'>( 'rl' );
+    const [ algorithm1, setAlgorithm1 ] = useState<'dijkstra' | 'rl'>( 'dijkstra' );
+    const [ algorithm2, setAlgorithm2 ] = useState<'dijkstra' | 'rl'>( 'rl' );
     const [ serviceQos, setServiceQos ] = useState<QoSRequirements>( {
         maxLatencyMs: 100,
         minBandwidthMbps: 1,
@@ -326,12 +326,11 @@ const Comparison: React.FC = () => {
                                 </label>
                                 <select
                                     value={ algorithm1 }
-                                    onChange={ ( e ) => setAlgorithm1( e.target.value as 'simple' | 'dijkstra' | 'rl' ) }
+                                    onChange={ ( e ) => setAlgorithm1( e.target.value as 'dijkstra' | 'rl' ) }
                                     className="block w-full px-3 py-2.5 border-2 border-violet-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent bg-white text-gray-800 font-medium transition-all"
                                     disabled={ loading }
                                     required
                                 >
-                                    <option value="simple">Simple</option>
                                     <option value="dijkstra">Dijkstra</option>
                                     <option value="rl">Reinforcement Learning</option>
                                 </select>
@@ -344,12 +343,11 @@ const Comparison: React.FC = () => {
                                 </label>
                                 <select
                                     value={ algorithm2 }
-                                    onChange={ ( e ) => setAlgorithm2( e.target.value as 'simple' | 'dijkstra' | 'rl' ) }
+                                    onChange={ ( e ) => setAlgorithm2( e.target.value as 'dijkstra' | 'rl' ) }
                                     className="block w-full px-3 py-2.5 border-2 border-teal-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white text-gray-800 font-medium transition-all"
                                     disabled={ loading }
                                     required
                                 >
-                                    <option value="simple">Simple</option>
                                     <option value="dijkstra">Dijkstra</option>
                                     <option value="rl">Reinforcement Learning</option>
                                 </select>

@@ -16,8 +16,8 @@ export const ComparisonDashboard: React.FC = () => {
     // Form state
     const [ sourceTerminalId, setSourceTerminalId ] = useState<string>( "" );
     const [ destinationTerminalId, setDestinationTerminalId ] = useState<string>( "" );
-    const [ algorithm1, setAlgorithm1 ] = useState<'simple' | 'dijkstra' | 'rl'>( 'dijkstra' );
-    const [ algorithm2, setAlgorithm2 ] = useState<'simple' | 'dijkstra' | 'rl'>( 'rl' );
+    const [ algorithm1, setAlgorithm1 ] = useState<'dijkstra' | 'rl'>( 'dijkstra' );
+    const [ algorithm2, setAlgorithm2 ] = useState<'dijkstra' | 'rl'>( 'rl' );
     const [ serviceQos, setServiceQos ] = useState<QoSRequirements>( {
         maxLatencyMs: 100,
         minBandwidthMbps: 1,
@@ -101,7 +101,7 @@ export const ComparisonDashboard: React.FC = () => {
 
         // Helper function to convert path to packet format
         const pathToPacket = ( path: typeof result.algorithm1.path, algorithmName: string, isRL: boolean ) => {
-            const algorithmLabel = algorithmName === 'dijkstra' ? 'Dijkstra' : algorithmName === 'rl' ? 'ReinforcementLearning' : 'Simple';
+            const algorithmLabel = algorithmName === 'dijkstra' ? 'Dijkstra' : 'ReinforcementLearning';
             return {
                 packetId: `PKT-${ algorithmName }`,
                 sourceUserId: result.sourceTerminalId,
@@ -254,12 +254,11 @@ export const ComparisonDashboard: React.FC = () => {
                             <select
                                 id="algorithm1"
                                 value={ algorithm1 }
-                                onChange={ ( e ) => setAlgorithm1( e.target.value as 'simple' | 'dijkstra' | 'rl' ) }
+                                onChange={ ( e ) => setAlgorithm1( e.target.value as 'dijkstra' | 'rl' ) }
                                 className="cosmic-select"
                                 disabled={ loading }
                                 required
                             >
-                                <option value="simple">Simple</option>
                                 <option value="dijkstra">Dijkstra</option>
                                 <option value="rl">Reinforcement Learning</option>
                             </select>
@@ -276,12 +275,11 @@ export const ComparisonDashboard: React.FC = () => {
                             <select
                                 id="algorithm2"
                                 value={ algorithm2 }
-                                onChange={ ( e ) => setAlgorithm2( e.target.value as 'simple' | 'dijkstra' | 'rl' ) }
+                                onChange={ ( e ) => setAlgorithm2( e.target.value as 'dijkstra' | 'rl' ) }
                                 className="cosmic-select"
                                 disabled={ loading }
                                 required
                             >
-                                <option value="simple">Simple</option>
                                 <option value="dijkstra">Dijkstra</option>
                                 <option value="rl">Reinforcement Learning</option>
                             </select>

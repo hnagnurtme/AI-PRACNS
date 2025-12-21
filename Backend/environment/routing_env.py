@@ -731,52 +731,51 @@ class RoutingEnvironment(gym.Env):
     
     def _filter_stress_problematic_nodes(self, nodes: List[Dict]) -> List[Dict]:
         """
-        Filter out nodes với vấn đề nghiêm trọng trong stress scenarios
-        Giúp RL học tránh các nodes có vấn đề
+        Filter out nodes với resource không tốt trong RL routing
+        Chỉ chọn node có utilization < 70%
         
         IMPORTANT: This function receives ALREADY FILTERED nodes from state_builder.
         Do NOT re-add nodes from any other source as they may be out of range.
         """
-        filtered = []
-        for node in nodes:
-            # Chỉ filter nếu node có vấn đề nghiêm trọng
-            utilization = node.get('resourceUtilization', 0)
-            battery = node.get('batteryChargePercent', 100)
-            is_operational = node.get('isOperational', True)
-            packet_loss = node.get('packetLossRate', 0)
-            
-            # Giữ node nếu:
-            # 1. Operational
-            # 2. Không có quá nhiều vấn đề cùng lúc
-            if is_operational:
-                # Chỉ filter nếu có nhiều vấn đề cùng lúc
-                problem_count = 0
-                if utilization > 0.9:
-                    problem_count += 1
-                if battery < 0.15:
-                    problem_count += 1
-                if packet_loss > 0.1:
-                    problem_count += 1
-                
-                # Chỉ filter nếu có 2+ vấn đề nghiêm trọng
-                if problem_count < 2:
-                    filtered.append(node)
+        # Import threshold từ constants
+        from environment.constants import UTILIZATION_MEDIUM_PERCENT
         
-        # 🔧 FIX: If filter removed too many, return ORIGINAL filtered list (from state_builder)
-        # Do NOT use `nodes` directly as fallback - those are already range-filtered
-        # If we have very few nodes, just return what we have
-        if len(filtered) < 3:
-            # Return original input (already range-filtered by state_builder)
-            # Sort by quality but keep all nodes from input
-            nodes_sorted = sorted(
-                nodes,  # These are already range-filtered
-                key=lambda n: (
-                    -n.get('resourceUtilization', 0),  # Lower is better
-                    -n.get('batteryChargePercent', 100),  # Higher is better
-                    n.get('packetLossRate', 0)  # Lower is better
-                )
-            )
-            return nodes_sorted  # Return all, not just top half
+        RESOURCE_UTILIZATION_THRESHOLD = UTILIZATION_MEDIUM_PERCENT  # 70%
+        
+        filtered = []
+        rejected = []
+        for node in nodes:
+            utilization = node.get('resourceUtilization', 0)
+            is_operational = node.get('isOperational', True)
+            node_id = node.get('nodeId', 'unknown')
+            
+            # Chỉ giữ node nếu:
+            # 1. Operational
+            # 2. Utilization < 70% (RESOURCE_UTILIZATION_THRESHOLD)
+            if is_operational and utilization < RESOURCE_UTILIZATION_THRESHOLD:
+                filtered.append(node)
+            else:
+                rejected.append((node_id, utilization, is_operational))
+        
+        # 🔍 DEBUG: Log filtered và rejected nodes
+        logger.info(f"🔍 Stress filter: {len(filtered)} accepted, {len(rejected)} rejected (threshold={RESOURCE_UTILIZATION_THRESHOLD}%)")
+        if rejected:
+            for node_id, util, operational in rejected[:5]:  # Log first 5 rejected
+                reason = "high util" if util >= RESOURCE_UTILIZATION_THRESHOLD else "not operational"
+                logger.info(f"   ❌ REJECTED {node_id}: util={util:.1f}% ({reason})")
+        
+        # Nếu filter quá strict (< 2 nodes), nới lỏng threshold lên 85%
+        if len(filtered) < 2:
+            RELAXED_THRESHOLD = 85.0
+            for node in nodes:
+                utilization = node.get('resourceUtilization', 0)
+                is_operational = node.get('isOperational', True)
+                
+                if is_operational and utilization < RELAXED_THRESHOLD and node not in filtered:
+                    filtered.append(node)
+                    logger.info(f"   ⚠️ RELAXED-ADD {node.get('nodeId')}: util={utilization:.1f}% (threshold relaxed to 85%)")
+            
+            logger.warning(f"⚠️ Relaxed resource filter from 70% to 85%, now have {len(filtered)} nodes")
         
         return filtered
     

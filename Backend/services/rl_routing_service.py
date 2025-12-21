@@ -142,13 +142,13 @@ class RLRoutingService:
         self.request_count += 1
         
         try:
-            # Pre-process nodes và cache
-            cache_key = self._get_cache_key(nodes, service_qos)
-            if cache_key in self._node_cache:
-                processed_nodes = self._node_cache[cache_key]
-            else:
-                processed_nodes = self._preprocess_nodes(nodes, service_qos)
-                self._node_cache[cache_key] = processed_nodes
+            processed_nodes = self._preprocess_nodes(nodes, service_qos)
+            
+            # 🔍 DEBUG: Log node count and resource states
+            gs_nodes = [n for n in processed_nodes if n.get('nodeType') == 'GROUND_STATION']
+            logger.info(f"🔍 RL using {len(processed_nodes)} nodes ({len(gs_nodes)} ground stations)")
+            for gs in gs_nodes[:5]:  # Log first 5 GS
+                logger.info(f"   GS {gs.get('nodeId')}: util={gs.get('resourceUtilization', 0):.1f}%, loss={gs.get('packetLossRate', 0)*100:.2f}%")
             
             if not processed_nodes:
                 logger.error("❌ No valid nodes after QoS filtering - cannot route")
@@ -262,6 +262,15 @@ class RLRoutingService:
         
         # Lấy kết quả path
         path = env.get_path_result()
+        
+        # 🔍 DEBUG: Log path segments để debug 
+        path_segments = path.get('path', [])
+        logger.info(f"🔍 RL Path segments ({len(path_segments)} total):")
+        for i, seg in enumerate(path_segments):
+            seg_type = seg.get('type', 'unknown')
+            seg_id = seg.get('id', 'N/A')
+            seg_name = seg.get('name', 'N/A')
+            logger.info(f"   {i+1}. [{seg_type}] {seg_name} ({seg_id})")
         
         if not path or len(path.get('path', [])) < 3:  # Ít nhất source, 1 node, dest
             logger.warning("RL path finding failed, using heuristic")
