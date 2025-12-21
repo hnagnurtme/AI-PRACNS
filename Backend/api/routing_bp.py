@@ -1395,6 +1395,9 @@ def send_packet():
                 )
                 # Path may have drop probability calculated by RL service
         
+        # IMPORTANT: Add algorithm to path for frontend color differentiation
+        path['algorithm'] = algorithm
+        
         # Create packet record
         packet = {
             'packetId': f"PKT-{int(datetime.now().timestamp() * 1000)}",
