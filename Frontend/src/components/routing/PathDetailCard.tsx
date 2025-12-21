@@ -22,6 +22,9 @@ const PathDetailCard: React.FC<PathDetailCardProps> = ( { path, nodes, onClose }
         let totalBattery = 0;
         let maxLatency = 0;
         let nodeCount = 0;
+        let maxUtilization = 0;
+        let maxPacketLoss = 0;
+        let minBattery = 100;
 
         nodeSegments.forEach( segment => {
             const node = getNodeDetails( segment.id );
@@ -30,6 +33,10 @@ const PathDetailCard: React.FC<PathDetailCardProps> = ( { path, nodes, onClose }
                 totalPacketLoss += node.packetLossRate || 0;
                 totalBattery += node.batteryChargePercent || 100;
                 maxLatency = Math.max( maxLatency, node.nodeProcessingDelayMs || 0 );
+                // Track worst case values
+                maxUtilization = Math.max( maxUtilization, node.resourceUtilization || 0 );
+                maxPacketLoss = Math.max( maxPacketLoss, node.packetLossRate || 0 );
+                minBattery = Math.min( minBattery, node.batteryChargePercent || 100 );
                 nodeCount++;
             }
         } );
@@ -38,6 +45,9 @@ const PathDetailCard: React.FC<PathDetailCardProps> = ( { path, nodes, onClose }
             avgUtilization: nodeCount > 0 ? totalUtilization / nodeCount : 0,
             avgPacketLoss: nodeCount > 0 ? totalPacketLoss / nodeCount : 0,
             avgBattery: nodeCount > 0 ? totalBattery / nodeCount : 0,
+            maxUtilization,
+            maxPacketLoss,
+            minBattery,
             maxLatency,
             nodeCount
         };
@@ -56,9 +66,9 @@ const PathDetailCard: React.FC<PathDetailCardProps> = ( { path, nodes, onClose }
 
     const getAlgorithmColor = ( algo?: string ) => {
         switch ( algo ) {
-            case 'rl': return 'bg-purple-100 text-purple-800 border-purple-400';         // Tím gradient - RL
-            case 'dijkstra': return 'bg-blue-100 text-blue-700 border-blue-400';         // Xanh dương - Dijkstra
-            case 'simple': return 'bg-teal-100 text-teal-700 border-teal-400';           // Xanh lục - Simple
+            case 'rl': return 'bg-purple-100 text-purple-800 border-purple-400';
+            case 'dijkstra': return 'bg-blue-100 text-blue-700 border-blue-400';
+            case 'simple': return 'bg-teal-100 text-teal-700 border-teal-400';
             default: return 'bg-gray-100 text-gray-700 border-gray-300';
         }
     };
@@ -75,14 +85,18 @@ const PathDetailCard: React.FC<PathDetailCardProps> = ( { path, nodes, onClose }
         return 'text-red-600';
     };
 
-    // Determine path quality
+    // Determine path quality - considers WORST node, not just averages
     const getPathQuality = (): 'excellent' | 'good' | 'poor' => {
-        if ( metrics.avgUtilization < 70 && metrics.avgPacketLoss < 0.05 && metrics.avgBattery > 50 ) {
-            return 'excellent';
-        } else if ( metrics.avgUtilization < 85 && metrics.avgPacketLoss < 0.1 ) {
+        // If ANY node has critical issues, path is POOR
+        if ( metrics.maxUtilization >= 85 || metrics.maxPacketLoss >= 0.05 || metrics.minBattery < 30 ) {
+            return 'poor';
+        }
+        // If ANY node has warning issues, path is at most GOOD
+        if ( metrics.maxUtilization >= 70 || metrics.maxPacketLoss >= 0.03 || metrics.minBattery < 50 ) {
             return 'good';
         }
-        return 'poor';
+        // All nodes are healthy
+        return 'excellent';
     };
 
     const pathQuality = getPathQuality();

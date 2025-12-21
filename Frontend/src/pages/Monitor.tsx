@@ -187,7 +187,7 @@ export const ComparisonDashboard: React.FC = () => {
     const comparisonData = convertToComparisonData( comparisonResult );
 
     return (
-        <div className="p-6 space-y-6 bg-gradient-to-br from-violet-50 via-fuchsia-50 to-purple-50 min-h-screen">
+        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-violet-50 to-fuchsia-50 min-h-screen">
 
 
             {/* Form Section */ }
@@ -208,7 +208,7 @@ export const ComparisonDashboard: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Source Terminal */ }
                         <div>
-                            <label htmlFor="sourceTerminal" className="block text-sm font-semibold text-violet-700 mb-2 uppercase tracking-wide">
+                            <label htmlFor="sourceTerminal" className="block text-sm font-semibold text-fuchsia-600 mb-2 uppercase tracking-wide">
                                 📡 Source Terminal
                             </label>
                             <select
@@ -230,7 +230,7 @@ export const ComparisonDashboard: React.FC = () => {
 
                         {/* Destination Terminal */ }
                         <div>
-                            <label htmlFor="destinationTerminal" className="block text-sm font-semibold text-violet-700 mb-2 uppercase tracking-wide">
+                            <label htmlFor="destinationTerminal" className="block text-sm font-semibold text-fuchsia-600 mb-2 uppercase tracking-wide">
                                 🎯 Destination Terminal
                             </label>
                             <select
@@ -254,7 +254,7 @@ export const ComparisonDashboard: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {/* Scenario */ }
                         <div>
-                            <label htmlFor="scenario" className="block text-sm font-semibold text-violet-700 mb-2 uppercase tracking-wide">
+                            <label htmlFor="scenario" className="block text-sm font-semibold text-fuchsia-600 mb-2 uppercase tracking-wide">
                                 <span className="flex items-center gap-1">
                                     <span>🌐</span>
                                     <span>Scenario</span>
@@ -282,7 +282,7 @@ export const ComparisonDashboard: React.FC = () => {
 
                         {/* Algorithm 1 */ }
                         <div>
-                            <label htmlFor="algorithm1" className="block text-sm font-semibold text-violet-700 mb-2 uppercase tracking-wide">
+                            <label htmlFor="algorithm1" className="block text-sm font-semibold text-fuchsia-600 mb-2 uppercase tracking-wide">
                                 <span className="flex items-center gap-1">
                                     <span>🔷</span>
                                     <span>Algorithm 1</span>
@@ -304,7 +304,7 @@ export const ComparisonDashboard: React.FC = () => {
 
                         {/* Algorithm 2 */ }
                         <div>
-                            <label htmlFor="algorithm2" className="block text-sm font-semibold text-violet-700 mb-2 uppercase tracking-wide">
+                            <label htmlFor="algorithm2" className="block text-sm font-semibold text-fuchsia-600 mb-2 uppercase tracking-wide">
                                 <span className="flex items-center gap-1">
                                     <span>🔶</span>
                                     <span>Algorithm 2</span>
@@ -330,7 +330,7 @@ export const ComparisonDashboard: React.FC = () => {
                         <h3 className="text-sm font-bold text-violet-800 mb-3 uppercase tracking-wide">⚙️ QoS Requirements</h3>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
-                                <label htmlFor="maxLatency" className="block text-xs font-semibold text-violet-700 mb-2 uppercase">
+                                <label htmlFor="maxLatency" className="block text-xs font-semibold text-fuchsia-600 mb-2 uppercase">
                                     Max Latency
                                 </label>
                                 <div className="relative">
@@ -347,7 +347,7 @@ export const ComparisonDashboard: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <label htmlFor="minBandwidth" className="block text-xs font-semibold text-violet-700 mb-2 uppercase">
+                                <label htmlFor="minBandwidth" className="block text-xs font-semibold text-fuchsia-600 mb-2 uppercase">
                                     Min Bandwidth
                                 </label>
                                 <div className="relative">
@@ -365,7 +365,7 @@ export const ComparisonDashboard: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <label htmlFor="maxLossRate" className="block text-xs font-semibold text-violet-700 mb-2 uppercase">
+                                <label htmlFor="maxLossRate" className="block text-xs font-semibold text-fuchsia-600 mb-2 uppercase">
                                     Max Loss Rate
                                 </label>
                                 <div className="relative">
@@ -384,7 +384,7 @@ export const ComparisonDashboard: React.FC = () => {
                                 </div>
                             </div>
                             <div>
-                                <label htmlFor="priority" className="block text-xs font-semibold text-violet-700 mb-2 uppercase">
+                                <label htmlFor="priority" className="block text-xs font-semibold text-fuchsia-600 mb-2 uppercase">
                                     Priority Level
                                 </label>
                                 <input
@@ -461,29 +461,34 @@ export const ComparisonDashboard: React.FC = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            {/* Algorithm 1 Results */ }
-                            <div className="border-2 border-violet-300 rounded-xl p-4 bg-gradient-to-br from-violet-50 to-white shadow-md">
-                                <h4 className="font-bold text-lg text-violet-800 mb-3 flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full bg-violet-500 shadow-sm"></span>
+                            {/* Algorithm 1 Results - Dynamic color based on algorithm type */ }
+                            <div className={ `border-2 rounded-xl p-4 shadow-md ${ comparisonResult.algorithm1.name === 'rl'
+                                ? 'border-teal-300 bg-gradient-to-br from-teal-50 to-white'
+                                : 'border-violet-300 bg-gradient-to-br from-violet-50 to-white'
+                                }` }>
+                                <h4 className={ `font-bold text-lg mb-3 flex items-center gap-2 ${ comparisonResult.algorithm1.name === 'rl' ? 'text-teal-800' : 'text-violet-800'
+                                    }` }>
+                                    <span className={ `w-3 h-3 rounded-full shadow-sm ${ comparisonResult.algorithm1.name === 'rl' ? 'bg-teal-500' : 'bg-violet-500'
+                                        }` }></span>
                                     { comparisonResult.algorithm1.name === 'rl' ? 'Reinforcement Learning' :
                                         comparisonResult.algorithm1.name === 'dijkstra' ? 'Dijkstra' :
                                             comparisonResult.algorithm1.name.charAt( 0 ).toUpperCase() + comparisonResult.algorithm1.name.slice( 1 ) }
                                 </h4>
                                 <div className="space-y-2 text-sm">
                                     <div className="flex justify-between bg-white/50 px-2 py-1.5 rounded-lg">
-                                        <span className="text-violet-700 font-semibold">Distance:</span>
+                                        <span className={ `font-semibold ${ comparisonResult.algorithm1.name === 'rl' ? 'text-teal-700' : 'text-fuchsia-600' }` }>Distance:</span>
                                         <span className="font-bold text-gray-900">{ comparisonResult.algorithm1.path.totalDistance.toFixed( 0 ) } km</span>
                                     </div>
                                     <div className="flex justify-between bg-white/50 px-2 py-1.5 rounded-lg">
-                                        <span className="text-violet-700 font-semibold">Latency:</span>
+                                        <span className={ `font-semibold ${ comparisonResult.algorithm1.name === 'rl' ? 'text-teal-700' : 'text-fuchsia-600' }` }>Latency:</span>
                                         <span className="font-bold text-gray-900">{ comparisonResult.algorithm1.path.estimatedLatency.toFixed( 0 ) } ms</span>
                                     </div>
                                     <div className="flex justify-between bg-white/50 px-2 py-1.5 rounded-lg">
-                                        <span className="text-violet-700 font-semibold">Hops:</span>
+                                        <span className={ `font-semibold ${ comparisonResult.algorithm1.name === 'rl' ? 'text-teal-700' : 'text-fuchsia-600' }` }>Hops:</span>
                                         <span className="font-bold text-gray-900">{ comparisonResult.algorithm1.path.hops }</span>
                                     </div>
                                     <div className="flex justify-between bg-white/50 px-2 py-1.5 rounded-lg">
-                                        <span className="text-violet-700 font-semibold">QoS Met:</span>
+                                        <span className={ `font-semibold ${ comparisonResult.algorithm1.name === 'rl' ? 'text-teal-700' : 'text-fuchsia-600' }` }>QoS Met:</span>
                                         <span className={ `font-bold px-3 py-1 rounded-lg ${ comparisonResult.algorithm1.qosMet ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }` }>
                                             { comparisonResult.algorithm1.qosMet ? '✓ Yes' : '✗ No' }
                                         </span>
@@ -491,29 +496,34 @@ export const ComparisonDashboard: React.FC = () => {
                                 </div>
                             </div>
 
-                            {/* Algorithm 2 Results */ }
-                            <div className="border-2 border-fuchsia-300 rounded-xl p-4 bg-gradient-to-br from-fuchsia-50 to-white shadow-md">
-                                <h4 className="font-bold text-lg text-fuchsia-800 mb-3 flex items-center gap-2">
-                                    <span className="w-3 h-3 rounded-full bg-fuchsia-500 shadow-sm"></span>
+                            {/* Algorithm 2 Results - Dynamic color based on algorithm type */ }
+                            <div className={ `border-2 rounded-xl p-4 shadow-md ${ comparisonResult.algorithm2.name === 'rl'
+                                ? 'border-teal-300 bg-gradient-to-br from-teal-50 to-white'
+                                : 'border-violet-300 bg-gradient-to-br from-violet-50 to-white'
+                                }` }>
+                                <h4 className={ `font-bold text-lg mb-3 flex items-center gap-2 ${ comparisonResult.algorithm2.name === 'rl' ? 'text-teal-800' : 'text-violet-800'
+                                    }` }>
+                                    <span className={ `w-3 h-3 rounded-full shadow-sm ${ comparisonResult.algorithm2.name === 'rl' ? 'bg-teal-500' : 'bg-violet-500'
+                                        }` }></span>
                                     { comparisonResult.algorithm2.name === 'rl' ? 'Reinforcement Learning' :
                                         comparisonResult.algorithm2.name === 'dijkstra' ? 'Dijkstra' :
                                             comparisonResult.algorithm2.name.charAt( 0 ).toUpperCase() + comparisonResult.algorithm2.name.slice( 1 ) }
                                 </h4>
                                 <div className="space-y-2 text-sm">
                                     <div className="flex justify-between bg-white/50 px-2 py-1.5 rounded-lg">
-                                        <span className="text-fuchsia-700 font-semibold">Distance:</span>
+                                        <span className={ `font-semibold ${ comparisonResult.algorithm2.name === 'rl' ? 'text-teal-700' : 'text-fuchsia-600' }` }>Distance:</span>
                                         <span className="font-bold text-gray-900">{ comparisonResult.algorithm2.path.totalDistance.toFixed( 0 ) } km</span>
                                     </div>
                                     <div className="flex justify-between bg-white/50 px-2 py-1.5 rounded-lg">
-                                        <span className="text-fuchsia-700 font-semibold">Latency:</span>
+                                        <span className={ `font-semibold ${ comparisonResult.algorithm2.name === 'rl' ? 'text-teal-700' : 'text-fuchsia-600' }` }>Latency:</span>
                                         <span className="font-bold text-gray-900">{ comparisonResult.algorithm2.path.estimatedLatency.toFixed( 0 ) } ms</span>
                                     </div>
                                     <div className="flex justify-between bg-white/50 px-2 py-1.5 rounded-lg">
-                                        <span className="text-fuchsia-700 font-semibold">Hops:</span>
+                                        <span className={ `font-semibold ${ comparisonResult.algorithm2.name === 'rl' ? 'text-teal-700' : 'text-fuchsia-600' }` }>Hops:</span>
                                         <span className="font-bold text-gray-900">{ comparisonResult.algorithm2.path.hops }</span>
                                     </div>
                                     <div className="flex justify-between bg-white/50 px-2 py-1.5 rounded-lg">
-                                        <span className="text-fuchsia-700 font-semibold">QoS Met:</span>
+                                        <span className={ `font-semibold ${ comparisonResult.algorithm2.name === 'rl' ? 'text-teal-700' : 'text-fuchsia-600' }` }>QoS Met:</span>
                                         <span className={ `font-bold px-3 py-1 rounded-lg ${ comparisonResult.algorithm2.qosMet ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }` }>
                                             { comparisonResult.algorithm2.qosMet ? '✓ Yes' : '✗ No' }
                                         </span>
@@ -531,8 +541,8 @@ export const ComparisonDashboard: React.FC = () => {
                                 Performance Comparison
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                                <div className="bg-gradient-to-br from-violet-50 to-violet-100 p-3 rounded-xl border border-violet-200 shadow-sm">
-                                    <div className="text-violet-700 font-semibold mb-1 uppercase text-xs">🏆 Best Distance</div>
+                                <div className="bg-gradient-to-br from-violet-50 to-fuchsia-50 p-3 rounded-xl border border-violet-200 shadow-sm">
+                                    <div className="text-fuchsia-600 font-semibold mb-1 uppercase text-xs">🏆 Best Distance</div>
                                     <div className="font-bold text-xl text-violet-900">
                                         { comparisonResult.comparison.bestDistance === 'rl' ? 'Reinforcement Learning' :
                                             comparisonResult.comparison.bestDistance === 'dijkstra' ? 'Dijkstra' :
@@ -619,44 +629,44 @@ export const ComparisonDashboard: React.FC = () => {
                             </h4>
                             <div className="space-y-3 text-sm">
                                 <div className="flex justify-between bg-white/50 p-2 rounded-lg">
-                                    <span className="text-violet-700 font-semibold">Distance:</span>
+                                    <span className="text-fuchsia-600 font-semibold">Distance:</span>
                                     <span className="font-bold text-gray-900">12,450 km</span>
                                 </div>
                                 <div className="flex justify-between bg-white/50 p-2 rounded-lg">
-                                    <span className="text-violet-700 font-semibold">Latency:</span>
+                                    <span className="text-fuchsia-600 font-semibold">Latency:</span>
                                     <span className="font-bold text-gray-900">125 ms</span>
                                 </div>
                                 <div className="flex justify-between bg-white/50 p-2 rounded-lg">
-                                    <span className="text-violet-700 font-semibold">Hops:</span>
+                                    <span className="text-fuchsia-600 font-semibold">Hops:</span>
                                     <span className="font-bold text-gray-900">8</span>
                                 </div>
                                 <div className="flex justify-between bg-white/50 p-2 rounded-lg">
-                                    <span className="text-violet-700 font-semibold">QoS Met:</span>
+                                    <span className="text-fuchsia-600 font-semibold">QoS Met:</span>
                                     <span className="font-bold px-3 py-1 rounded-lg bg-green-100 text-green-700">✓ Yes</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="border-2 border-fuchsia-200 rounded-2xl p-6 bg-gradient-to-br from-fuchsia-50 to-white">
-                            <h4 className="font-bold text-xl text-fuchsia-800 mb-4 flex items-center gap-2">
-                                <span className="w-4 h-4 rounded-full bg-fuchsia-500"></span>
+                        <div className="border-2 border-pink-200 rounded-2xl p-6 bg-gradient-to-br from-pink-50 to-white">
+                            <h4 className="font-bold text-xl text-pink-800 mb-4 flex items-center gap-2">
+                                <span className="w-4 h-4 rounded-full bg-pink-500"></span>
                                 Algorithm B (Example)
                             </h4>
                             <div className="space-y-3 text-sm">
                                 <div className="flex justify-between bg-white/50 p-2 rounded-lg">
-                                    <span className="text-fuchsia-700 font-semibold">Distance:</span>
+                                    <span className="text-pink-700 font-semibold">Distance:</span>
                                     <span className="font-bold text-gray-900">11,820 km</span>
                                 </div>
                                 <div className="flex justify-between bg-white/50 p-2 rounded-lg">
-                                    <span className="text-fuchsia-700 font-semibold">Latency:</span>
+                                    <span className="text-pink-700 font-semibold">Latency:</span>
                                     <span className="font-bold text-gray-900">98 ms</span>
                                 </div>
                                 <div className="flex justify-between bg-white/50 p-2 rounded-lg">
-                                    <span className="text-fuchsia-700 font-semibold">Hops:</span>
+                                    <span className="text-pink-700 font-semibold">Hops:</span>
                                     <span className="font-bold text-gray-900">6</span>
                                 </div>
                                 <div className="flex justify-between bg-white/50 p-2 rounded-lg">
-                                    <span className="text-fuchsia-700 font-semibold">QoS Met:</span>
+                                    <span className="text-pink-700 font-semibold">QoS Met:</span>
                                     <span className="font-bold px-3 py-1 rounded-lg bg-green-100 text-green-700">✓ Yes</span>
                                 </div>
                             </div>

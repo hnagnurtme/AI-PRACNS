@@ -265,7 +265,7 @@ export const CombinedHopMetricsChart: React.FC<Props> = ({ data, scenario }) => 
             <div className="mb-6">
                 <div className="flex justify-between items-center mb-4">
                     <div className="flex items-center gap-3">
-                        <div className="p-2 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg">
+                        <div className="p-2 bg-gradient-to-br from-rose-500 to-rose-600 rounded-lg">
                             <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                             </svg>
@@ -292,7 +292,7 @@ export const CombinedHopMetricsChart: React.FC<Props> = ({ data, scenario }) => 
                         stats.dijkstraDropped ? 'bg-red-50 border-red-400' : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-300'
                     }`}>
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+                            <span className="w-3 h-3 rounded-full bg-rose-500"></span>
                             <p className="text-sm font-semibold text-gray-700">Dijkstra Total Latency</p>
                         </div>
                         <p className="text-2xl font-bold text-blue-700 mb-1">
@@ -317,13 +317,13 @@ export const CombinedHopMetricsChart: React.FC<Props> = ({ data, scenario }) => 
                     {/* RL Stats */}
                     <div className={`p-4 rounded-xl border-2 shadow-md transition-all ${
                         !data.rlPacket ? 'bg-gray-50 border-gray-300' :
-                        stats.rlDropped ? 'bg-red-50 border-red-400' : 'bg-gradient-to-br from-orange-50 to-orange-100 border-orange-300'
+                        stats.rlDropped ? 'bg-red-50 border-red-400' : 'bg-gradient-to-br from-teal-50 to-teal-100 border-teal-300'
                     }`}>
                         <div className="flex items-center gap-2 mb-2">
-                            <span className="w-3 h-3 rounded-full bg-orange-500"></span>
+                            <span className="w-3 h-3 rounded-full bg-teal-500"></span>
                             <p className="text-sm font-semibold text-gray-700">RL Total Latency</p>
                         </div>
-                        <p className="text-2xl font-bold text-orange-700 mb-1">
+                        <p className="text-2xl font-bold text-teal-700 mb-1">
                             {!data.rlPacket ? (
                                 <span className="text-gray-400">N/A</span>
                             ) : (
@@ -375,7 +375,7 @@ export const CombinedHopMetricsChart: React.FC<Props> = ({ data, scenario }) => 
                         onClick={() => toggleMetric('latency')}
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                             visibleMetrics.latency
-                                ? 'bg-blue-500 text-white shadow-md'
+                                ? 'bg-rose-500 text-white shadow-md'
                                 : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
                         }`}
                     >
@@ -448,10 +448,10 @@ export const CombinedHopMetricsChart: React.FC<Props> = ({ data, scenario }) => 
                                 yAxisId="left"
                                 type="monotone"
                                 dataKey="dijkstraLatency"
-                                stroke="#2563eb"
+                                stroke="#e11d48"
                                 name="Dijkstra Latency (ms)"
                                 strokeWidth={3}
-                                dot={{ fill: '#2563eb', r: 4 }}
+                                dot={{ fill: '#e11d48', r: 4 }}
                                 activeDot={{ r: 6 }}
                                 connectNulls
                             />
@@ -459,10 +459,10 @@ export const CombinedHopMetricsChart: React.FC<Props> = ({ data, scenario }) => 
                                 yAxisId="left"
                                 type="monotone"
                                 dataKey="rlLatency"
-                                stroke="#f97316"
+                                stroke="#0d9488"
                                 name="RL Latency (ms)"
                                 strokeWidth={3}
-                                dot={{ fill: '#f97316', r: 4 }}
+                                dot={{ fill: '#0d9488', r: 4 }}
                                 activeDot={{ r: 6 }}
                                 connectNulls
                             />
@@ -503,7 +503,7 @@ export const CombinedHopMetricsChart: React.FC<Props> = ({ data, scenario }) => 
                             <Bar
                                 yAxisId="left"
                                 dataKey="dijkstraBandwidth"
-                                fill="#60a5fa"
+                                fill="#fda4af"
                                 name="Dijkstra Bandwidth (%)"
                                 opacity={0.6}
                                 radius={[4, 4, 0, 0]}
@@ -511,7 +511,7 @@ export const CombinedHopMetricsChart: React.FC<Props> = ({ data, scenario }) => 
                             <Bar
                                 yAxisId="left"
                                 dataKey="rlBandwidth"
-                                fill="#fb923c"
+                                fill="#5eead4"
                                 name="RL Bandwidth (%)"
                                 opacity={0.6}
                                 radius={[4, 4, 0, 0]}
