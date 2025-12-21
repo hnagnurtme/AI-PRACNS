@@ -140,14 +140,7 @@ const normalizePositions = (
     } ) );
 };
 
-const getLatencyColor = ( latencyMs: number, maxLatency: number ): string => {
-    const effectiveMax = maxLatency || 200;
-    const ratio = Math.min( latencyMs / effectiveMax, 1 );
 
-    if ( ratio < 0.3 ) return "#10b981"; // Green
-    if ( ratio < 0.7 ) return "#facc15"; // Yellow
-    return "#ef4444"; // Red
-};
 
 const getNodeSize = ( utilization: number ): number => {
     return 6 + utilization * 8; // Kích thước Node từ 6 đến 14
@@ -262,7 +255,7 @@ export const PacketRouteGraph: React.FC<Props> = ( { data } ) => {
             const fromOffset = getOffsetPoint( fromData.coord.x, fromData.coord.y, dx, dy, pathOffset );
             const toOffset = getOffsetPoint( toData.coord.x, toData.coord.y, dx, dy, pathOffset );
 
-            const strokeWidth = 2.5;
+
 
             // Use offset coordinates for text positioning
             const textX = ( fromOffset.x + toOffset.x ) / 2;
