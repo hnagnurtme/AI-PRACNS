@@ -1,3 +1,138 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ===== COSMIC UI FOUNDATION ===== */
+
+/* Star field background animation */
+@layer base {
+    :root {
+        --cosmic-black: #0a0a0f;
+        --cosmic-navy: #0f172a;
+        --cosmic-dark: #1e1b4b;
+        --nebula-purple: #7c3aed;
+        --nebula-pink: #db2777;
+        --nebula-cyan: #06b6d4;
+    }
+
+    body {
+        @apply bg-cosmic-black text-white antialiased;
+        background: linear-gradient(to bottom right, #0a0a0f 0%, #0f172a 50%, #1e1b4b 100%);
+        min-height: 100vh;
+    }
+}
+
+@layer components {
+
+    /* Glassmorphism Card */
+    .glass-card {
+        @apply backdrop-blur-lg bg-white/5 border border-white/10 rounded-2xl;
+    }
+
+    /* Nebula Glow Card */
+    .nebula-card {
+        @apply backdrop-blur-lg bg-gradient-to-br from-nebula-purple/10 to-nebula-pink/10 border border-nebula-purple/20 rounded-2xl shadow-nebula;
+    }
+
+    /* Cosmic Button */
+    .cosmic-btn {
+        @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+        @apply bg-gradient-to-r from-nebula-purple to-nebula-pink text-white;
+        @apply hover:shadow-nebula-lg hover:scale-105;
+        @apply active:scale-95;
+    }
+
+    /* Cosmic Button Secondary */
+    .cosmic-btn-secondary {
+        @apply px-6 py-3 rounded-xl font-semibold transition-all duration-300;
+        @apply bg-white/5 border border-white/20 text-white;
+        @apply hover:bg-white/10 hover:border-nebula-purple/50;
+    }
+
+    /* Star Badge */
+    .star-badge {
+        @apply inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium;
+        @apply bg-star-gold/20 text-star-gold border border-star-gold/30;
+    }
+
+    /* Nebula Input */
+    .cosmic-input {
+        @apply w-full px-4 py-3 rounded-xl transition-all duration-200;
+        @apply bg-white/5 border border-white/10 text-white placeholder-white/40;
+        @apply focus:outline-none focus:ring-2 focus:ring-nebula-purple/50 focus:border-nebula-purple/50;
+        @apply hover:border-white/20;
+    }
+
+    /* Cosmic Select */
+    .cosmic-select {
+        @apply w-full px-4 py-3 rounded-xl transition-all duration-200 cursor-pointer;
+        @apply bg-white/5 border border-white/10 text-white;
+        @apply focus:outline-none focus:ring-2 focus:ring-nebula-purple/50 focus:border-nebula-purple/50;
+        @apply hover:border-white/20;
+    }
+
+    /* Status Badges */
+    .status-healthy {
+        @apply bg-emerald-500/20 text-emerald-400 border-emerald-500/30;
+    }
+
+    .status-warning {
+        @apply bg-amber-500/20 text-amber-400 border-amber-500/30;
+    }
+
+    .status-critical {
+        @apply bg-red-500/20 text-red-400 border-red-500/30;
+    }
+
+    /* Glowing Text */
+    .glow-text {
+        text-shadow: 0 0 20px rgba(124, 58, 237, 0.5);
+    }
+
+    /* Nebula Divider */
+    .nebula-divider {
+        @apply h-px bg-gradient-to-r from-transparent via-nebula-purple/50 to-transparent;
+    }
+}
+
+@layer utilities {
+
+    /* Animated star background */
+    .stars-bg {
+        background-image:
+            radial-gradient(2px 2px at 20px 30px, rgba(255, 255, 255, 0.3), transparent),
+            radial-gradient(2px 2px at 40px 70px, rgba(255, 255, 255, 0.2), transparent),
+            radial-gradient(1px 1px at 90px 40px, rgba(255, 255, 255, 0.4), transparent),
+            radial-gradient(2px 2px at 130px 80px, rgba(255, 255, 255, 0.2), transparent),
+            radial-gradient(1px 1px at 160px 120px, rgba(255, 255, 255, 0.3), transparent);
+        background-repeat: repeat;
+        background-size: 200px 200px;
+    }
+
+    /* Nebula overlay effect */
+    .nebula-overlay {
+        background: radial-gradient(ellipse at 30% 20%, rgba(124, 58, 237, 0.1) 0%, transparent 50%),
+            radial-gradient(ellipse at 70% 80%, rgba(219, 39, 119, 0.08) 0%, transparent 50%),
+            radial-gradient(ellipse at 50% 50%, rgba(6, 182, 212, 0.05) 0%, transparent 70%);
+    }
+
+    /* Scrollbar styling */
+    .cosmic-scrollbar::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .cosmic-scrollbar::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 4px;
+    }
+
+    .cosmic-scrollbar::-webkit-scrollbar-thumb {
+        background: linear-gradient(180deg, #7c3aed, #db2777);
+        border-radius: 4px;
+    }
+
+    .cosmic-scrollbar::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(180deg, #8b5cf6, #ec4899);
+    }
+}

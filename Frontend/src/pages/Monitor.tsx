@@ -177,20 +177,20 @@ export const ComparisonDashboard: React.FC = () => {
     const comparisonData = convertToComparisonData( comparisonResult );
 
     return (
-        <div className="p-6 space-y-6 bg-gradient-to-br from-slate-50 via-violet-50 to-fuchsia-50 min-h-screen">
+        <div className="p-6 space-y-6 bg-cosmic-black min-h-screen cosmic-scrollbar">
 
 
             {/* Form Section */ }
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border-2 border-violet-200">
+            <div className="glass-card p-8">
                 <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-gradient-to-br from-violet-600 to-fuchsia-600 rounded-xl shadow-lg">
+                    <div className="p-3 bg-gradient-to-br from-nebula-purple to-nebula-pink rounded-xl shadow-nebula">
                         <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={ 2 } d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                         </svg>
                     </div>
                     <div>
-                        <h2 className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">Algorithm Comparison Monitor</h2>
-                        <p className="text-sm text-violet-600 font-medium">Compare routing algorithms with different network scenarios</p>
+                        <h2 className="text-3xl font-bold bg-gradient-to-r from-nebula-purple via-nebula-pink to-nebula-cyan bg-clip-text text-transparent glow-text">Algorithm Comparison Monitor</h2>
+                        <p className="text-sm text-star-silver/70">Compare routing algorithms with different network scenarios</p>
                     </div>
                 </div>
 
@@ -198,14 +198,14 @@ export const ComparisonDashboard: React.FC = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {/* Source Terminal */ }
                         <div>
-                            <label htmlFor="sourceTerminal" className="block text-sm font-semibold text-fuchsia-600 mb-2 uppercase tracking-wide">
+                            <label htmlFor="sourceTerminal" className="block text-sm font-semibold text-nebula-cyan mb-2 uppercase tracking-wide">
                                 📡 Source Terminal
                             </label>
                             <select
                                 id="sourceTerminal"
                                 value={ sourceTerminalId }
                                 onChange={ ( e ) => setSourceTerminalId( e.target.value ) }
-                                className="block w-full px-4 py-3 border-2 border-violet-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 bg-white"
+                                className="cosmic-select"
                                 disabled={ loading || loadingTerminals }
                                 required
                             >
@@ -220,14 +220,14 @@ export const ComparisonDashboard: React.FC = () => {
 
                         {/* Destination Terminal */ }
                         <div>
-                            <label htmlFor="destinationTerminal" className="block text-sm font-semibold text-fuchsia-600 mb-2 uppercase tracking-wide">
+                            <label htmlFor="destinationTerminal" className="block text-sm font-semibold text-nebula-cyan mb-2 uppercase tracking-wide">
                                 🎯 Destination Terminal
                             </label>
                             <select
                                 id="destinationTerminal"
                                 value={ destinationTerminalId }
                                 onChange={ ( e ) => setDestinationTerminalId( e.target.value ) }
-                                className="block w-full px-4 py-3 border-2 border-violet-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 bg-white"
+                                className="cosmic-select"
                                 disabled={ loading || loadingTerminals }
                                 required
                             >
@@ -255,7 +255,7 @@ export const ComparisonDashboard: React.FC = () => {
                                 id="algorithm1"
                                 value={ algorithm1 }
                                 onChange={ ( e ) => setAlgorithm1( e.target.value as 'simple' | 'dijkstra' | 'rl' ) }
-                                className="block w-full px-4 py-3 border-2 border-violet-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 bg-white"
+                                className="cosmic-select"
                                 disabled={ loading }
                                 required
                             >
@@ -267,7 +267,7 @@ export const ComparisonDashboard: React.FC = () => {
 
                         {/* Algorithm 2 */ }
                         <div>
-                            <label htmlFor="algorithm2" className="block text-sm font-semibold text-fuchsia-600 mb-2 uppercase tracking-wide">
+                            <label htmlFor="algorithm2" className="block text-sm font-semibold text-nebula-cyan mb-2 uppercase tracking-wide">
                                 <span className="flex items-center gap-1">
                                     <span>🔶</span>
                                     <span>Algorithm 2</span>
@@ -277,7 +277,7 @@ export const ComparisonDashboard: React.FC = () => {
                                 id="algorithm2"
                                 value={ algorithm2 }
                                 onChange={ ( e ) => setAlgorithm2( e.target.value as 'simple' | 'dijkstra' | 'rl' ) }
-                                className="block w-full px-4 py-3 border-2 border-violet-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 bg-white"
+                                className="cosmic-select"
                                 disabled={ loading }
                                 required
                             >
@@ -289,11 +289,11 @@ export const ComparisonDashboard: React.FC = () => {
                     </div>
 
                     {/* Service QoS */ }
-                    <div className="bg-gradient-to-r from-violet-50 to-fuchsia-50 p-4 rounded-xl border border-violet-200">
-                        <h3 className="text-sm font-bold text-violet-800 mb-3 uppercase tracking-wide">⚙️ QoS Requirements</h3>
+                    <div className="glass-card p-4">
+                        <h3 className="text-sm font-bold text-nebula-cyan mb-3 uppercase tracking-wide">⚙️ QoS Requirements</h3>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                             <div>
-                                <label htmlFor="maxLatency" className="block text-xs font-semibold text-fuchsia-600 mb-2 uppercase">
+                                <label htmlFor="maxLatency" className="block text-xs font-semibold text-nebula-cyan mb-2 uppercase">
                                     Max Latency
                                 </label>
                                 <div className="relative">
@@ -302,15 +302,15 @@ export const ComparisonDashboard: React.FC = () => {
                                         id="maxLatency"
                                         value={ serviceQos.maxLatencyMs }
                                         onChange={ ( e ) => setServiceQos( { ...serviceQos, maxLatencyMs: Number( e.target.value ) } ) }
-                                        className="block w-full px-4 py-2 border-2 border-violet-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                                        className="cosmic-input"
                                         disabled={ loading }
                                         min="1"
                                     />
-                                    <span className="absolute right-3 top-2 text-xs text-gray-500 font-medium">ms</span>
+                                    <span className="absolute right-3 top-3 text-xs text-star-silver font-medium">ms</span>
                                 </div>
                             </div>
                             <div>
-                                <label htmlFor="minBandwidth" className="block text-xs font-semibold text-fuchsia-600 mb-2 uppercase">
+                                <label htmlFor="minBandwidth" className="block text-xs font-semibold text-nebula-cyan mb-2 uppercase">
                                     Min Bandwidth
                                 </label>
                                 <div className="relative">
@@ -319,16 +319,16 @@ export const ComparisonDashboard: React.FC = () => {
                                         id="minBandwidth"
                                         value={ serviceQos.minBandwidthMbps }
                                         onChange={ ( e ) => setServiceQos( { ...serviceQos, minBandwidthMbps: Number( e.target.value ) } ) }
-                                        className="block w-full px-4 py-2 border-2 border-violet-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                                        className="cosmic-input"
                                         disabled={ loading }
                                         min="0.1"
                                         step="0.1"
                                     />
-                                    <span className="absolute right-3 top-2 text-xs text-gray-500 font-medium">Mbps</span>
+                                    <span className="absolute right-3 top-3 text-xs text-star-silver font-medium">Mbps</span>
                                 </div>
                             </div>
                             <div>
-                                <label htmlFor="maxLossRate" className="block text-xs font-semibold text-fuchsia-600 mb-2 uppercase">
+                                <label htmlFor="maxLossRate" className="block text-xs font-semibold text-nebula-cyan mb-2 uppercase">
                                     Max Loss Rate
                                 </label>
                                 <div className="relative">
@@ -337,17 +337,17 @@ export const ComparisonDashboard: React.FC = () => {
                                         id="maxLossRate"
                                         value={ serviceQos.maxLossRate }
                                         onChange={ ( e ) => setServiceQos( { ...serviceQos, maxLossRate: Number( e.target.value ) } ) }
-                                        className="block w-full px-4 py-2 border-2 border-violet-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                                        className="cosmic-input"
                                         disabled={ loading }
                                         min="0"
                                         max="1"
                                         step="0.01"
                                     />
-                                    <span className="absolute right-3 top-2 text-xs text-gray-500 font-medium">rate</span>
+                                    <span className="absolute right-3 top-3 text-xs text-star-silver font-medium">rate</span>
                                 </div>
                             </div>
                             <div>
-                                <label htmlFor="priority" className="block text-xs font-semibold text-fuchsia-600 mb-2 uppercase">
+                                <label htmlFor="priority" className="block text-xs font-semibold text-nebula-cyan mb-2 uppercase">
                                     Priority Level
                                 </label>
                                 <input
@@ -355,7 +355,7 @@ export const ComparisonDashboard: React.FC = () => {
                                     id="priority"
                                     value={ serviceQos.priority }
                                     onChange={ ( e ) => setServiceQos( { ...serviceQos, priority: Number( e.target.value ) } ) }
-                                    className="block w-full px-4 py-2 border-2 border-violet-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500"
+                                    className="cosmic-input"
                                     disabled={ loading }
                                     min="1"
                                     max="10"
@@ -365,11 +365,11 @@ export const ComparisonDashboard: React.FC = () => {
                     </div>
 
                     {/* Submit Button */ }
-                    <div className="flex justify-end pt-6 border-t-2 border-violet-200 mt-6">
+                    <div className="flex justify-end pt-6 border-t border-white/10 mt-6">
                         <button
                             type="submit"
                             disabled={ loading || loadingTerminals || !sourceTerminalId || !destinationTerminalId }
-                            className="px-10 py-4 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white rounded-xl hover:from-violet-700 hover:to-fuchsia-700 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed transition-all shadow-xl hover:shadow-2xl font-bold flex items-center gap-3 text-lg"
+                            className="cosmic-btn px-10 py-4 text-lg"
                         >
                             { loading ? (
                                 <>
