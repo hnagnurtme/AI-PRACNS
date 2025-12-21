@@ -477,6 +477,15 @@ class ImitationLearning:
         
         for demo in self.expert_demos:
             for i, demo_state in enumerate(demo.states):
+                # Handle dimension mismatch: pad or truncate to match
+                state_dim = len(state)
+                demo_dim = len(demo_state)
+                
+                if state_dim != demo_dim:
+                    # If dimensions don't match, skip this demo
+                    # This can happen if state dimension changed after demos were generated
+                    continue
+                
                 # Simple cosine similarity
                 similarity = np.dot(state, demo_state) / (
                     np.linalg.norm(state) * np.linalg.norm(demo_state) + 1e-8

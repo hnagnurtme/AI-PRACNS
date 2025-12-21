@@ -90,11 +90,22 @@ class EnhancedRoutingTrainer(RoutingTrainer):
         logger.info(f"Starting enhanced training: {max_episodes} episodes")
         logger.info(f"State dim: {state_dim}, Action dim: {action_dim}")
         
-        if self.use_imitation and len(self.imitation.expert_demos) == 0:
-            logger.info("Generating expert demonstrations...")
-            imitation_config = self.config.get('imitation_learning', {})
-            num_demos = imitation_config.get('num_demos', 500)
-            self.imitation.generate_comprehensive_demos(terminals, nodes, num_demos=num_demos)
+        if self.use_imitation:
+            # Clear old demos if state dimension changed (e.g., max_nodes changed)
+            if len(self.imitation.expert_demos) > 0:
+                # Check if demo state dimension matches current state dimension
+                first_demo = self.imitation.expert_demos[0]
+                if len(first_demo.states) > 0:
+                    demo_state_dim = len(first_demo.states[0])
+                    if demo_state_dim != state_dim:
+                        logger.info(f"State dimension changed ({demo_state_dim} → {state_dim}), clearing old demonstrations")
+                        self.imitation.expert_demos.clear()
+            
+            if len(self.imitation.expert_demos) == 0:
+                logger.info("Generating expert demonstrations...")
+                imitation_config = self.config.get('imitation_learning', {})
+                num_demos = imitation_config.get('num_demos', 500)
+                self.imitation.generate_comprehensive_demos(terminals, nodes, num_demos=num_demos)
         
         # Training loop
         for episode in range(max_episodes):
@@ -171,6 +182,12 @@ class EnhancedRoutingTrainer(RoutingTrainer):
                 if train_metrics:
                     episode_losses.append(train_metrics['loss'])
                     self.training_losses.append(train_metrics['loss'])
+                elif agent.total_steps % 100 == 0 and len(agent.replay_buffer) < agent.learning_starts:
+                    # Log buffer status periodically
+                    logger.debug(
+                        f"Buffer: {len(agent.replay_buffer)}/{agent.learning_starts} "
+                        f"(training starts at {agent.learning_starts} experiences)"
+                    )
                 
                 # Update state
                 state = next_state
@@ -214,6 +231,21 @@ class EnhancedRoutingTrainer(RoutingTrainer):
                 success_rate = len([r for r in self.episode_rewards if r > 0]) / max(len(self.episode_rewards), 1)
                 self.imitation.update_dagger(success_rate)
             
+            # Calculate coverage and success
+            visited_nodes = len(env.visited_nodes) if hasattr(env, 'visited_nodes') else 0
+            total_nodes = len(nodes)
+            coverage = visited_nodes / total_nodes if total_nodes > 0 else 0.0
+            if not hasattr(self, 'episode_coverage'):
+                self.episode_coverage = deque(maxlen=100)
+                self.episode_success = deque(maxlen=100)
+                self.reward_per_step = deque(maxlen=100)
+            
+            self.episode_coverage.append(coverage)
+            success = 1 if terminated else 0
+            self.episode_success.append(success)
+            reward_per_step = episode_reward / episode_length if episode_length > 0 else 0.0
+            self.reward_per_step.append(reward_per_step)
+            
             # Update metrics
             self.episode_rewards.append(episode_reward)
             self.episode_lengths.append(episode_length)
@@ -245,18 +277,38 @@ class EnhancedRoutingTrainer(RoutingTrainer):
                 
                 logger.info(log_msg)
                 
-                # Tensorboard
+                # Calculate additional metrics
+                mean_coverage = np.mean(list(self.episode_coverage)[-10:]) if hasattr(self, 'episode_coverage') and self.episode_coverage else 0.0
+                mean_success = np.mean(list(self.episode_success)[-10:]) if hasattr(self, 'episode_success') and self.episode_success else 0.0
+                mean_reward_per_step = np.mean(list(self.reward_per_step)[-10:]) if hasattr(self, 'reward_per_step') and self.reward_per_step else 0.0
+                
+                # Tensorboard - organized by category
                 if self.writer:
-                    self.writer.add_scalar('train/reward', episode_reward, episode)
-                    self.writer.add_scalar('train/mean_reward', mean_reward, episode)
-                    self.writer.add_scalar('train/loss', mean_loss, episode)
+                    # Training metrics
+                    self.writer.add_scalar('1_Training/Reward', episode_reward, episode)
+                    self.writer.add_scalar('1_Training/Mean_Reward_10ep', mean_reward, episode)
+                    self.writer.add_scalar('1_Training/Reward_Per_Step', reward_per_step, episode)
+                    self.writer.add_scalar('1_Training/Mean_Reward_Per_Step_10ep', mean_reward_per_step, episode)
+                    self.writer.add_scalar('1_Training/Episode_Length', episode_length, episode)
+                    self.writer.add_scalar('1_Training/Mean_Length_10ep', mean_length, episode)
+                    self.writer.add_scalar('1_Training/Loss', mean_loss, episode)
+                    self.writer.add_scalar('1_Training/Epsilon', agent.epsilon, episode)
                     
+                    # Coverage metrics
+                    self.writer.add_scalar('2_Coverage/Node_Coverage', coverage, episode)
+                    self.writer.add_scalar('2_Coverage/Mean_Coverage_10ep', mean_coverage, episode)
+                    
+                    # Success metrics
+                    self.writer.add_scalar('3_Success/Success_Rate', success, episode)
+                    self.writer.add_scalar('3_Success/Mean_Success_Rate_10ep', mean_success, episode)
+                    
+                    # Enhanced features
                     if self.use_curriculum:
-                        self.writer.add_scalar('curriculum/level', stats['current_level'], episode)
-                        self.writer.add_scalar('curriculum/difficulty', stats['difficulty'], episode)
+                        self.writer.add_scalar('7_Enhanced/Curriculum_Level', stats['current_level'], episode)
+                        self.writer.add_scalar('7_Enhanced/Curriculum_Difficulty', stats['difficulty'], episode)
                     
                     if self.use_imitation:
-                        self.writer.add_scalar('imitation/expert_ratio', self.imitation.mixing_ratio, episode)
+                        self.writer.add_scalar('7_Enhanced/Imitation_Expert_Ratio', self.imitation.mixing_ratio, episode)
             
             # Evaluation
             if (episode + 1) % self.eval_frequency == 0:
@@ -271,8 +323,18 @@ class EnhancedRoutingTrainer(RoutingTrainer):
                 )
                 
                 if self.writer:
-                    self.writer.add_scalar('eval/mean_reward', eval_reward, episode)
-                    self.writer.add_scalar('eval/success_rate', eval_metrics['success_rate'], episode)
+                    # Evaluation metrics - organized
+                    self.writer.add_scalar('6_Evaluation/Mean_Reward', eval_reward, episode)
+                    self.writer.add_scalar('6_Evaluation/Success_Rate', eval_metrics['success_rate'], episode)
+                    self.writer.add_scalar('6_Evaluation/Mean_Hops', eval_metrics.get('mean_hops', 0), episode)
+                    self.writer.add_scalar('6_Evaluation/Mean_Latency', eval_metrics.get('mean_latency', 0), episode)
+                    self.writer.add_scalar('6_Evaluation/Std_Reward', eval_metrics.get('std_reward', 0), episode)
+                    self.writer.add_scalar('6_Evaluation/Mean_Length', eval_metrics.get('mean_length', 0), episode)
+                    
+                    # Reward per episode ratio
+                    if eval_metrics.get('mean_length', 0) > 0:
+                        eval_reward_per_step = eval_reward / eval_metrics['mean_length']
+                        self.writer.add_scalar('6_Evaluation/Reward_Per_Step', eval_reward_per_step, episode)
                 
                 # Early stopping và save best model
                 if eval_reward > self.best_mean_reward:

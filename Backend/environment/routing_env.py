@@ -91,7 +91,11 @@ class RoutingEnvironment(gym.Env):
             self.max_steps = max(base_max_steps, estimated_max_hops)
             self.adaptive_max_steps = True
             if self.max_steps > base_max_steps:
-                logger.info(f"Dynamic max_steps: {self.max_steps} (network_size={network_size}, base={base_max_steps})")
+                logger.info(
+                    f"Dynamic max_steps: {self.max_steps} "
+                    f"(operational_nodes={network_size}, base={base_max_steps}, "
+                    f"estimated_hops={estimated_max_hops})"
+                )
         else:
             self.max_steps = max_steps
             self.adaptive_max_steps = False
@@ -486,42 +490,30 @@ class RoutingEnvironment(gym.Env):
                 
             estimated_utilization = min(UTILIZATION_MAX_PERCENT, next_node_utilization)
             
+            # Simplified utilization penalty - max -10
             if estimated_utilization > 90:
-                reward -= 40.0
-            elif estimated_utilization > UTILIZATION_HIGH_PERCENT:
-                reward -= 25.0
-            elif estimated_utilization > UTILIZATION_MEDIUM_PERCENT:
-                reward -= 15.0
-            elif estimated_utilization > 60:
-                reward -= 8.0
+                reward -= 10.0
+            elif estimated_utilization > 80:
+                reward -= 5.0
             elif estimated_utilization < 30:
-                reward += 10.0
+                reward += 5.0
             
+            # Simplified GS connection penalty
             if next_node_type == 'GROUND_STATION':
                 if next_connection_count <= 2:
-                    reward += 8.0
-                elif next_connection_count <= 5:
-                    reward += 3.0
+                    reward += 5.0
                 elif next_connection_count > GS_CONNECTION_OVERLOADED:
-                    reward -= 25.0
-                elif next_connection_count > GS_CONNECTION_HIGH:
-                    reward -= 15.0
+                    reward -= 10.0
                 
-            battery_level = next_node.get('batteryChargePercent', BATTERY_MAX_PERCENT)
+            # Simplified battery penalty - only critical
+            battery_level = next_node.get('batteryChargePercent', 100)
             if battery_level < 20:
-                reward -= 10.0  # Battery rất thấp - penalty lớn
-            elif battery_level < 30:
                 reward -= 5.0
-            elif battery_level < 50:
-                reward -= 2.0
                 
+            # Simplified loss rate penalty
             loss_rate = next_node.get('packetLossRate', 0)
             if loss_rate > 0.1:
-                reward -= loss_rate * 50.0
-            elif loss_rate > 0.05:
-                reward -= loss_rate * 30.0
-            elif loss_rate > 0:
-                reward -= loss_rate * 10.0
+                reward -= 10.0
         
         truncated = self.step_count >= self.max_steps
         if truncated and not terminated:

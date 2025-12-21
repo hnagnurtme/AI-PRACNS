@@ -26,7 +26,7 @@ rl_agent:
     learning_rate: 0.0001
     batch_size: 64  # Increased for better stability
     buffer_size: 100000
-    learning_starts: 5000  # More samples before training
+    learning_starts: 1000  # Reduced for faster learning start (was 5000, too high for short episodes)
     target_update_interval: 1000
     gamma: 0.99
     tau: 0.005  # Soft updates for stability
@@ -55,7 +55,7 @@ rl_agent:
 # Phase 1 Enhancement: Increased features for Dijkstra-like state representation
 state_builder:
   # Optimized dimensions
-  max_nodes: 30  # Reduced from 50 for performance
+  max_nodes: 53  # Match actual operational nodes count
   max_terminals: 2  # Only need source + destination
   
   # Phase 1: Enhanced feature dimensions
@@ -154,10 +154,10 @@ reward:
   penalty_multiplier: 3.0  # Multiplier for penalty (3.0x)
   
   # Primary Rewards (optimized scales)
-  success_reward: 200.0
-  failure_penalty: -10.0  # Giảm từ -30.0 xuống -10.0
-  step_penalty: -10.0  # Phase 1: Increased for Dijkstra alignment
-  hop_penalty: -15.0  # Phase 1: Increased for Dijkstra alignment
+  success_reward: 500.0
+  failure_penalty: -50.0
+  step_penalty: -1.0
+  hop_penalty: -2.0
   
   # Progressive Rewards - Tăng để khuyến khích progress
   progress_reward_scale: 100.0  # Tăng từ 15.0 lên 100.0
@@ -173,15 +173,15 @@ reward:
   efficiency_bonus: 20.0
   inefficiency_penalty: -10.0
   
-  # Resource Awareness - Giảm penalties
-  high_utilization_penalty: -2.0  # Giảm từ -5.0
-  medium_utilization_penalty: -1.0  # Giảm từ -2.0
-  loss_rate_penalty_scale: 5.0  # Giảm từ 10.0
+  # Resource Awareness - Reduced penalties
+  high_utilization_penalty: -1.0
+  medium_utilization_penalty: -0.5
+  loss_rate_penalty_scale: 3.0
 
 # Action Space Configuration
 action_space:
   type: "discrete"
-  max_actions: 30  # Matches max_nodes
+  max_actions: 53  # Matches max_nodes (actual operational nodes)
   
   # Action Selection
   use_action_masking: true

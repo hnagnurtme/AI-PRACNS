@@ -69,20 +69,35 @@ class RoutingTrainer:
         self.episode_lengths = deque(maxlen=100)
         self.training_losses = deque(maxlen=500)
         self.epsilon_history = deque(maxlen=100)
+        self.episode_success = deque(maxlen=100)
+        self.episode_coverage = deque(maxlen=100)
+        self.reward_per_step = deque(maxlen=100)
         
         # Performance monitoring
         self.episode_times = deque(maxlen=50)
         
         # Tensorboard
         self.tensorboard_enabled = training_config.get('tensorboard_enabled', True)
-        self.tensorboard_log_dir = rl_config.get('tensorboard_log_dir', './logs/tensorboard')
+        tensorboard_log_dir_str = rl_config.get('tensorboard_log_dir', './logs/tensorboard')
+        
+        # Convert to absolute path to avoid issues with relative paths
+        if not os.path.isabs(tensorboard_log_dir_str):
+            # Get Backend root directory (parent of training directory)
+            backend_root = Path(__file__).parent.parent
+            self.tensorboard_log_dir = backend_root / tensorboard_log_dir_str.lstrip('./')
+        else:
+            self.tensorboard_log_dir = Path(tensorboard_log_dir_str)
+        
+        # Create directory if it doesn't exist
+        self.tensorboard_log_dir.mkdir(parents=True, exist_ok=True)
+        
         self.writer = None
         
         if self.tensorboard_enabled:
             try:
                 from torch.utils.tensorboard import SummaryWriter
-                self.writer = SummaryWriter(log_dir=self.tensorboard_log_dir)
-                logger.info(f"Tensorboard logging to {self.tensorboard_log_dir}")
+                self.writer = SummaryWriter(log_dir=str(self.tensorboard_log_dir))
+                logger.info(f"Tensorboard logging to {self.tensorboard_log_dir.absolute()}")
             except ImportError:
                 logger.warning("Tensorboard not available")
                 self.tensorboard_enabled = False
@@ -157,6 +172,12 @@ class RoutingTrainer:
                 if train_metrics:
                     episode_losses.append(train_metrics['loss'])
                     self.training_losses.append(train_metrics['loss'])
+                elif agent.total_steps % 100 == 0 and len(agent.replay_buffer) < agent.learning_starts:
+                    # Log buffer status periodically
+                    logger.debug(
+                        f"Buffer: {len(agent.replay_buffer)}/{agent.learning_starts} "
+                        f"(training starts at {agent.learning_starts} experiences)"
+                    )
                 
                 # Update state
                 state = next_state
@@ -177,6 +198,20 @@ class RoutingTrainer:
             self.episode_lengths.append(episode_length)
             self.epsilon_history.append(agent.epsilon)
             
+            # Calculate coverage (visited nodes / total nodes)
+            visited_nodes = len(env.visited_nodes) if hasattr(env, 'visited_nodes') else 0
+            total_nodes = len(nodes)
+            coverage = visited_nodes / total_nodes if total_nodes > 0 else 0.0
+            self.episode_coverage.append(coverage)
+            
+            # Calculate success
+            success = 1 if terminated else 0
+            self.episode_success.append(success)
+            
+            # Calculate reward per step
+            reward_per_step = episode_reward / episode_length if episode_length > 0 else 0.0
+            self.reward_per_step.append(reward_per_step)
+            
             episode_time = time.time() - episode_start_time
             self.episode_times.append(episode_time)
             
@@ -187,6 +222,9 @@ class RoutingTrainer:
                 mean_loss = np.mean(list(self.training_losses)[-100:]) if self.training_losses else 0.0
                 mean_epsilon = np.mean(list(self.epsilon_history)[-10:])
                 mean_episode_time = np.mean(list(self.episode_times)[-10:])
+                mean_coverage = np.mean(list(self.episode_coverage)[-10:]) if self.episode_coverage else 0.0
+                mean_success = np.mean(list(self.episode_success)[-10:]) if self.episode_success else 0.0
+                mean_reward_per_step = np.mean(list(self.reward_per_step)[-10:]) if self.reward_per_step else 0.0
                 
                 logger.info(
                     f"Episode {episode + 1}/{max_episodes} | "
@@ -194,19 +232,43 @@ class RoutingTrainer:
                     f"Length: {episode_length} (avg: {mean_length:.1f}) | "
                     f"Loss: {mean_loss:.4f} | "
                     f"Epsilon: {agent.epsilon:.3f} | "
-                    f"Time: {mean_episode_time:.2f}s | "
-                    f"Memory: {self._get_memory_usage()} MB"
+                    f"Coverage: {coverage:.2%} (avg: {mean_coverage:.2%}) | "
+                    f"Success: {success} (avg: {mean_success:.2%}) | "
+                    f"Reward/Step: {reward_per_step:.2f} (avg: {mean_reward_per_step:.2f}) | "
+                    f"Time: {mean_episode_time:.2f}s"
                 )
                 
-                # Tensorboard logging
+                # Tensorboard logging - organized by category
                 if self.writer:
-                    self.writer.add_scalar('train/reward', episode_reward, episode)
-                    self.writer.add_scalar('train/episode_length', episode_length, episode)
-                    self.writer.add_scalar('train/mean_reward', mean_reward, episode)
-                    self.writer.add_scalar('train/epsilon', agent.epsilon, episode)
-                    self.writer.add_scalar('train/loss', mean_loss, episode)
-                    self.writer.add_scalar('train/episode_time', mean_episode_time, episode)
-                    self.writer.add_scalar('train/memory_usage', self._get_memory_usage(), episode)
+                    # Training metrics
+                    self.writer.add_scalar('1_Training/Reward', episode_reward, episode)
+                    self.writer.add_scalar('1_Training/Mean_Reward_10ep', mean_reward, episode)
+                    self.writer.add_scalar('1_Training/Reward_Per_Step', reward_per_step, episode)
+                    self.writer.add_scalar('1_Training/Mean_Reward_Per_Step_10ep', mean_reward_per_step, episode)
+                    self.writer.add_scalar('1_Training/Episode_Length', episode_length, episode)
+                    self.writer.add_scalar('1_Training/Mean_Length_10ep', mean_length, episode)
+                    self.writer.add_scalar('1_Training/Loss', mean_loss, episode)
+                    self.writer.add_scalar('1_Training/Epsilon', agent.epsilon, episode)
+                    
+                    # Coverage metrics
+                    self.writer.add_scalar('2_Coverage/Node_Coverage', coverage, episode)
+                    self.writer.add_scalar('2_Coverage/Mean_Coverage_10ep', mean_coverage, episode)
+                    
+                    # Success metrics
+                    self.writer.add_scalar('3_Success/Success_Rate', success, episode)
+                    self.writer.add_scalar('3_Success/Mean_Success_Rate_10ep', mean_success, episode)
+                    
+                    # Performance metrics
+                    self.writer.add_scalar('4_Performance/Episode_Time', episode_time, episode)
+                    self.writer.add_scalar('4_Performance/Mean_Time_10ep', mean_episode_time, episode)
+                    self.writer.add_scalar('4_Performance/Memory_Usage_MB', self._get_memory_usage(), episode)
+                    
+                    # Agent metrics
+                    if len(episode_losses) > 0:
+                        agent_stats = agent.get_training_stats()
+                        self.writer.add_scalar('5_Agent/Q_Value', agent_stats.get('avg_q_value', 0), episode)
+                        self.writer.add_scalar('5_Agent/Buffer_Size', agent_stats.get('buffer_size', 0), episode)
+                        self.writer.add_scalar('5_Agent/Learning_Rate', agent_stats.get('learning_rate', 0), episode)
             
             # Evaluation với early stopping
             if (episode + 1) % self.eval_frequency == 0:
@@ -222,10 +284,18 @@ class RoutingTrainer:
                 )
                 
                 if self.writer:
-                    self.writer.add_scalar('eval/mean_reward', eval_reward, episode)
-                    self.writer.add_scalar('eval/success_rate', eval_metrics['success_rate'], episode)
-                    self.writer.add_scalar('eval/mean_hops', eval_metrics['mean_hops'], episode)
-                    self.writer.add_scalar('eval/mean_latency', eval_metrics['mean_latency'], episode)
+                    # Evaluation metrics - organized
+                    self.writer.add_scalar('6_Evaluation/Mean_Reward', eval_reward, episode)
+                    self.writer.add_scalar('6_Evaluation/Success_Rate', eval_metrics['success_rate'], episode)
+                    self.writer.add_scalar('6_Evaluation/Mean_Hops', eval_metrics['mean_hops'], episode)
+                    self.writer.add_scalar('6_Evaluation/Mean_Latency', eval_metrics['mean_latency'], episode)
+                    self.writer.add_scalar('6_Evaluation/Std_Reward', eval_metrics['std_reward'], episode)
+                    self.writer.add_scalar('6_Evaluation/Mean_Length', eval_metrics['mean_length'], episode)
+                    
+                    # Reward per episode ratio
+                    if eval_metrics['mean_length'] > 0:
+                        eval_reward_per_step = eval_reward / eval_metrics['mean_length']
+                        self.writer.add_scalar('6_Evaluation/Reward_Per_Step', eval_reward_per_step, episode)
                 
                 # Early stopping và save best model
                 if eval_reward > self.best_mean_reward:
@@ -356,7 +426,14 @@ class RoutingTrainer:
             if len(terminals) < 2:
                 raise ValueError("Need at least 2 terminals in database")
             
-            logger.info(f"Loaded {len(nodes)} nodes and {len(terminals)} terminals from database")
+            # Count total nodes for logging
+            total_nodes_count = nodes_collection.count_documents({})
+            operational_nodes_count = len(nodes)
+            
+            logger.info(
+                f"Loaded {operational_nodes_count} operational nodes "
+                f"(out of {total_nodes_count} total) and {len(terminals)} terminals from database"
+            )
             
             # Pre-process nodes để tăng performance
             processed_nodes = self._preprocess_nodes(nodes)
