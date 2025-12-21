@@ -24,10 +24,10 @@ rl_agent:
   # Optimized DQN Hyperparameters
   dqn:
     learning_rate: 0.0001
-    batch_size: 64  # Increased for better stability
+    batch_size: 32  # Reduced for faster updates
     buffer_size: 100000
-    learning_starts: 1000  # Reduced for faster learning start (was 5000, too high for short episodes)
-    target_update_interval: 1000
+    learning_starts: 256  # 🔧 FIX: Reduced from 1000 for faster learning start
+    target_update_interval: 100  # 🔧 FIX: Reduced from 1000 for more stable Q-targets
     gamma: 0.99
     tau: 0.005  # Soft updates for stability
     
@@ -40,8 +40,9 @@ rl_agent:
     
     # Optimized Exploration
     exploration_initial_eps: 1.0
-    exploration_final_eps: 0.01  # Lower final epsilon
-    exploration_decay: 0.9995  # Exponential decay
+    exploration_final_eps: 0.05  # 🔧 FIX: Increased from 0.01 for more exploration
+    exploration_decay: 0.999  # 🔧 FIX: Slower decay from 0.9995
+    epsilon_decay_strategy: "linear"  # 🔧 NEW: Use linear decay instead of exponential
     
     # Optimized Dueling DQN
     dueling:
@@ -52,18 +53,18 @@ rl_agent:
       use_layer_norm: true  # Training stability
 
 # Optimized State Builder Configuration
-# Phase 1 Enhancement: Increased features for Dijkstra-like state representation
+# FIX: Reduced max_nodes for actual filtering and faster training
 state_builder:
-  # Optimized dimensions
-  max_nodes: 53  # Match actual operational nodes count
+  # Optimized dimensions - REDUCED for faster training
+  max_nodes: 15  # FIX: Reduced from 53 - only keep top 15 candidates
   max_terminals: 2  # Only need source + destination
   
-  # Phase 1: Enhanced feature dimensions
-  node_feature_dim: 18  # Increased from 12 to include Dijkstra-like features
-  terminal_feature_dim: 6  # Optimized from 8
-  global_feature_dim: 8  # Optimized from 10
+  # Feature dimensions
+  node_feature_dim: 12  # FIX: Reduced from 18
+  terminal_feature_dim: 6
+  global_feature_dim: 8
   
-  # Phase 1: Enable Dijkstra-aware features
+  # Enable Dijkstra-aware features
   include_dijkstra_features: true
   
   # Performance features
@@ -74,7 +75,7 @@ state_builder:
   # Dynamic features
   dynamic_positions:
     enabled: true
-    update_interval_seconds: 30  # Less frequent updates
+    update_interval_seconds: 30
 
 # Optimized Training Configuration
 training:
@@ -107,6 +108,13 @@ training:
   log_frequency: 10
   tensorboard_enabled: true
   console_log_enabled: true
+  
+  # Dashboard Configuration - Custom training visualization
+  dashboard:
+    enabled: true
+    auto_cleanup_logs: true  # Tự động xóa logs sau training
+    log_retention_days: 7    # Giữ logs 7 ngày gần nhất
+    live_update_frequency: 10  # Update dashboard mỗi 10 episodes
   
   # Performance Monitoring
   enable_performance_metrics: true

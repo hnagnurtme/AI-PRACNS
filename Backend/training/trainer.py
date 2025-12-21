@@ -18,6 +18,9 @@ from agent.dueling_dqn import DuelingDQNAgent
 from environment.routing_env import RoutingEnvironment
 from environment.state_builder import RoutingStateBuilder
 from config import Config
+from training.training_dashboard import TrainingDashboard
+from training.imitation_learning import ImitationLearning
+from training.curriculum_learning import CurriculumScheduler
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +104,34 @@ class RoutingTrainer:
             except ImportError:
                 logger.warning("Tensorboard not available")
                 self.tensorboard_enabled = False
+        
+        # Custom Training Dashboard
+        dashboard_config = training_config.get('dashboard', {})
+        self.dashboard_enabled = dashboard_config.get('enabled', True)
+        self.dashboard = TrainingDashboard(
+            config=self.config,
+            log_dir=self.tensorboard_log_dir,
+            auto_cleanup=dashboard_config.get('auto_cleanup_logs', True),
+            retention_days=dashboard_config.get('log_retention_days', 7),
+            update_frequency=dashboard_config.get('live_update_frequency', 10)
+        )
+        
+        # Imitation Learning - config at root level
+        il_config = self.config.get('imitation_learning', {})
+        self.use_imitation_learning = il_config.get('enabled', True)
+        self.il_warmup_episodes = il_config.get('warmup_episodes', 100)
+        self.il_num_demos = il_config.get('num_demos', 500)
+        self.imitation_learning = ImitationLearning(self.config) if self.use_imitation_learning else None
+        
+        # Curriculum Learning - config at root level (key is 'curriculum')
+        cl_config = self.config.get('curriculum', {})
+        self.use_curriculum_learning = cl_config.get('enabled', True)
+        self.curriculum_scheduler = CurriculumScheduler(self.config) if self.use_curriculum_learning else None
+        
+        if self.use_imitation_learning:
+            logger.info("🎓 Imitation Learning ENABLED")
+        if self.use_curriculum_learning:
+            logger.info("📚 Curriculum Learning ENABLED")
     
     def train(
         self,
@@ -136,6 +167,28 @@ class RoutingTrainer:
         logger.info(f"State dim: {state_dim}, Action dim: {action_dim}")
         logger.info(f"Device: {agent.device}")
         logger.info(f"Memory usage: {self._get_memory_usage()} MB")
+        
+        # 🎓 Imitation Learning: Generate expert demonstrations
+        if self.use_imitation_learning and self.imitation_learning:
+            logger.info(f"🎓 Generating {self.il_num_demos} expert demonstrations...")
+            try:
+                self.imitation_learning.generate_comprehensive_demos(
+                    terminals=terminals,
+                    nodes=nodes,
+                    num_demos=self.il_num_demos
+                )
+                logger.info(f"🎓 Generated {len(self.imitation_learning.expert_demos)} demos")
+            except Exception as e:
+                logger.warning(f"Failed to generate expert demos: {e}")
+        
+        # 📚 Curriculum Learning: Log initial level
+        if self.use_curriculum_learning and self.curriculum_scheduler:
+            level = self.curriculum_scheduler.get_current_level()
+            logger.info(f"📚 Starting at curriculum level: {level.name} (difficulty: {level.difficulty})")
+        
+        # Start training dashboard
+        if self.dashboard_enabled:
+            self.dashboard.start(total_episodes=max_episodes)
         
         # Training loop với optimizations
         for episode in range(max_episodes):
@@ -214,6 +267,37 @@ class RoutingTrainer:
             
             episode_time = time.time() - episode_start_time
             self.episode_times.append(episode_time)
+            
+            # Update custom dashboard
+            if self.dashboard_enabled:
+                mean_loss = np.mean(list(self.training_losses)[-10:]) if self.training_losses else 0.0
+                self.dashboard.update(
+                    episode=episode + 1,
+                    reward=episode_reward,
+                    success=bool(terminated),
+                    loss=mean_loss,
+                    epsilon=agent.epsilon,
+                    extra_metrics={
+                        'coverage': f"{coverage:.1%}",
+                        'episode_length': episode_length,
+                        'best_reward': self.best_mean_reward
+                    }
+                )
+            
+            # Curriculum Learning: Update performance and check for level advancement
+            if self.use_curriculum_learning and self.curriculum_scheduler:
+                self.curriculum_scheduler.update_performance(
+                    success=bool(terminated),
+                    reward=episode_reward,
+                    episode_length=episode_length
+                )
+                
+                # Check if should advance to next level
+                if self.curriculum_scheduler.should_advance():
+                    old_level = self.curriculum_scheduler.get_current_level()
+                    self.curriculum_scheduler.advance_level()
+                    new_level = self.curriculum_scheduler.get_current_level()
+                    logger.info(f"Curriculum LEVEL UP! {old_level.name} -> {new_level.name}")
             
             # Logging với advanced metrics
             if (episode + 1) % 10 == 0:
@@ -338,6 +422,18 @@ class RoutingTrainer:
         
         if self.writer:
             self.writer.close()
+        
+        # Show final dashboard summary
+        if self.dashboard_enabled:
+            final_success_rate = np.mean(list(self.episode_success)) if self.episode_success else 0
+            final_metrics = {
+                'total_episodes': self.episode + 1,
+                'total_steps': self.total_steps,
+                'best_mean_reward': self.best_mean_reward,
+                'final_success_rate': f"{final_success_rate:.1%}",
+                'training_time': f"{training_time:.1f}s"
+            }
+            self.dashboard.show_final_summary(final_metrics)
         
         return agent
     

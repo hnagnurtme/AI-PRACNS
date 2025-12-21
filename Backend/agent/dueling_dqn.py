@@ -330,16 +330,17 @@ class DuelingDQNAgent:
         self.epsilon_start = dqn_config.get('exploration_initial_eps', 1.0)
         self.epsilon_end = dqn_config.get('exploration_final_eps', 0.05)
         self.epsilon_decay = dqn_config.get('exploration_decay', 0.999)
-        self.target_update_interval = dqn_config.get('target_update_interval', 1000)
-        self.batch_size = dqn_config.get('batch_size', 64)  # Increased
+        self.epsilon_decay_strategy = dqn_config.get('epsilon_decay_strategy', 'linear')  # 🔧 NEW: linear or exponential
+        self.target_update_interval = dqn_config.get('target_update_interval', 100)  # 🔧 FIX: Default 100
+        self.batch_size = dqn_config.get('batch_size', 32)  # 🔧 FIX: Reduced from 64
         self.buffer_size = dqn_config.get('buffer_size', 100000)
-        self.learning_starts = dqn_config.get('learning_starts', 5000)
+        self.learning_starts = dqn_config.get('learning_starts', 256)  # 🔧 FIX: Reduced from 5000
         
         # Advanced features
         self.use_double_dqn = dqn_config.get('use_double_dqn', True)
         self.use_prioritized_replay = dqn_config.get('use_prioritized_replay', False)
         self.gradient_clip = dqn_config.get('gradient_clip', 10.0)
-        self.tau = dqn_config.get('tau', 1.0)  # For soft target updates
+        self.tau = dqn_config.get('tau', 0.005)  # 🔧 FIX: Default soft update
         
         # Network architecture
         dueling_config = dqn_config.get('dueling', {})
@@ -452,11 +453,18 @@ class DuelingDQNAgent:
     
     def update_epsilon(self, total_steps: int, max_steps: int):
         """
-        Advanced epsilon decay với multiple strategies
+        🔧 FIX: Support both linear and exponential epsilon decay
+        Linear decay is more stable for learning
         """
-        # Exponential decay
-        self.epsilon = max(self.epsilon_end, 
-                          self.epsilon_start * (self.epsilon_decay ** total_steps))
+        if self.epsilon_decay_strategy == 'linear':
+            # Linear decay: epsilon decreases linearly from start to end
+            progress = min(1.0, total_steps / max(max_steps, 1))
+            self.epsilon = self.epsilon_start - progress * (self.epsilon_start - self.epsilon_end)
+            self.epsilon = max(self.epsilon_end, min(self.epsilon_start, self.epsilon))
+        else:
+            # Exponential decay (original)
+            self.epsilon = max(self.epsilon_end, 
+                              self.epsilon_start * (self.epsilon_decay ** total_steps))
     
     def train_step(self) -> Optional[Dict]:
         """
@@ -533,7 +541,7 @@ class DuelingDQNAgent:
             self._update_target_network(self.tau)
         
         # Update learning rate
-        self.lr_scheduler.step(loss)
+        self.lr_scheduler.step(loss.detach())  # Fix: detach to avoid gradient warning
         
         # Collect statistics
         self.training_losses.append(loss.item())

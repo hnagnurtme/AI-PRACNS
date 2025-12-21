@@ -29,6 +29,7 @@ from environment.constants import (
     QUALITY_WEIGHT_RESOURCE, QUALITY_WEIGHT_RELIABILITY,
     QUALITY_WEIGHT_ENERGY, QUALITY_WEIGHT_PERFORMANCE,
     DEFAULT_MAX_RANGE_KM, SATELLITE_RANGE_MARGIN, GS_RANGE_MARGIN,
+    GS_DIRECT_CONNECTION_THRESHOLD_KM,
     DIJKSTRA_DROP_THRESHOLD, DIJKSTRA_PENALTY_THRESHOLD,
     DIJKSTRA_PENALTY_MULTIPLIER
 )
@@ -139,17 +140,19 @@ class RoutingStateBuilder:
                 current_node_type = current_node.get('nodeType', '')
                 node_type = node.get('nodeType', '')
                 
-                default_range_m = DEFAULT_MAX_RANGE_KM * M_TO_KM
-                current_max_range = current_node.get('communication', {}).get('maxRangeKm', DEFAULT_MAX_RANGE_KM) * M_TO_KM
-                node_max_range = node.get('communication', {}).get('maxRangeKm', DEFAULT_MAX_RANGE_KM) * M_TO_KM
-                max_range = min(current_max_range, node_max_range)
+                # Get max range based on orbital types (same logic as routing_env)
+                max_range_km = self._get_max_range_for_connection(current_node_type, node_type)
+                dist_to_current_km = dist_to_current / M_TO_KM
                 
-                if current_node_type == 'GROUND_STATION' and node_type == 'GROUND_STATION':
-                    if dist_to_current > max_range * GS_RANGE_MARGIN:
-                        return float('inf')
-                else:
-                    if dist_to_current > max_range * SATELLITE_RANGE_MARGIN:
-                        return float('inf')
+                # Check if connection is within range
+                if dist_to_current_km > max_range_km:
+                    logger.debug(
+                        f"🚫 Filtered out-of-range connection: "
+                        f"{current_node.get('nodeId')} ({current_node_type}) → "
+                        f"{node.get('nodeId')} ({node_type}) "
+                        f"({dist_to_current_km:.1f}km > {max_range_km:.1f}km)"
+                    )
+                    return float('inf')
             
             utilization = node.get('resourceUtilization', 0)
             battery = node.get('batteryChargePercent', BATTERY_MAX_PERCENT)
@@ -230,8 +233,80 @@ class RoutingStateBuilder:
             
             return score
         
-        operational_nodes.sort(key=compute_node_score)
-        return operational_nodes[:self.max_nodes]
+        # Filter out nodes with infinite score (blocked connections)
+        filtered_operational_nodes = [
+            node for node in operational_nodes 
+            if compute_node_score(node) != float('inf')
+        ]
+        
+        # Sort by score and return top nodes
+        filtered_operational_nodes.sort(key=compute_node_score)
+        return filtered_operational_nodes[:self.max_nodes]
+    
+    def _get_max_range_for_connection(self, source_type: str, dest_type: str) -> float:
+        """Get max communication range based on node types.
+        
+        Uses constants from environment.constants for different satellite/GS combinations.
+        """
+        from environment.constants import (
+            GS_MAX_DIRECT_RANGE_KM,
+            GS_TO_LEO_MAX_RANGE_KM,
+            GS_TO_MEO_MAX_RANGE_KM,
+            GS_TO_GEO_MAX_RANGE_KM,
+            LEO_MAX_RANGE_KM,
+            LEO_TO_MEO_MAX_RANGE_KM,
+            LEO_TO_GEO_MAX_RANGE_KM,
+            MEO_MAX_RANGE_KM,
+            MEO_TO_GEO_MAX_RANGE_KM,
+            GEO_MAX_RANGE_KM,
+            SATELLITE_RANGE_MARGIN
+        )
+        
+        # Normalize types - extract orbital type from nodeType
+        def get_orbital_type(node_type: str) -> str:
+            if 'GROUND' in node_type.upper():
+                return 'GS'
+            elif 'LEO' in node_type.upper():
+                return 'LEO'
+            elif 'MEO' in node_type.upper():
+                return 'MEO'
+            elif 'GEO' in node_type.upper():
+                return 'GEO'
+            elif 'SATELLITE' in node_type.upper():
+                return 'LEO'  # Default satellite to LEO
+            elif 'AERIAL' in node_type.upper():
+                return 'LEO'  # Aerial vehicles treated like LEO
+            else:
+                return 'LEO'  # Default
+        
+        src = get_orbital_type(source_type)
+        dst = get_orbital_type(dest_type)
+        
+        # Sort to make lookup symmetric (GS-LEO == LEO-GS)
+        pair = tuple(sorted([src, dst]))
+        
+        # Range lookup table based on node type pairs
+        # Keys are sorted alphabetically: GEO < GS < LEO < MEO
+        range_table = {
+            ('GS', 'GS'): GS_MAX_DIRECT_RANGE_KM,
+            ('GS', 'LEO'): GS_TO_LEO_MAX_RANGE_KM,
+            ('GS', 'MEO'): GS_TO_MEO_MAX_RANGE_KM,
+            ('GEO', 'GS'): GS_TO_GEO_MAX_RANGE_KM,  # GEO < GS alphabetically
+            ('LEO', 'LEO'): LEO_MAX_RANGE_KM,
+            ('LEO', 'MEO'): LEO_TO_MEO_MAX_RANGE_KM,
+            ('GEO', 'LEO'): LEO_TO_GEO_MAX_RANGE_KM,  # GEO < LEO
+            ('MEO', 'MEO'): MEO_MAX_RANGE_KM,
+            ('GEO', 'MEO'): MEO_TO_GEO_MAX_RANGE_KM,  # GEO < MEO
+            ('GEO', 'GEO'): GEO_MAX_RANGE_KM,
+        }
+        
+        max_range = range_table.get(pair, LEO_MAX_RANGE_KM)
+        
+        # Apply margin for dynamic orbital positions (except GS-GS)
+        if 'GS' not in pair or pair != ('GS', 'GS'):
+            max_range *= SATELLITE_RANGE_MARGIN
+        
+        return max_range
     
     def _build_optimized_node_features(
         self,

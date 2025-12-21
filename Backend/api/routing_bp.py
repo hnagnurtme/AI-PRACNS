@@ -798,30 +798,37 @@ def get_max_comm_range(node1_type: str, node2_type: str) -> float:
     return COMM_RANGES.get(key, 2000)
 
 def calculate_path_dijkstra(source_terminal: dict, dest_terminal: dict, nodes: list, 
-                           resource_aware: bool = True, drop_threshold: float = 95.0,
-                           penalty_threshold: float = 80.0, penalty_multiplier: float = 3.0) -> dict:
+                           resource_aware: bool = False, drop_threshold: float = 95.0,
+                           penalty_threshold: float = 80.0, penalty_multiplier: float = 3.0,
+                           source_gs: Optional[dict] = None, dest_gs: Optional[dict] = None) -> dict:
     """
-    Calculate path using Dijkstra's algorithm with resource awareness and optimized edge weights
+    Calculate path using Dijkstra's algorithm - BASELINE: Pure Distance Optimization
+    
+    ⚠️ BASELINE ALGORITHM: Dijkstra tối ưu PURE DISTANCE (no resource penalties)
+    để đảm bảo tìm được path với distance ngắn nhất (baseline rõ ràng).
+    
+    ⚠️ GS Selection:
+    - Nếu source_gs và dest_gs được cung cấp: Dùng GS đó (để so sánh công bằng với RL)
+    - Nếu không: LUÔN dùng find_nearest_ground_station (chỉ khoảng cách) để làm baseline
     
     Args:
         source_terminal: Source terminal dict
         dest_terminal: Destination terminal dict
         nodes: List of available nodes
-        resource_aware: If True, apply resource-based penalties/filtering
+        resource_aware: DEPRECATED - Always False for baseline (pure distance only)
         drop_threshold: Resource utilization % above which nodes are DROPPED (default: 95%)
-        penalty_threshold: Resource utilization % above which latency penalty is applied (default: 80%)
-        penalty_multiplier: Multiplier for latency penalty on high-resource nodes (default: 3.0x)
+        penalty_threshold: DEPRECATED - Not used (pure distance only)
+        penalty_multiplier: DEPRECATED - Not used (pure distance only)
+        source_gs: Optional pre-selected source ground station (for fair comparison with RL)
+        dest_gs: Optional pre-selected destination ground station (for fair comparison with RL)
     
     Logic:
+        - GS Selection: Dùng source_gs/dest_gs nếu có, nếu không dùng find_nearest_ground_station
+        - Edge weights: PURE DISTANCE ONLY (no resource penalties)
         - Nodes with resource > drop_threshold: EXCLUDED from routing (marked as congested)
-        - Edge weights: distance * resource_factor (multiplicative, not additive)
-          * Low utilization (<40%): 5% bonus (factor = 0.95)
-          * Medium utilization (40-60%): slight penalty (factor = 1.0-1.2)
-          * High utilization (60-80%): linear penalty (factor = 1.0-1.5)
-          * Very high utilization (>=80%): exponential penalty (factor = 1.0-3.0x)
         - Ground Station → Ground Station: Direct connection allowed if distance < 100km
-        - Terminal → Ground Station: Chọn GS tốt nhất (resource + distance)
-        - Node → Node: Optimized weight balancing distance and resource utilization
+        - Node → Node: Pure distance (km) as edge weight
+        - ✅ Đảm bảo: Dijkstra LUÔN tìm được path với distance ngắn nhất (từ GS đã chọn)
     """
     # Build graph: nodes as vertices, DISTANCE as edge weights
     graph = {}
@@ -844,32 +851,48 @@ def calculate_path_dijkstra(source_terminal: dict, dest_terminal: dict, nodes: l
         return util >= drop_threshold
     
     def calculate_edge_weight(node: dict, other_node: dict, base_distance_km: float) -> float:
-        """Calculate optimized edge weight balancing distance and resource utilization"""
-        if not resource_aware:
-            return base_distance_km
+        """
+        Calculate edge weight - BASELINE: Pure Distance Only
         
-        util = get_node_utilization(other_node)
+        ⚠️ BASELINE: Không có resource penalties để đảm bảo Dijkstra tìm được
+        path với distance ngắn nhất (baseline rõ ràng).
         
-        if util >= penalty_threshold:
-            excess = (util - penalty_threshold) / (RESOURCE_FACTOR_MAX_PERCENT - penalty_threshold)
-            resource_factor = 1.0 + (penalty_multiplier - 1.0) * excess
-        elif util >= RESOURCE_FACTOR_MEDIUM_THRESHOLD:
-            excess = (util - RESOURCE_FACTOR_MEDIUM_THRESHOLD) / (penalty_threshold - RESOURCE_FACTOR_MEDIUM_THRESHOLD)
-            resource_factor = 1.0 + excess * RESOURCE_FACTOR_MEDIUM_PENALTY_MAX
-        elif util >= RESOURCE_FACTOR_LOW_THRESHOLD:
-            excess = (util - RESOURCE_FACTOR_LOW_THRESHOLD) / RESOURCE_FACTOR_HIGH_PENALTY_RANGE
-            resource_factor = 1.0 + excess * RESOURCE_FACTOR_HIGH_PENALTY_MAX
-        else:
-            resource_factor = RESOURCE_FACTOR_LOW_BONUS
-        
-        return base_distance_km * resource_factor
+        RL sẽ thể hiện lợi ích của resource-aware optimization.
+        """
+        # Pure distance only - no resource penalties for baseline
+        return base_distance_km
     
-    if resource_aware:
-        source_node = find_best_ground_station(source_terminal, nodes)
-        dest_node = find_best_ground_station(dest_terminal, nodes)
+    # 🔥 FIX: Nếu có pre-selected GS, dùng GS đó để so sánh công bằng với RL
+    # Nếu không, dùng nearest GS (baseline)
+    if source_gs and dest_gs:
+        source_node = source_gs
+        dest_node = dest_gs
+        logger.info(
+            f"📐 Dijkstra: Using PRE-SELECTED Ground Stations "
+            f"(source: {source_gs['nodeId']}, dest: {dest_gs['nodeId']}) "
+            f"for FAIR COMPARISON with RL"
+        )
     else:
+        # 🔥 BASELINE: Dijkstra LUÔN dùng nearest GS (chỉ khoảng cách) để so sánh với RL
+        # RL sẽ dùng find_best_ground_station (tối ưu resource) để thể hiện sự vượt trội
         source_node = find_nearest_ground_station(source_terminal, nodes)
         dest_node = find_nearest_ground_station(dest_terminal, nodes)
+    
+    if source_node:
+        source_distance_km = calculate_distance(source_terminal.get('position'), source_node.get('position')) / 1000.0
+        logger.info(
+            f"📐 Dijkstra (BASELINE): Selected NEAREST Ground Station {source_node['nodeId']} "
+            f"for terminal {source_terminal.get('terminalId')} "
+            f"(distance: {source_distance_km:.1f}km, NO resource optimization)"
+        )
+    
+    if dest_node:
+        dest_distance_km = calculate_distance(dest_terminal.get('position'), dest_node.get('position')) / 1000.0
+        logger.info(
+            f"📐 Dijkstra (BASELINE): Selected NEAREST Ground Station {dest_node['nodeId']} "
+            f"for terminal {dest_terminal.get('terminalId')} "
+            f"(distance: {dest_distance_km:.1f}km, NO resource optimization)"
+        )
     
     if not source_node or not dest_node:
         logger.error(
@@ -920,15 +943,14 @@ def calculate_path_dijkstra(source_terminal: dict, dest_terminal: dict, nodes: l
                 realistic_max_range = get_max_comm_range(node_type, other_type) * 1000
                 
                 if distance <= realistic_max_range * SATELLITE_RANGE_MARGIN:
+                    # BASELINE: Pure distance only (no resource penalties)
                     base_weight = distance_km
                     edge_weight = calculate_edge_weight(node, other_node, base_weight)
                     
-                    util = get_node_utilization(other_node)
-                    if util >= RESOURCE_FACTOR_MEDIUM_THRESHOLD or util < RESOURCE_FACTOR_LOW_THRESHOLD:
-                        logger.debug(
-                            f"📊 Edge {node['nodeId']} → {other_node['nodeId']}: "
-                            f"weight={edge_weight:.2f}km (base={base_weight:.2f}km, util={util:.1f}%)"
-                        )
+                    logger.debug(
+                        f"📐 Dijkstra edge {node['nodeId']} → {other_node['nodeId']}: "
+                        f"weight={edge_weight:.2f}km (pure distance, baseline)"
+                    )
                     
                     graph[node['nodeId']].append((other_node['nodeId'], edge_weight))
 
@@ -1033,7 +1055,11 @@ def calculate_path_dijkstra(source_terminal: dict, dest_terminal: dict, nodes: l
     result_path['estimatedLatency'] = round(total_latency, 2)
     result_path['hops'] = len(result_path['path']) - 1
     
-    logger.info(f"📊 Dijkstra path: {result_path['hops']} hops, {result_path['totalDistance']:.1f}km, {result_path['estimatedLatency']:.2f}ms latency")
+    logger.info(
+        f"📐 Dijkstra (BASELINE - Pure Distance): {result_path['hops']} hops, "
+        f"{result_path['totalDistance']:.1f}km (shortest distance), "
+        f"{result_path['estimatedLatency']:.2f}ms latency"
+    )
     for i, seg in enumerate(result_path['path']):
         if seg['type'] == 'node' and seg['id'] in node_map:
             node = node_map[seg['id']]

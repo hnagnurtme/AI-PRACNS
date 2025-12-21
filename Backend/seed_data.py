@@ -17,12 +17,12 @@ EARTH_RADIUS_KM = 6371.0
 EARTH_MU = 398600.4418
 SPEED_OF_LIGHT_KM_S = 299792.458
 
-# Training-optimized configuration
-NUM_LEO_SATELLITES = 24  # 4 planes x 6 satellites for good coverage
-NUM_MEO_SATELLITES = 6   # Even distribution
-NUM_GEO_SATELLITES = 3   # Equatorial coverage
-NUM_GROUND_STATIONS = 20 # Strategic locations
-NUM_TERMINALS = 30       # Diverse scenarios
+# Training-optimized configuration - ENHANCED for better RL vs Dijkstra comparison
+NUM_LEO_SATELLITES = 40  # 5 planes x 8 satellites for excellent coverage (was 24)
+NUM_MEO_SATELLITES = 12  # Better inter-orbital links (was 6)
+NUM_GEO_SATELLITES = 3   # Equatorial coverage (unchanged)
+NUM_GROUND_STATIONS = 35 # More strategic locations for routing options (was 20)
+NUM_TERMINALS = 40       # More diverse scenarios (was 30)
 
 # Deterministic seed for reproducibility
 DETERMINISTIC_SEED = 42
@@ -63,8 +63,8 @@ def generate_leo_constellation() -> List[Dict]:
     Deterministic positions for consistent training
     """
     satellites = []
-    num_planes = 4
-    sats_per_plane = NUM_LEO_SATELLITES // num_planes
+    num_planes = 5  # Increased from 4
+    sats_per_plane = NUM_LEO_SATELLITES // num_planes  # 8 per plane
     altitude_km = 550
     inclination = 53.0
     
@@ -171,37 +171,56 @@ def generate_geo_constellation() -> List[Dict]:
 def generate_ground_stations() -> List[Dict]:
     """
     Generate ground stations at strategic locations
-    Distributed globally for good coverage
+    Distributed globally for good coverage - ENHANCED with more locations
     """
-    # Strategic locations for training scenarios
+    # Strategic locations for training scenarios - EXPANDED to 35
     locations = [
-        # North America - Easy scenarios
+        # North America - 8 stations
         {'lat': 40.7128, 'lon': -74.0060, 'name': 'New York', 'alt': 10, 'region': 'NA'},
         {'lat': 34.0522, 'lon': -118.2437, 'name': 'Los Angeles', 'alt': 100, 'region': 'NA'},
         {'lat': 41.8781, 'lon': -87.6298, 'name': 'Chicago', 'alt': 180, 'region': 'NA'},
         {'lat': 29.7604, 'lon': -95.3698, 'name': 'Houston', 'alt': 15, 'region': 'NA'},
         {'lat': 45.5017, 'lon': -73.5673, 'name': 'Montreal', 'alt': 36, 'region': 'NA'},
+        {'lat': 47.6062, 'lon': -122.3321, 'name': 'Seattle', 'alt': 56, 'region': 'NA'},
+        {'lat': 25.7617, 'lon': -80.1918, 'name': 'Miami', 'alt': 2, 'region': 'NA'},
+        {'lat': 49.2827, 'lon': -123.1207, 'name': 'Vancouver', 'alt': 70, 'region': 'NA'},
         
-        # Europe - Medium scenarios
+        # Europe - 8 stations
         {'lat': 51.5074, 'lon': -0.1278, 'name': 'London', 'alt': 15, 'region': 'EU'},
         {'lat': 48.8566, 'lon': 2.3522, 'name': 'Paris', 'alt': 35, 'region': 'EU'},
         {'lat': 52.5200, 'lon': 13.4050, 'name': 'Berlin', 'alt': 34, 'region': 'EU'},
         {'lat': 55.7558, 'lon': 37.6173, 'name': 'Moscow', 'alt': 156, 'region': 'EU'},
         {'lat': 41.9028, 'lon': 12.4964, 'name': 'Rome', 'alt': 57, 'region': 'EU'},
+        {'lat': 40.4168, 'lon': -3.7038, 'name': 'Madrid', 'alt': 657, 'region': 'EU'},
+        {'lat': 59.3293, 'lon': 18.0686, 'name': 'Stockholm', 'alt': 28, 'region': 'EU'},
+        {'lat': 52.3676, 'lon': 4.9041, 'name': 'Amsterdam', 'alt': -2, 'region': 'EU'},
         
-        # Asia - Hard scenarios (long distances)
+        # Asia - 9 stations
         {'lat': 35.6762, 'lon': 139.6503, 'name': 'Tokyo', 'alt': 40, 'region': 'ASIA'},
         {'lat': 22.3193, 'lon': 114.1694, 'name': 'Hong Kong', 'alt': 5, 'region': 'ASIA'},
         {'lat': 1.3521, 'lon': 103.8198, 'name': 'Singapore', 'alt': 15, 'region': 'ASIA'},
         {'lat': 28.6139, 'lon': 77.2090, 'name': 'New Delhi', 'alt': 216, 'region': 'ASIA'},
         {'lat': 31.2304, 'lon': 121.4737, 'name': 'Shanghai', 'alt': 4, 'region': 'ASIA'},
+        {'lat': 37.5665, 'lon': 126.9780, 'name': 'Seoul', 'alt': 38, 'region': 'ASIA'},
+        {'lat': 13.7563, 'lon': 100.5018, 'name': 'Bangkok', 'alt': 1, 'region': 'ASIA'},
+        {'lat': 39.9042, 'lon': 116.4074, 'name': 'Beijing', 'alt': 43, 'region': 'ASIA'},
+        {'lat': 25.2048, 'lon': 55.2708, 'name': 'Dubai', 'alt': 15, 'region': 'ME'},
         
-        # Oceania & Others - Cross-continental scenarios
+        # Oceania - 3 stations
         {'lat': -33.8688, 'lon': 151.2093, 'name': 'Sydney', 'alt': 25, 'region': 'OCEANIA'},
         {'lat': -37.8136, 'lon': 144.9631, 'name': 'Melbourne', 'alt': 31, 'region': 'OCEANIA'},
+        {'lat': -36.8485, 'lon': 174.7633, 'name': 'Auckland', 'alt': 59, 'region': 'OCEANIA'},
+        
+        # South America - 4 stations
         {'lat': -23.5505, 'lon': -46.6333, 'name': 'Sao Paulo', 'alt': 760, 'region': 'SA'},
         {'lat': -34.6037, 'lon': -58.3816, 'name': 'Buenos Aires', 'alt': 25, 'region': 'SA'},
+        {'lat': -22.9068, 'lon': -43.1729, 'name': 'Rio de Janeiro', 'alt': 11, 'region': 'SA'},
+        {'lat': -12.0464, 'lon': -77.0428, 'name': 'Lima', 'alt': 154, 'region': 'SA'},
+        
+        # Africa - 3 stations
         {'lat': -1.2921, 'lon': 36.8219, 'name': 'Nairobi', 'alt': 1795, 'region': 'AFRICA'},
+        {'lat': 30.0444, 'lon': 31.2357, 'name': 'Cairo', 'alt': 75, 'region': 'AFRICA'},
+        {'lat': -33.9249, 'lon': 18.4241, 'name': 'Cape Town', 'alt': 0, 'region': 'AFRICA'},
     ]
     
     return locations[:NUM_GROUND_STATIONS]
@@ -258,58 +277,94 @@ def get_deterministic_qos(service_type: str, index: int) -> Dict:
 
 def get_node_attributes(node_type: str, index: int, total: int) -> Dict:
     """
-    Generate deterministic node attributes for training
-    Creates patterns: some nodes are better, some have constraints
+    Generate deterministic node attributes for training.
+    
+    TRAP SCENARIO DESIGN:
+    - ~25% of nodes are "trap nodes" with POOR resources (high util, low battery, high loss)
+    - These trap nodes test RL's ability to avoid overloaded nodes
+    - Dijkstra picks closest node (ignores resources) → picks trap nodes
+    - RL should LEARN to avoid trap nodes and pick better (possibly farther) nodes
     """
-    # Base attributes by node type
-    if node_type == 'LEO_SATELLITE':
-        base_utilization = 30.0 + (index % 5) * 10.0  # 30-70%
-        base_battery = 85.0 + (index % 3) * 5.0  # 85-95%
-        base_loss = 0.001 + (index % 3) * 0.002  # 0.001-0.005
-        processing_delay = 3.0 + (index % 4) * 1.5  # 3-9ms
-        buffer_capacity = 5000
-        current_packets = int(buffer_capacity * (0.2 + (index % 5) * 0.15))
+    # Determine if this is a trap node (every 4th node)
+    is_trap_node = (index % 4 == 0)
+    
+    if is_trap_node:
+        # TRAP NODE: Poor resources - Dijkstra ignores this, RL should learn to avoid
+        if node_type == 'LEO_SATELLITE':
+            base_utilization = 85.0 + (index % 3) * 5.0  # 85-95% (overloaded!)
+            base_battery = 15.0 + (index % 3) * 5.0  # 15-25% (low battery!)
+            base_loss = 0.08 + (index % 3) * 0.03  # 8-14% (high loss!)
+            processing_delay = 25.0 + (index % 3) * 10.0  # 25-45ms (high delay!)
+        elif node_type == 'MEO_SATELLITE':
+            base_utilization = 88.0 + (index % 2) * 7.0  # 88-95%
+            base_battery = 20.0 + (index % 2) * 5.0  # 20-25%
+            base_loss = 0.06 + (index % 2) * 0.04  # 6-10%
+            processing_delay = 30.0 + (index % 2) * 15.0  # 30-45ms
+        elif node_type == 'GEO_SATELLITE':
+            base_utilization = 90.0 + (index % 2) * 5.0  # 90-95%
+            base_battery = 25.0 + (index % 2) * 5.0  # 25-30%
+            base_loss = 0.05 + (index % 2) * 0.03  # 5-8%
+            processing_delay = 40.0 + (index % 2) * 10.0  # 40-50ms
+        else:  # GROUND_STATION trap
+            base_utilization = 85.0 + (index % 3) * 5.0  # 85-95%
+            base_battery = 100.0  # GS always full
+            base_loss = 0.05 + (index % 3) * 0.03  # 5-11%
+            processing_delay = 15.0 + (index % 3) * 10.0  # 15-35ms
         
-    elif node_type == 'MEO_SATELLITE':
-        base_utilization = 40.0 + (index % 4) * 10.0  # 40-70%
-        base_battery = 90.0 + (index % 2) * 5.0  # 90-95%
-        base_loss = 0.0005 + (index % 2) * 0.001  # 0.0005-0.0015
-        processing_delay = 8.0 + (index % 3) * 3.0  # 8-14ms
-        buffer_capacity = 10000
-        current_packets = int(buffer_capacity * (0.15 + (index % 4) * 0.1))
+        buffer_capacity = 5000 if node_type == 'LEO_SATELLITE' else 10000
+        current_packets = int(buffer_capacity * 0.95)  # Almost full!
         
-    elif node_type == 'GEO_SATELLITE':
-        base_utilization = 50.0 + (index % 3) * 15.0  # 50-80%
-        base_battery = 95.0 + (index % 2) * 2.5  # 95-97.5%
-        base_loss = 0.0001 + (index % 2) * 0.0002  # 0.0001-0.0003
-        processing_delay = 12.0 + (index % 2) * 4.0  # 12-16ms
-        buffer_capacity = 20000
-        current_packets = int(buffer_capacity * (0.1 + (index % 3) * 0.05))
-        
-    else:  # GROUND_STATION
-        base_utilization = 20.0 + (index % 6) * 8.0  # 20-60%
-        base_battery = 100.0  # Always full
-        base_loss = 0.0001 + (index % 3) * 0.0002  # 0.0001-0.0005
-        processing_delay = 1.0 + (index % 3) * 0.5  # 1-2.5ms
-        buffer_capacity = 10000
-        current_packets = int(buffer_capacity * (0.1 + (index % 5) * 0.08))
+    else:
+        # NORMAL/GOOD NODE: Standard or good resources
+        if node_type == 'LEO_SATELLITE':
+            base_utilization = 25.0 + (index % 5) * 8.0  # 25-57%
+            base_battery = 80.0 + (index % 4) * 5.0  # 80-95%
+            base_loss = 0.001 + (index % 3) * 0.001  # 0.1-0.3%
+            processing_delay = 3.0 + (index % 4) * 1.5  # 3-9ms
+            buffer_capacity = 5000
+            current_packets = int(buffer_capacity * (0.2 + (index % 5) * 0.1))
+            
+        elif node_type == 'MEO_SATELLITE':
+            base_utilization = 35.0 + (index % 4) * 8.0  # 35-59%
+            base_battery = 88.0 + (index % 3) * 4.0  # 88-96%
+            base_loss = 0.0005 + (index % 2) * 0.0005  # 0.05-0.1%
+            processing_delay = 8.0 + (index % 3) * 2.0  # 8-12ms
+            buffer_capacity = 10000
+            current_packets = int(buffer_capacity * (0.15 + (index % 4) * 0.08))
+            
+        elif node_type == 'GEO_SATELLITE':
+            base_utilization = 45.0 + (index % 3) * 10.0  # 45-65%
+            base_battery = 92.0 + (index % 2) * 4.0  # 92-96%
+            base_loss = 0.0001 + (index % 2) * 0.0001  # 0.01-0.02%
+            processing_delay = 12.0 + (index % 2) * 3.0  # 12-15ms
+            buffer_capacity = 20000
+            current_packets = int(buffer_capacity * (0.1 + (index % 3) * 0.05))
+            
+        else:  # GROUND_STATION normal
+            base_utilization = 20.0 + (index % 5) * 8.0  # 20-52%
+            base_battery = 100.0  # Always full
+            base_loss = 0.0001 + (index % 3) * 0.0001  # 0.01-0.03%
+            processing_delay = 1.0 + (index % 3) * 0.5  # 1-2.5ms
+            buffer_capacity = 10000
+            current_packets = int(buffer_capacity * (0.1 + (index % 5) * 0.06))
     
     # Resource breakdown (for Dijkstra features)
-    cpu_util = base_utilization + (index % 3) * 5.0
-    mem_util = base_utilization - (index % 3) * 3.0
-    bw_util = base_utilization + (index % 2) * 4.0
+    cpu_util = base_utilization + (index % 3) * 3.0
+    mem_util = base_utilization - (index % 3) * 2.0
+    bw_util = base_utilization + (index % 2) * 2.0
     
     return {
         'resourceUtilization': round(base_utilization, 1),
         'cpu': {'utilization': round(min(100.0, cpu_util), 1)},
-        'memory': {'utilization': round(min(100.0, mem_util), 1)},
+        'memory': {'utilization': round(max(0.0, mem_util), 1)},
         'bandwidth': {'utilization': round(min(100.0, bw_util), 1)},
         'batteryChargePercent': round(base_battery, 1),
         'packetLossRate': round(base_loss, 5),
         'nodeProcessingDelayMs': round(processing_delay, 2),
         'packetBufferCapacity': buffer_capacity,
         'currentPacketCount': current_packets,
-        'isOperational': True  # All operational for training
+        'isOperational': True,  # All operational for training
+        'isTrapNode': is_trap_node  # Mark for analysis
     }
 
 
