@@ -1,19 +1,16 @@
 import React, { useState, useEffect, useMemo } from "react";
 import { compareAlgorithms } from "../services/routingService";
 import { getUserTerminals } from "../services/userTerminalService";
-import { getScenarios } from "../services/simulationService";
 import type { AlgorithmComparison, CompareAlgorithmsRequest, NodeResourceInfo } from "../types/RoutingTypes";
 import type { UserTerminal, QoSRequirements } from "../types/UserTerminalTypes";
-import type { SimulationScenario } from "../types/SimulationTypes";
 
 const Comparison: React.FC = () => {
     // State for terminals
     const [ terminals, setTerminals ] = useState<UserTerminal[]>( [] );
     const [ loadingTerminals, setLoadingTerminals ] = useState( false );
 
-    // State for scenarios
-    const [ scenarios, setScenarios ] = useState<SimulationScenario[]>( [] );
-    const [ selectedScenario, setSelectedScenario ] = useState<string>( 'NORMAL' );
+    // State for scenarios (selectedScenario used internally)
+    const [ selectedScenario ] = useState<string>( 'NORMAL' );
 
     // Form state
     const [ sourceTerminalId, setSourceTerminalId ] = useState<string>( "" );
@@ -42,12 +39,8 @@ const Comparison: React.FC = () => {
         const loadData = async () => {
             setLoadingTerminals( true );
             try {
-                const [ terminalsData, scenariosData ] = await Promise.all( [
-                    getUserTerminals(),
-                    getScenarios()
-                ] );
+                const terminalsData = await getUserTerminals();
                 setTerminals( terminalsData );
-                setScenarios( scenariosData );
             } catch ( err ) {
                 console.error( 'Failed to load data:', err );
                 setError( err instanceof Error ? err.message : 'Failed to load data' );
