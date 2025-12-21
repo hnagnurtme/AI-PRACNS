@@ -12,6 +12,10 @@ logger = logging.getLogger(__name__)
 
 topology_bp = Blueprint('topology', __name__, url_prefix='/api/v1')
 
+# Ensure database is connected
+if not db.is_connected():
+    db.connect()
+
 def calculate_distance(pos1: dict, pos2: dict) -> float:
     """Calculate distance between two positions in meters"""
     from math import radians, cos, sin, asin, sqrt
@@ -185,12 +189,17 @@ def get_topology():
         return jsonify(topology), 200
         
     except Exception as e:
-        logger.error(f"Error getting topology: {str(e)}")
-        return jsonify({
-            'status': 500,
-            'error': 'Internal server error',
-            'message': str(e)
-        }), 500
+        error_msg = str(e)
+        logger.error(f"Error getting topology: {error_msg}", exc_info=True)
+        try:
+            return jsonify({
+                'status': 500,
+                'error': 'Internal server error',
+                'message': error_msg
+            }), 500
+        except Exception as json_error:
+            logger.error(f"Error creating JSON response: {json_error}")
+            return {'status': 500, 'error': 'Internal server error', 'message': error_msg}, 500
 
 @topology_bp.route('/topology/statistics', methods=['GET'])
 def get_topology_statistics():

@@ -9,6 +9,7 @@ import logging
 from pathlib import Path
 import time
 import random
+from collections import deque
 
 from training.trainer import RoutingTrainer
 from training.curriculum_learning import CurriculumScheduler
@@ -120,11 +121,22 @@ class EnhancedRoutingTrainer(RoutingTrainer):
             if not source_terminal or not dest_terminal:
                 continue
             
-            # Reset environment với selected terminals
+            # 🔥 FIX: Chọn Ground Stations cho terminals TRƯỚC khi reset
+            # Model chỉ học routing giữa GS, không học chọn GS cho terminal
+            source_gs = self._find_best_ground_station(source_terminal, nodes)
+            dest_gs = self._find_best_ground_station(dest_terminal, nodes)
+            
+            if not source_gs or not dest_gs:
+                logger.warning(f"Skipping episode: Cannot find ground stations for terminals")
+                continue
+            
+            # Reset environment với explicit ground stations
             state, info = env.reset(
                 options={
                     'source_terminal_id': source_terminal.get('terminalId'),
-                    'dest_terminal_id': dest_terminal.get('terminalId')
+                    'dest_terminal_id': dest_terminal.get('terminalId'),
+                    'source_ground_station': source_gs, 
+                    'dest_ground_station': dest_gs         
                 }
             )
             
@@ -402,6 +414,48 @@ class EnhancedRoutingTrainer(RoutingTrainer):
             # Fallback to random
             indices = np.random.choice(len(terminals), size=2, replace=False)
             return terminals[indices[0]], terminals[indices[1]]
+    
+    def _find_best_ground_station(self, terminal: Dict, nodes: List[Dict]) -> Optional[Dict]:
+        """Tìm ground station tốt nhất cho terminal (giống như trong routing_bp)"""
+        try:
+            # Import function từ routing_bp
+            from api.routing_bp import find_best_ground_station
+            return find_best_ground_station(terminal, nodes)
+        except ImportError:
+            # Fallback: Simple distance-based selection
+            terminal_pos = terminal.get('position')
+            if not terminal_pos:
+                return None
+            
+            ground_stations = [
+                n for n in nodes
+                if n.get('nodeType') == 'GROUND_STATION'
+                and n.get('isOperational', True)
+                and n.get('position')
+            ]
+            
+            if not ground_stations:
+                return None
+            
+            # Find closest
+            from environment.state_builder import RoutingStateBuilder
+            state_builder = RoutingStateBuilder(self.config)
+            
+            best_station = None
+            best_score = float('inf')
+            
+            for station in ground_stations:
+                distance = state_builder._calculate_distance(
+                    terminal_pos, station.get('position')
+                )
+                quality = state_builder._compute_node_quality(station)
+                score = distance / 1000.0 * (1.1 - quality)
+                
+                if score < best_score:
+                    best_score = score
+                    best_station = station
+            
+            return best_station
     
     def _generate_expert_demos(
         self,
