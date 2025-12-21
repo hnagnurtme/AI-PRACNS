@@ -11,26 +11,26 @@ interface ApiResponse<T> {
     data: T;
 }
 
-const handleAxiosError = (error: unknown): Error => {
-    if (error instanceof AxiosError) {
-        if (error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK') {
-            return new Error('Cannot connect to server. Please make sure the backend is running.');
+const handleAxiosError = ( error: unknown ): Error => {
+    if ( error instanceof AxiosError ) {
+        if ( error.code === 'ECONNREFUSED' || error.code === 'ERR_NETWORK' ) {
+            return new Error( 'Cannot connect to server. Please make sure the backend is running.' );
         }
 
-        if (error.response) {
+        if ( error.response ) {
             return new Error(
-                `Server error: ${error.response.status} - ${error.response.data?.message || error.message}`
+                `Server error: ${ error.response.status } - ${ error.response.data?.message || error.message }`
             );
-        } else if (error.request) {
-            return new Error('No response from server. Please check your connection.');
+        } else if ( error.request ) {
+            return new Error( 'No response from server. Please check your connection.' );
         }
     }
 
-    if (error instanceof Error) {
+    if ( error instanceof Error ) {
         return error;
     }
 
-    return new Error('An unexpected error occurred.');
+    return new Error( 'An unexpected error occurred.' );
 };
 
 /**
@@ -39,11 +39,11 @@ const handleAxiosError = (error: unknown): Error => {
 export const calculatePath = async (
     sourceTerminalId: string,
     destinationTerminalId: string,
-    algorithm: 'simple' | 'dijkstra' | 'rl' = 'rl'  // 🆕 CHANGED: 'simple' → 'rl'
+    algorithm: 'dijkstra' | 'rl' = 'rl'
 ): Promise<RoutingPath> => {
     try {
         const response = await axiosClient.post<RoutingPath | ApiResponse<RoutingPath>>(
-            `${ROUTING_ENDPOINT}/calculate-path`,
+            `${ ROUTING_ENDPOINT }/calculate-path`,
             {
                 sourceTerminalId,
                 destinationTerminalId,
@@ -51,53 +51,53 @@ export const calculatePath = async (
             }
         );
 
-        if (response.data && typeof response.data === 'object' && 'data' in response.data) {
-            return (response.data as ApiResponse<RoutingPath>).data;
+        if ( response.data && typeof response.data === 'object' && 'data' in response.data ) {
+            return ( response.data as ApiResponse<RoutingPath> ).data;
         }
 
         return response.data as RoutingPath;
-    } catch (error) {
-        throw handleAxiosError(error);
+    } catch ( error ) {
+        throw handleAxiosError( error );
     }
 };
 
 /**
  * Send a packet from source terminal to destination terminal
  */
-export const sendPacket = async (request: SendPacketRequest & { algorithm?: 'simple' | 'dijkstra' | 'rl' }): Promise<Packet> => {
+export const sendPacket = async ( request: SendPacketRequest & { algorithm?: 'dijkstra' | 'rl' } ): Promise<Packet> => {
     try {
         const response = await axiosClient.post<Packet | ApiResponse<Packet>>(
-            `${ROUTING_ENDPOINT}/send-packet`,
+            `${ ROUTING_ENDPOINT }/send-packet`,
             request
         );
 
-        if (response.data && typeof response.data === 'object' && 'data' in response.data) {
-            return (response.data as ApiResponse<Packet>).data;
+        if ( response.data && typeof response.data === 'object' && 'data' in response.data ) {
+            return ( response.data as ApiResponse<Packet> ).data;
         }
 
         return response.data as Packet;
-    } catch (error) {
-        throw handleAxiosError(error);
+    } catch ( error ) {
+        throw handleAxiosError( error );
     }
 };
 
 /**
  * Compare two routing algorithms for a given source and destination terminal
  */
-export const compareAlgorithms = async (request: CompareAlgorithmsRequest): Promise<AlgorithmComparison> => {
+export const compareAlgorithms = async ( request: CompareAlgorithmsRequest ): Promise<AlgorithmComparison> => {
     try {
         const response = await axiosClient.post<AlgorithmComparison | ApiResponse<AlgorithmComparison>>(
-            `${ROUTING_ENDPOINT}/compare-algorithms`,
+            `${ ROUTING_ENDPOINT }/compare-algorithms`,
             request
         );
 
-        if (response.data && typeof response.data === 'object' && 'data' in response.data) {
-            return (response.data as ApiResponse<AlgorithmComparison>).data;
+        if ( response.data && typeof response.data === 'object' && 'data' in response.data ) {
+            return ( response.data as ApiResponse<AlgorithmComparison> ).data;
         }
 
         return response.data as AlgorithmComparison;
-    } catch (error) {
-        throw handleAxiosError(error);
+    } catch ( error ) {
+        throw handleAxiosError( error );
     }
 };
 

@@ -54,7 +54,7 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
     const [ destinationTerminalId, setDestinationTerminalId ] = useState<string>( '' );
     const [ packetSize, setPacketSize ] = useState<number>( 1024 );
     const [ priority, setPriority ] = useState<number>( 5 );
-    const [ routingAlgorithm, setRoutingAlgorithm ] = useState<'simple' | 'dijkstra' | 'rl'>( 'rl' );  // 🆕 CHANGED: 'simple' → 'rl'
+    const [ routingAlgorithm, setRoutingAlgorithm ] = useState<'dijkstra' | 'rl'>( 'rl' );
     const [ useServiceQos, setUseServiceQos ] = useState<boolean>( false );
     const [ serviceQos, setServiceQos ] = useState<QoSRequirements>( {
         maxLatencyMs: 100,
@@ -204,10 +204,9 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
                         </label>
                         <select
                             value={ routingAlgorithm }
-                            onChange={ ( e ) => setRoutingAlgorithm( e.target.value as 'simple' | 'dijkstra' | 'rl' ) }
+                            onChange={ ( e ) => setRoutingAlgorithm( e.target.value as 'dijkstra' | 'rl' ) }
                             className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         >
-                            <option value="simple">Simple</option>
                             <option value="dijkstra">Dijkstra</option>
                             <option value="rl">RL Agent</option>
                         </select>
@@ -222,21 +221,21 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
                         id="useServiceQos"
                         checked={ useServiceQos }
                         onChange={ ( e ) => setUseServiceQos( e.target.checked ) }
-                        className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        className="w-4 h-4 text-blue-600 border-slate-500 rounded focus:ring-blue-500 bg-slate-700"
                     />
-                    <label htmlFor="useServiceQos" className="text-sm font-medium text-gray-700">
+                    <label htmlFor="useServiceQos" className="text-sm font-medium text-slate-300">
                         Use Service QoS Requirements
                     </label>
                 </div>
 
                 {/* Service QoS Settings */ }
                 { useServiceQos && (
-                    <div className="bg-gray-50 border border-gray-200 rounded p-3 space-y-3">
-                        <div className="font-semibold text-sm text-gray-700">QoS Requirements</div>
+                    <div className="bg-slate-700/50 border border-slate-600 rounded p-3 space-y-3">
+                        <div className="font-semibold text-sm text-slate-200">QoS Requirements</div>
 
                         {/* Service Type */ }
                         <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                            <label className="block text-xs font-medium text-slate-300 mb-1">
                                 Service Type (Auto-fills QoS)
                             </label>
                             <select
@@ -252,7 +251,7 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
                                         setPreviousServiceType( newServiceType );
                                     }
                                 } }
-                                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-2 py-1.5 text-sm border border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-700 text-white"
                             >
                                 <option value="VIDEO_STREAM">Video Stream (Low Latency, High Bandwidth)</option>
                                 <option value="AUDIO_CALL">Audio Call (Very Low Latency)</option>
@@ -260,14 +259,14 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
                                 <option value="TEXT_MESSAGE">Text Message (Low Priority)</option>
                                 <option value="FILE_TRANSFER">File Transfer (High Bandwidth, Low Loss)</option>
                             </select>
-                            <div className="mt-1 text-xs text-gray-500 italic">
+                            <div className="mt-1 text-xs text-slate-400 italic">
                                 QoS parameters will be auto-filled based on service type
                             </div>
                         </div>
 
                         {/* Max Latency */ }
                         <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                            <label className="block text-xs font-medium text-slate-300 mb-1">
                                 Max Latency (ms)
                             </label>
                             <input
@@ -281,9 +280,9 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
                                         maxLatencyMs: parseFloat( e.target.value ) || 100,
                                     } )
                                 }
-                                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                className="w-full px-2 py-1.5 text-sm border border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-700 text-white"
                             />
-                            <div className="mt-0.5 text-xs text-gray-400">
+                            <div className="mt-0.5 text-xs text-slate-400">
                                 { serviceQos.serviceType === 'AUDIO_CALL' && 'Real-time: &lt;100ms recommended' }
                                 { serviceQos.serviceType === 'VIDEO_STREAM' && 'Streaming: &lt;150ms recommended' }
                                 { serviceQos.serviceType === 'TEXT_MESSAGE' && 'Non-critical: &lt;1000ms acceptable' }
@@ -292,7 +291,7 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
 
                         {/* Min Bandwidth */ }
                         <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                            <label className="block text-xs font-medium text-slate-300 mb-1">
                                 Min Bandwidth (Mbps)
                             </label>
                             <input
@@ -307,9 +306,9 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
                                         minBandwidthMbps: parseFloat( e.target.value ) || 10,
                                     } )
                                 }
-                                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                className="w-full px-2 py-1.5 text-sm border border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-700 text-white"
                             />
-                            <div className="mt-0.5 text-xs text-gray-400">
+                            <div className="mt-0.5 text-xs text-slate-400">
                                 { serviceQos.serviceType === 'VIDEO_STREAM' && 'HD Video: ~20Mbps' }
                                 { serviceQos.serviceType === 'AUDIO_CALL' && 'Voice: ~0.064Mbps' }
                                 { serviceQos.serviceType === 'FILE_TRANSFER' && 'Large files: ~10Mbps' }
@@ -318,7 +317,7 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
 
                         {/* Max Loss Rate */ }
                         <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                            <label className="block text-xs font-medium text-slate-300 mb-1">
                                 Max Loss Rate (0-1)
                             </label>
                             <input
@@ -333,9 +332,9 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
                                         maxLossRate: parseFloat( e.target.value ) || 0.01,
                                     } )
                                 }
-                                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                className="w-full px-2 py-1.5 text-sm border border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-700 text-white"
                             />
-                            <div className="mt-0.5 text-xs text-gray-400">
+                            <div className="mt-0.5 text-xs text-slate-400">
                                 { serviceQos.serviceType === 'IMAGE_TRANSFER' && 'Critical: &lt;0.01% loss' }
                                 { serviceQos.serviceType === 'FILE_TRANSFER' && 'Critical: &lt;0.01% loss' }
                                 { serviceQos.serviceType === 'TEXT_MESSAGE' && 'Tolerant: &lt;5% loss acceptable' }
@@ -344,7 +343,7 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
 
                         {/* QoS Priority */ }
                         <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                            <label className="block text-xs font-medium text-slate-300 mb-1">
                                 QoS Priority (1-10)
                             </label>
                             <input
@@ -358,9 +357,9 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
                                         priority: parseInt( e.target.value ) || 5,
                                     } )
                                 }
-                                className="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                className="w-full px-2 py-1.5 text-sm border border-slate-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-slate-700 text-white"
                             />
-                            <div className="mt-0.5 text-xs text-gray-400">
+                            <div className="mt-0.5 text-xs text-slate-400">
                                 { serviceQos.priority >= 8 && 'High Priority (Real-time services)' }
                                 { serviceQos.priority >= 5 && serviceQos.priority < 8 && 'Medium Priority' }
                                 { serviceQos.priority < 5 && 'Low Priority (Best-effort)' }

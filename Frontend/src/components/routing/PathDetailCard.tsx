@@ -59,7 +59,6 @@ const PathDetailCard: React.FC<PathDetailCardProps> = ( { path, nodes, onClose }
         switch ( algo ) {
             case 'rl': return 'Reinforcement Learning';
             case 'dijkstra': return 'Dijkstra';
-            case 'simple': return 'Simple';
             default: return 'Unknown';
         }
     };
@@ -68,7 +67,6 @@ const PathDetailCard: React.FC<PathDetailCardProps> = ( { path, nodes, onClose }
         switch ( algo ) {
             case 'rl': return 'bg-purple-100 text-purple-800 border-purple-400';
             case 'dijkstra': return 'bg-blue-100 text-blue-700 border-blue-400';
-            case 'simple': return 'bg-teal-100 text-teal-700 border-teal-400';
             default: return 'bg-gray-100 text-gray-700 border-gray-300';
         }
     };
@@ -170,19 +168,19 @@ const PathDetailCard: React.FC<PathDetailCardProps> = ( { path, nodes, onClose }
                     <div className="grid grid-cols-2 gap-2 text-xs">
                         <div>
                             <span className="text-gray-600">Distance:</span>
-                            <span className="font-semibold ml-1">{ path.totalDistance.toFixed( 2 ) } km</span>
+                            <span className="font-semibold ml-1 text-blue-900">{ path.totalDistance.toFixed( 2 ) } km</span>
                         </div>
                         <div>
                             <span className="text-gray-600">Latency:</span>
-                            <span className="font-semibold ml-1">{ path.estimatedLatency.toFixed( 0 ) } ms</span>
+                            <span className="font-semibold ml-1 text-blue-900">{ path.estimatedLatency.toFixed( 0 ) } ms</span>
                         </div>
                         <div>
                             <span className="text-gray-600">Hops:</span>
-                            <span className="font-semibold ml-1">{ path.hops }</span>
+                            <span className="font-semibold ml-1 text-blue-900">{ path.hops }</span>
                         </div>
                         <div>
                             <span className="text-gray-600">Nodes:</span>
-                            <span className="font-semibold ml-1">{ metrics.nodeCount }</span>
+                            <span className="font-semibold ml-1 text-blue-900">{ metrics.nodeCount }</span>
                         </div>
                     </div>
                 </div>

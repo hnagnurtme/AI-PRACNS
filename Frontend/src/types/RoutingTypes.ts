@@ -21,7 +21,7 @@ export interface RoutingPath {
     totalDistance: number; // km
     estimatedLatency: number; // ms
     hops: number;
-    algorithm?: 'simple' | 'dijkstra' | 'rl'; // Routing algorithm used
+    algorithm?: 'dijkstra' | 'rl'; // Routing algorithm used
 }
 
 export interface SendPacketRequest {
@@ -92,7 +92,7 @@ export interface CompareAlgorithmsRequest {
     destinationTerminalId: string;
     serviceQos?: QoSRequirements;
     scenario?: string;
-    algorithm1: 'simple' | 'dijkstra' | 'rl';
-    algorithm2: 'simple' | 'dijkstra' | 'rl';
+    algorithm1: 'dijkstra' | 'rl';
+    algorithm2: 'dijkstra' | 'rl';
 }
 

@@ -55,7 +55,7 @@ GS_CONNECTION_LOW = 3
 # ============================================================================
 # SCORING WEIGHTS
 # ============================================================================
-SCORE_WEIGHT_DIST_TO_DEST = 0.85  # 🔥 Tăng từ 0.7 để ưu tiên distance đến destination hơn
+SCORE_WEIGHT_DIST_TO_DEST = 0.85  
 SCORE_WEIGHT_DIST_TO_CURRENT = 0.15  # 🔥 Tăng từ 0.1 để ưu tiên distance đến current node hơn
 SCORE_WEIGHT_VISITED_PENALTY = 1000000.0
 SCORE_WEIGHT_QUALITY = 300000.0  # 🔥 Giảm từ 500000.0 để giảm ảnh hưởng của quality
@@ -216,7 +216,7 @@ SATELLITE_RANGE_MARGIN = 1.1  # 10% margin for orbital movement
 GS_RANGE_MARGIN = 1.0  # No margin for ground stations
 
 # Terminal ranges (user devices connecting to Ground Stations ONLY)
-TERMINAL_TO_GS_MAX_RANGE_KM = 500.0  # Terminal direct to Ground Station (no satellite direct)
+TERMINAL_TO_GS_MAX_RANGE_KM = 1000.0  
 
 # Ground Station ranges - INCREASED for better connectivity
 GS_MAX_DIRECT_RANGE_KM = 500.0  # GS-to-GS (was 100km, now 500km for fiber/microwave links)
