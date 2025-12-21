@@ -154,7 +154,7 @@ const PacketSender: React.FC<PacketSenderProps> = ( { onPathCalculated, onPacket
                         <select
                             value={ destinationTerminalId }
                             onChange={ ( e ) => setDestinationTerminalId( e.target.value ) }
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            className="w-full px-3 py-2 bg-slate-700 border border-slate-600 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                         >
                             <option value="">Select destination...</option>
                             { terminals
