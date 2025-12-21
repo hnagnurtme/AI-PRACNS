@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useBatchPolling } from '../hooks/useBatchPolling';
 import { BatchComparisonLog } from '../components/batchchart/BatchComparisonLog';
 import { generateBatch, getBatchSuggestions, type BatchSuggestion } from '../services/batchService';
-import { getScenarios } from '../services/simulationService';
-import type { SimulationScenario } from '../types/SimulationTypes';
 
 const BatchDashboard: React.FC = () => {
     // Lấy dữ liệu lô gói tin từ polling endpoint
@@ -13,29 +11,12 @@ const BatchDashboard: React.FC = () => {
     const latestBatch = receivedBatches.length > 0 ? receivedBatches[ receivedBatches.length - 1 ] : null;
 
     // State for test form
-    const [ scenarios, setScenarios ] = useState<SimulationScenario[]>( [] );
-    const [ selectedScenario, setSelectedScenario ] = useState<string>( 'NORMAL' );
     const [ pairCount, setPairCount ] = useState<number>( 10 );
     const [ loading, setLoading ] = useState( false );
     const [ error, setError ] = useState<string | null>( null );
     const [ suggestions, setSuggestions ] = useState<BatchSuggestion | null>( null );
     const [ _loadingSuggestions, setLoadingSuggestions ] = useState( false );
 
-    // Load scenarios
-    useEffect( () => {
-        const loadScenarios = async () => {
-            try {
-                const data = await getScenarios();
-                setScenarios( data );
-                if ( data.length > 0 && !data.find( s => s.name === 'NORMAL' ) ) {
-                    setSelectedScenario( data[ 0 ].name );
-                }
-            } catch ( err ) {
-                console.error( 'Error loading scenarios:', err );
-            }
-        };
-        loadScenarios();
-    }, [] );
 
     // Load suggestions on mount
     useEffect( () => {
@@ -60,7 +41,7 @@ const BatchDashboard: React.FC = () => {
         try {
             await generateBatch( {
                 pairCount,
-                scenario: selectedScenario,
+                scenario: 'NORMAL',
             } );
             // Batch will be picked up by polling
         } catch ( err ) {
@@ -253,25 +234,7 @@ const BatchDashboard: React.FC = () => {
                     <h3 className="text-xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent uppercase tracking-wide">Generate Batch</h3>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                    <div>
-                        <label htmlFor="scenario" className="block text-xs font-semibold text-fuchsia-600 uppercase tracking-wider mb-2">
-                            Scenario
-                        </label>
-                        <select
-                            id="scenario"
-                            value={ selectedScenario }
-                            onChange={ ( e ) => setSelectedScenario( e.target.value ) }
-                            className="block w-full px-4 py-3 border-2 border-violet-200 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 bg-white font-medium transition-all hover:border-violet-300"
-                            disabled={ loading }
-                        >
-                            { scenarios.map( ( scenario ) => (
-                                <option key={ scenario.name } value={ scenario.name }>
-                                    { scenario.displayName }
-                                </option>
-                            ) ) }
-                        </select>
-                    </div>
+                <div className="grid grid-cols-2 gap-4">
                     <div>
                         <label htmlFor="pairCount" className="block text-xs font-semibold text-fuchsia-600 uppercase tracking-wider mb-2">
                             Pair Count
