@@ -14,6 +14,9 @@ simulation_bp = Blueprint('simulation', __name__, url_prefix='/api/v1/simulation
 
 # Database instance
 db = Database()
+# Ensure database is connected
+if not db.is_connected():
+    db.connect()
 
 # Available scenario types - Real-world network conditions
 SCENARIO_TYPES = [
@@ -69,12 +72,17 @@ def get_current_scenario():
     try:
         return jsonify(_current_scenario), 200
     except Exception as e:
-        logger.error(f"Error getting current scenario: {str(e)}")
-        return jsonify({
-            'status': 500,
-            'error': 'Internal server error',
-            'message': str(e)
-        }), 500
+        error_msg = str(e)
+        logger.error(f"Error getting current scenario: {error_msg}", exc_info=True)
+        try:
+            return jsonify({
+                'status': 500,
+                'error': 'Internal server error',
+                'message': error_msg
+            }), 500
+        except Exception as json_error:
+            logger.error(f"Error creating JSON response: {json_error}")
+            return {'status': 500, 'error': 'Internal server error', 'message': error_msg}, 500
 
 @simulation_bp.route('/scenario/<scenario_name>', methods=['POST'])
 def set_scenario(scenario_name: str):

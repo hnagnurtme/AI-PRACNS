@@ -74,7 +74,7 @@ class CurriculumScheduler:
                 difficulty=0.1,
                 max_distance_km=1000,  # 1000km
                 min_nodes=5,
-                max_nodes=30,  # 🆕 CHANGED: 10 → 30 to match production action_dim
+                max_nodes=53,  # Match actual operational nodes count
                 allow_obstacles=False,
                 require_qos=False
             ),

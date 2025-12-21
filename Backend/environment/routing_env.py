@@ -1,6 +1,6 @@
 """
-Optimized Routing Environment for SAGIN
-Environment được tối ưu cho training hiệu quả và performance
+Routing Environment for SAGIN RL
+Gymnasium environment for routing with Dijkstra-aligned rewards
 """
 import gymnasium as gym
 from gymnasium import spaces
@@ -11,6 +11,33 @@ import math
 from collections import deque
 
 from environment.state_builder import RoutingStateBuilder
+from environment.constants import (
+    SPEED_OF_LIGHT_MPS, MS_PER_SECOND, M_TO_KM,
+    DISTANCE_NEAR_DEST_M, DISTANCE_CLOSE_DEST_M, DISTANCE_FAR_DEST_M,
+    DISTANCE_VERY_CLOSE_M, MIN_PATH_HOPS, MIN_PATH_SEGMENTS,
+    REWARD_SUCCESS, REWARD_FAILURE, REWARD_STEP_PENALTY,
+    REWARD_HOP_PENALTY, REWARD_GS_HOP_PENALTY, REWARD_LOAD_BALANCING,
+    REWARD_LOOP_PENALTY, REWARD_DROP_NODE, PROGRESS_REWARD_SCALE,
+    DISTANCE_REWARD_SCALE, QUALITY_REWARD_SCALE, PROXIMITY_BONUS_SCALE,
+    PROGRESS_DIVISOR_M, DETOUR_PENALTY_DIVISOR_M, DETOUR_PENALTY_MULTIPLIER,
+    DISTANCE_PENALTY_DIVISOR_M, PROXIMITY_CLOSE_M, PROXIMITY_FAR_M,
+    PROXIMITY_BONUS_MULTIPLIER, BONUS_EXACT_DEST_GS, BONUS_QOS_COMPLIANCE,
+    PENALTY_QOS_VIOLATION, EFFICIENCY_BONUS_PER_HOP, EFFICIENCY_PENALTY_PER_HOP,
+    EFFICIENCY_EXTRA_PENALTY_BASE, EFFICIENCY_EXTRA_PENALTY_MULTIPLIER,
+    DISTANCE_RATIO_EFFICIENT, DISTANCE_RATIO_ACCEPTABLE, DISTANCE_RATIO_POOR,
+    BONUS_DISTANCE_EFFICIENT, BONUS_DISTANCE_ACCEPTABLE, PENALTY_DISTANCE_POOR,
+    QUALITY_EXCELLENT, QUALITY_GOOD, QUALITY_BAD, BONUS_EXCELLENT_NODE,
+    BONUS_GOOD_NODE, PENALTY_BAD_NODE, EXCESS_HOPS_THRESHOLD,
+    EXCESS_HOPS_PENALTY_MULTIPLIER, UTILIZATION_HIGH_PERCENT,
+    UTILIZATION_MEDIUM_PERCENT, UTILIZATION_MAX_PERCENT,
+    TERMINAL_UTILIZATION_IMPACT, GS_CONNECTION_OVERLOADED, GS_CONNECTION_HIGH,
+    BATTERY_MAX_PERCENT, DIJKSTRA_DROP_THRESHOLD, DIJKSTRA_PENALTY_THRESHOLD,
+    DIJKSTRA_PENALTY_MULTIPLIER, DIJKSTRA_PROGRESS_SCALE,
+    PROGRESS_CHECK_MIN_STEPS, PROGRESS_CHECK_WINDOW_SIZE,
+    PROGRESS_MIN_THRESHOLD_M, PROGRESS_NO_PROGRESS_PENALTY,
+    ADAPTIVE_MAX_STEPS_NETWORK_DIVISOR, ADAPTIVE_MAX_STEPS_MULTIPLIER,
+    GS_MAX_DIRECT_RANGE_KM
+)
 
 logger = logging.getLogger(__name__)
 
@@ -43,31 +70,50 @@ class RoutingEnvironment(gym.Env):
         nodes: List[Dict],
         terminals: List[Dict],
         config: Dict = None,
-        max_steps: int = 8  # GIẢM: 10 → 8 để force shorter paths
+        max_steps: int = 8
     ):
         super().__init__()
         
         self.config = config or {}
         self.nodes = nodes
         self.terminals = terminals
-        self.max_steps = max_steps
         
-        # State builder
+        training_config = self.config.get('training', {})
+        adaptive_max_steps = training_config.get('adaptive_max_steps', True)
+        
+        base_max_steps = max_steps
+        network_size = len(nodes)
+        
+        if adaptive_max_steps:
+            estimated_max_hops = min(
+                network_size // ADAPTIVE_MAX_STEPS_NETWORK_DIVISOR,
+                base_max_steps * ADAPTIVE_MAX_STEPS_MULTIPLIER
+            )
+            self.max_steps = max(base_max_steps, estimated_max_hops)
+            self.adaptive_max_steps = True
+            if self.max_steps > base_max_steps:
+                logger.info(
+                    f"Dynamic max_steps: {self.max_steps} "
+                    f"(operational_nodes={network_size}, base={base_max_steps}, "
+                    f"estimated_hops={estimated_max_hops})"
+                )
+        else:
+            self.max_steps = max_steps
+            self.adaptive_max_steps = False
+            logger.debug(f"Fixed max_steps: {self.max_steps} (adaptive disabled)")
+        
         self.state_builder = RoutingStateBuilder(config)
         
-        # Action space
         max_actions = min(len(nodes), self.state_builder.max_nodes)
         self.action_space = spaces.Discrete(max_actions)
         
-        # Observation space
         self.observation_space = spaces.Box(
-            low=-1.0,  # Thay đổi để ổn định training
+            low=-1.0,
             high=2.0,
             shape=(self.state_builder.state_dimension,),
             dtype=np.float32
         )
         
-        # Episode state
         self.source_terminal = None
         self.dest_terminal = None
         self.current_node = None
@@ -77,21 +123,25 @@ class RoutingEnvironment(gym.Env):
         self.total_distance = 0.0
         self.total_latency = 0.0
         self.service_qos = None
-        self.terminated = False  # Track if episode terminated successfully
+        self.terminated = False
         
-        # Optimized reward configuration - ƯU TIÊN GIẢM HOP/DISTANCE/LATENCY
         reward_config = self.config.get('reward', {})
-        self.success_reward = reward_config.get('success_reward', 200.0)
-        self.failure_penalty = reward_config.get('failure_penalty', -10.0)  # Giảm từ -30 xuống -10
-        self.step_penalty = reward_config.get('step_penalty', -10.0)  # TĂNG: -8.0 → -10.0 - MỖI STEP ĐỀU TỐN KÉM
-        self.hop_penalty = reward_config.get('hop_penalty', -15.0)  # TĂNG: -12.0 → -15.0 - HOP LÀ TỐN KÉM NHẤT
-        self.ground_station_hop_penalty = reward_config.get('ground_station_hop_penalty', -25.0)  # TĂNG: -20 → -25
-        self.progress_reward_scale = reward_config.get('progress_reward_scale', 80.0)  # GIẢM: 150 → 80 - Không thưởng quá nhiều cho progress
-        self.distance_reward_scale = reward_config.get('distance_reward_scale', 10.0)  # Tăng từ 5.0 → 10.0: Distance quan trọng
-        self.quality_reward_scale = reward_config.get('quality_reward_scale', 10.0)  # Giảm từ 30.0 → 10.0: Resource là mục tiêu thứ 2
-        self.proximity_bonus_scale = reward_config.get('proximity_bonus_scale', 50.0)  # Bonus khi đến gần destination
+        self.use_dijkstra_aligned_rewards = reward_config.get('dijkstra_aligned', True)
         
-        # Cache untuk performance
+        self.drop_threshold = reward_config.get('drop_threshold', DIJKSTRA_DROP_THRESHOLD)
+        self.penalty_threshold = reward_config.get('penalty_threshold', DIJKSTRA_PENALTY_THRESHOLD)
+        self.penalty_multiplier = reward_config.get('penalty_multiplier', DIJKSTRA_PENALTY_MULTIPLIER)
+        
+        self.success_reward = reward_config.get('success_reward', REWARD_SUCCESS)
+        self.failure_penalty = reward_config.get('failure_penalty', REWARD_FAILURE)
+        self.step_penalty = reward_config.get('step_penalty', REWARD_STEP_PENALTY)
+        self.hop_penalty = reward_config.get('hop_penalty', REWARD_HOP_PENALTY)
+        self.ground_station_hop_penalty = reward_config.get('ground_station_hop_penalty', REWARD_GS_HOP_PENALTY)
+        self.progress_reward_scale = reward_config.get('progress_reward_scale', PROGRESS_REWARD_SCALE)
+        self.distance_reward_scale = reward_config.get('distance_reward_scale', DISTANCE_REWARD_SCALE)
+        self.quality_reward_scale = reward_config.get('quality_reward_scale', QUALITY_REWARD_SCALE)
+        self.proximity_bonus_scale = reward_config.get('proximity_bonus_scale', PROXIMITY_BONUS_SCALE)
+        
         self._node_cache = {node['nodeId']: node for node in nodes}
         self._terminal_cache = {terminal['terminalId']: terminal for terminal in terminals}
     
@@ -100,13 +150,11 @@ class RoutingEnvironment(gym.Env):
         seed: Optional[int] = None,
         options: Optional[Dict] = None
     ) -> Tuple[np.ndarray, Dict]:
-        """Reset environment với optimizations và explicit ground stations"""
+        """Reset environment"""
         super().reset(seed=seed)
         
-        # Reset terminated flag
         self.terminated = False
         
-        # Get terminals và ground stations từ options hoặc random
         source_ground_station = None
         dest_ground_station = None
         
@@ -115,14 +163,12 @@ class RoutingEnvironment(gym.Env):
             dest_terminal_id = options.get('dest_terminal_id')
             self.service_qos = options.get('service_qos')
             
-            # 🔥 NEW: Get explicit ground stations from options
             source_ground_station = options.get('source_ground_station')
             dest_ground_station = options.get('dest_ground_station')
             
             self.source_terminal = self._terminal_cache.get(source_terminal_id)
             self.dest_terminal = self._terminal_cache.get(dest_terminal_id)
         else:
-            # Random terminals
             if len(self.terminals) < 2:
                 raise ValueError("Need at least 2 terminals")
             
@@ -133,12 +179,10 @@ class RoutingEnvironment(gym.Env):
         if not self.source_terminal or not self.dest_terminal:
             raise ValueError("Source or destination terminal not found")
         
-        # 🔥 FIX: Sử dụng explicit ground stations nếu có, otherwise tìm optimal
         if source_ground_station:
             self.current_node = source_ground_station
-            logger.info(f"🛰️ RL starting from explicit source GS: {source_ground_station['nodeId']}")
+            logger.info(f"RL starting from explicit source GS: {source_ground_station['nodeId']}")
         else:
-            # Tìm initial node thông minh
             self.current_node = self._find_optimal_initial_node(
                 self.source_terminal, self.dest_terminal
             )
@@ -149,7 +193,6 @@ class RoutingEnvironment(gym.Env):
                 if n.get('isOperational', True) and n.get('position')
             ]
             if operational_nodes:
-                # Chọn node gần destination nhất
                 dest_pos = self.dest_terminal.get('position')
                 self.current_node = min(
                     operational_nodes,
@@ -160,17 +203,21 @@ class RoutingEnvironment(gym.Env):
             else:
                 raise ValueError("No operational nodes available")
         
-        # 🔥 NEW: Store dest_ground_station for validation
         self.dest_ground_station = dest_ground_station
         
-        # Reset episode state
         self.path = [self.source_terminal, self.current_node]
         self.visited_nodes = {self.current_node.get('nodeId')}
         self.step_count = 0
         self.total_distance = 0.0
         self.total_latency = 0.0
         
-        # Build state
+        self.recent_distances = deque(maxlen=PROGRESS_CHECK_WINDOW_SIZE)
+        initial_dist = self._calculate_distance(
+            self.current_node.get('position'),
+            self.dest_terminal.get('position')
+        )
+        self.recent_distances.append(initial_dist)
+        
         state = self.state_builder.build_state(
             nodes=self.nodes,
             source_terminal=self.source_terminal,
@@ -193,42 +240,102 @@ class RoutingEnvironment(gym.Env):
         return state, info
     
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, Dict]:
-        """Optimized step function với reward engineering tiên tiến"""
+        """Step function with reward engineering"""
         self.step_count += 1
         
-        # Lấy available nodes với stress-aware filtering
+        # Initialize progress to 0.0 to avoid UnboundLocalError
+        progress = 0.0
+        
         filtered_nodes = self.state_builder._smart_node_filtering(
             self.nodes, self.source_terminal, self.dest_terminal, 
             self.current_node, list(self.visited_nodes)
         )
         
-        # Filter out problematic nodes in stress scenarios (optional - can be disabled)
-        # This helps RL learn to avoid bad nodes
         stress_aware_nodes = self._filter_stress_problematic_nodes(filtered_nodes)
         if len(stress_aware_nodes) > 0:
             filtered_nodes = stress_aware_nodes
         
-        # Validate action và chọn next node
         if action < 0 or action >= len(filtered_nodes) or not filtered_nodes:
-            # Fallback strategy
             next_node = self._find_fallback_node()
             if not next_node:
-                # No valid nodes, end episode
                 state = self.state_builder.build_state(
                     self.nodes, self.source_terminal, self.dest_terminal,
                     self.current_node, self.service_qos, list(self.visited_nodes)
                 )
-                return state, self.failure_penalty, True, False, {'error': 'no_valid_nodes'}
+                info = {
+                    'path': self.path.copy(),
+                    'current_node': self.current_node.get('nodeId') if self.current_node else None,
+                    'distance_to_dest': 0.0,
+                    'hops': len(self.path) - 1,
+                    'terminated': True,
+                    'progress': 0.0,
+                    'error': 'no_valid_nodes'
+                }
+                return state, self.failure_penalty, True, False, info
         else:
             next_node = filtered_nodes[action]
         
-        # Loop detection
+        # 🔧 CONNECTIVITY VALIDATION: Prevent out-of-range hops
+        # This is a safety check - state_builder should filter, but we double-check
+        if self.current_node and next_node:
+            current_pos = self.current_node.get('position')
+            next_pos = next_node.get('position')
+            if current_pos and next_pos:
+                hop_dist = self._calculate_distance(current_pos, next_pos)
+                hop_dist_km = hop_dist / 1000.0
+                
+                current_type = self.current_node.get('nodeType', '')
+                next_type = next_node.get('nodeType', '')
+                
+                # Get max range based on node types
+                max_range_km = self._get_max_range_for_connection(current_type, next_type)
+                
+                is_invalid_hop = False
+                if hop_dist_km > max_range_km:
+                    is_invalid_hop = True
+                    logger.warning(
+                        f"🚫 BLOCKED invalid hop ({current_type} → {next_type}): "
+                        f"{self.current_node.get('nodeId')} → {next_node.get('nodeId')} "
+                        f"({hop_dist_km:.1f}km > {max_range_km:.1f}km)"
+                    )
+                
+                if is_invalid_hop:
+                    # Return penalty for invalid action
+                    state = self.state_builder.build_state(
+                        self.nodes, self.source_terminal, self.dest_terminal,
+                        self.current_node, self.service_qos, list(self.visited_nodes)
+                    )
+                    reward = REWARD_FAILURE  # Invalid action penalty (use constant)
+                    info = {
+                        'path': self.path.copy(),
+                        'invalid_hop': True,
+                        'current_node': self.current_node.get('nodeId'),
+                        'attempted_node': next_node.get('nodeId'),
+                        'hop_distance_km': hop_dist_km,
+                        'max_range_km': max_range_km,
+                        'terminated': False,
+                        'progress': 0.0
+                    }
+                    truncated = self.step_count >= self.max_steps
+                    return state, reward, False, truncated, info
+        
         next_node_id = next_node.get('nodeId')
         if next_node_id in self.visited_nodes:
-            # Loop penalty
-            reward = -20.0
+            reward = REWARD_LOOP_PENALTY
             terminated = False
             truncated = self.step_count >= self.max_steps
+            
+            # Calculate progress for loop case
+            dest_pos = self.dest_terminal.get('position')
+            next_pos = next_node.get('position')
+            if dest_pos and self.current_node and self.current_node.get('position') and next_pos:
+                current_dist = self._calculate_distance(
+                    self.current_node.get('position'), dest_pos
+                )
+                next_dist = self._calculate_distance(next_pos, dest_pos)
+                progress = current_dist - next_dist
+            else:
+                progress = 0.0
             
             state = self.state_builder.build_state(
                 self.nodes, self.source_terminal, self.dest_terminal,
@@ -239,276 +346,208 @@ class RoutingEnvironment(gym.Env):
                 'path': self.path.copy(),
                 'loop_detected': True,
                 'current_node': next_node_id,
-                'hops': len(self.path) - 1
+                'hops': len(self.path) - 1,
+                'terminated': terminated,
+                'progress': progress
             }
+            # 🔧 REWARD CLIPPING: Also clip for loop detection
+            reward = max(-100.0, min(600.0, reward))
             return state, reward, terminated, truncated, info
         
-        # Thêm node vào path
         self.path.append(next_node)
         self.visited_nodes.add(next_node_id)
         
-        # Tính metrics cho hop này
         current_pos = self.current_node.get('position')
         next_pos = next_node.get('position')
         hop_distance = self._calculate_distance(current_pos, next_pos)
         self.total_distance += hop_distance
         
-        # Tính latency
-        speed_of_light = 299792458
-        propagation_delay = (hop_distance / speed_of_light) * 1000
+        propagation_delay = (hop_distance / SPEED_OF_LIGHT_MPS) * MS_PER_SECOND
         processing_delay = next_node.get('nodeProcessingDelayMs', 5)
         hop_latency = propagation_delay + processing_delay
         self.total_latency += hop_latency
         
-        # Get node types for reward calculation
         current_node_type = self.current_node.get('nodeType', '')
         next_node_type = next_node.get('nodeType', '')
         
-        # Get connection counts để tính utilization thực tế
         current_connection_count = get_terminal_connection_count(self.current_node.get('nodeId'))
         next_connection_count = get_terminal_connection_count(next_node.get('nodeId'))
         
-        # Tính utilization thực tế (mỗi terminal ~4-10% utilization)
-        current_node_utilization = self.current_node.get('resourceUtilization', 0) + (current_connection_count * 7.0)
-        next_node_utilization = next_node.get('resourceUtilization', 0) + (next_connection_count * 7.0)
+        current_node_utilization = self.current_node.get('resourceUtilization', 0) + (current_connection_count * TERMINAL_UTILIZATION_IMPACT)
+        next_node_utilization = next_node.get('resourceUtilization', 0) + (next_connection_count * TERMINAL_UTILIZATION_IMPACT)
         
-        # Penalty đặc biệt cho ground station hops - LUÔN PENALTY trừ khi load balancing
         initial_reward = 0.0
         if current_node_type == 'GROUND_STATION' and next_node_type == 'GROUND_STATION':
-            # LUÔN penalty GS→GS, trừ khi current GS quá tải VÀ next GS ít tải hơn
-            if current_node_utilization > 80.0 and next_node_utilization < current_node_utilization - 20.0:
-                # Load balancing case: current GS quá tải, next GS tốt hơn
-                initial_reward = 5.0  # Bonus cho load balancing
-                logger.debug(f"✅ Load balancing bonus: current={current_node_utilization:.1f}%, next={next_node_utilization:.1f}%")
+            if current_node_utilization > UTILIZATION_HIGH_PERCENT and next_node_utilization < current_node_utilization - 20.0:
+                initial_reward = REWARD_LOAD_BALANCING
+                logger.debug(f"Load balancing bonus: current={current_node_utilization:.1f}%, next={next_node_utilization:.1f}%")
             else:
-                # Normal case: LUÔN penalty GS→GS
-                initial_reward = self.ground_station_hop_penalty  # -15.0 (tăng từ -5.0)
-                logger.debug(f"⚠️ GS→GS penalty: {initial_reward}")
+                initial_reward = self.ground_station_hop_penalty
+                logger.debug(f"GS→GS penalty: {initial_reward}")
         
-        # Kiểm tra destination reached
         dest_pos = self.dest_terminal.get('position')
         dist_to_dest = self._calculate_distance(next_pos, dest_pos)
         
-        # 🔥 ENHANCED: Check if we reached dest ground station explicitly
+        # Calculate progress for info dict (used in all cases)
+        prev_dist = self._calculate_distance(
+            self.current_node.get('position'), dest_pos
+        )
+        progress = prev_dist - dist_to_dest
+        
+        if self.step_count > PROGRESS_CHECK_MIN_STEPS:
+            recent_progress = self._check_recent_progress(dist_to_dest)
+            if not recent_progress:
+                state = self.state_builder.build_state(
+                    self.nodes, self.source_terminal, self.dest_terminal,
+                    self.current_node, self.service_qos, list(self.visited_nodes)
+                )
+                info = {
+                    'path': self.path.copy(),
+                    'current_node': next_node_id,
+                    'distance_to_dest': dist_to_dest,
+                    'hops': len(self.path) - 1,
+                    'terminated': False,
+                    'progress': progress,
+                    'reason': 'no_progress'
+                }
+                return state, PROGRESS_NO_PROGRESS_PENALTY, False, True, info
+        
+        # Update recent distances tracking
+        self.recent_distances.append(dist_to_dest)
+        
         reached_dest_gs = False
         if hasattr(self, 'dest_ground_station') and self.dest_ground_station:
             reached_dest_gs = (next_node_id == self.dest_ground_station['nodeId'])
         
-        # Điều kiện success - STRICT: Chỉ accept khi thực sự đến destination GS
         is_ground_station = next_node_type == 'GROUND_STATION'
-        is_near_dest = dist_to_dest < 500000  # Tightened: Within 500km only
+        is_near_dest = dist_to_dest < DISTANCE_NEAR_DEST_M
         
         terminated = False
-        reward = initial_reward  # Start with ground station hop penalty if applicable
+        reward = initial_reward
         
-        has_min_hops = len(self.path) >= 3  # Ít nhất 2 hops (source GS + 1 satellite + current)
+        has_min_hops = len(self.path) >= MIN_PATH_HOPS
         
-        # 🎯 STRICT SUCCESS: Chỉ accept khi:
-        # 1. Reached exact dest GS (best case)
-        # 2. GS node AND very close to destination (<500km)
-        # 3. Has minimum hops AND close to destination (<1000km)
-        if reached_dest_gs or \
-           (is_ground_station and is_near_dest and has_min_hops) or \
-           (has_min_hops and dist_to_dest < 1000000):  # Tightened từ 2000km xuống 1000km
-            # Success!
-            self.path.append(self.dest_terminal)
-            terminated = True
-            self.terminated = True  # Mark as successfully terminated
+        # 🔥 FIX: Chỉ terminate khi thực sự đến destination GS
+        # Không cho phép early termination dựa trên distance để tránh "nhảy" trực tiếp
+        # Điều này đảm bảo RL phải đi qua đầy đủ path giống Dijkstra
+        if hasattr(self, 'dest_ground_station') and self.dest_ground_station:
+            # Nếu có explicit dest_gs (từ reset options), CHỈ terminate khi đến đúng GS đó
+            # Không cho phép early termination dựa trên distance
+            if reached_dest_gs and has_min_hops:
+                self.path.append(self.dest_terminal)
+                terminated = True
+                self.terminated = True
+        else:
+            # Fallback: Nếu không có explicit dest_gs, cho phép terminate khi gần destination
+            # (cho backward compatibility)
+            if reached_dest_gs or \
+               (is_ground_station and is_near_dest and has_min_hops) or \
+               (has_min_hops and dist_to_dest < DISTANCE_CLOSE_DEST_M):
+                self.path.append(self.dest_terminal)
+                terminated = True
+                self.terminated = True
+        
+        if terminated:
+            # 🔧 SIMPLIFIED SUCCESS REWARD
+            # Base success: 500, small bonuses, no extreme penalties
+            reward = self.success_reward  # 500
             
-            # Base success reward
-            reward = self.success_reward
-            
-            # 🔥 BONUS: Extra reward if reached exact dest GS
+            # Small bonus for reaching exact destination GS
             if reached_dest_gs:
                 reward += 50.0
-                logger.info(f"🎯 RL reached exact destination GS: {self.dest_ground_station['nodeId']}")
+                logger.info(f"RL reached exact destination GS: {self.dest_ground_station['nodeId']}")
             
-            # QoS compliance bonus
-            if self.service_qos:
-                max_latency = self.service_qos.get('maxLatencyMs', float('inf'))
-                if self.total_latency <= max_latency:
-                    reward += 30.0  # QoS bonus
-                else:
-                    reward -= 15.0  # QoS violation penalty
-            
-            # Path efficiency bonus/penalty - MỤC TIÊU SỐ 1
+            # Small efficiency bonus/penalty (capped)
             num_hops = len(self.path) - 2
-            optimal_hops = self._estimate_optimal_hops()
-            
-            if num_hops <= optimal_hops:
-                efficiency_bonus = (optimal_hops - num_hops) * 20.0  # TĂNG MẠNH: 10.0 → 20.0: THƯỞNG CỰC LỚN cho path ngắn
-                reward += efficiency_bonus
-            else:
-                efficiency_penalty = (num_hops - optimal_hops) * 15.0  # TĂNG MẠNH: 5.0 → 15.0: PENALTY CỰC LỚN cho path dài
-                reward -= efficiency_penalty
-                
-            # 🔥 EXTRA PENALTY cho paths quá dài (>5 hops) - GIẢM threshold
-            if num_hops > 5:  # Giảm từ 6 xuống 5
-                extra_penalty = (num_hops - 5) ** 2 * 30.0  # TĂNG: 20.0 → 30.0
-                reward -= extra_penalty
-                logger.warning(f"⚠️ Path too long: {num_hops} hops, extra penalty: -{extra_penalty}")
-                
-            # Distance efficiency - MỤC TIÊU SỐ 1
-            direct_distance = self._calculate_distance(
-                self.source_terminal.get('position'),
-                self.dest_terminal.get('position')
-            )
-            # 🆕 FIX: Prevent ZeroDivisionError when source = destination
-            if direct_distance > 0:
-                distance_ratio = self.total_distance / direct_distance
-                if distance_ratio < 1.2:  # Rất hiệu quả (<20% detour)
-                    reward += 30.0  # Tăng từ 20.0: THƯNG LỚN cho đường thẳng
-                elif distance_ratio < 1.5:  # Hiệu quả (<50% detour)
-                    reward += 15.0  # Tăng từ 10.0
-                elif distance_ratio > 3.0:  # Quá vòng (>200% detour)
-                    reward -= 20.0  # Tăng từ 10.0: PENALTY LỚN cho đường dài
-            else:
-                # Source = Destination (direct_distance = 0), max bonus
-                reward += 50.0
+            if num_hops <= 3:
+                reward += 30.0  # Very efficient
+            elif num_hops <= 5:
+                reward += 10.0  # Good
+            elif num_hops > 8:
+                reward -= 30.0  # Too long (capped penalty)
                 
         else:
-            # Still routing - tính progressive reward với proximity bonus
-            prev_dist = self._calculate_distance(
-                self.current_node.get('position'), dest_pos
-            )
-            progress = prev_dist - dist_to_dest
+            # 🔧 NORMALIZED REWARD FUNCTION - Scale to reasonable range
+            # Target range: -50 to +50 per step (not counting terminal rewards)
             
-            # Progressive rewards với detour penalty
-            if progress > 0:
-                # Progress reward - khuyến khích tiến gần destination
-                reward += progress / 100000.0 * self.progress_reward_scale  # Scale đã giảm xuống 80.0
-            else:
-                # 🔥 DETOUR PENALTY: Đi xa destination = penalty MỰC NẶNG
-                detour_penalty = abs(progress) / 50000.0 * 30.0  # Penalty lớn hơn progress reward
-                reward -= detour_penalty
-                logger.debug(f"⚠️ Detour penalty: -{detour_penalty:.2f} (moved away from dest by {abs(progress)/1000:.1f}km)")
-            
-            # Distance penalty
-            reward -= hop_distance / 10000000.0 * self.distance_reward_scale
-            # Step và hop penalties (tăng để tránh quá nhiều hops)
-            reward += self.step_penalty  # Full penalty cho mỗi step
-            reward += self.hop_penalty  # Full penalty cho mỗi hop
-            
-            # Satellite bonus GIẢM MẠNH: Ưu tiên satellites nhưng KHÔNG override hop penalty
-            # Net effect: satellite hop = -15 (hop) + 5 (satellite) = -10 (vẫn penalty)
-            if next_node_type in ['LEO_SATELLITE', 'MEO_SATELLITE', 'GEO_SATELLITE']:
-                satellite_bonus = 3.0  # GIẢM từ 15.0 → 3.0 - Chỉ bonus nhỏ
-                if next_node_type == 'LEO_SATELLITE':
-                    satellite_bonus = 5.0  # GIẢM từ 20.0 → 5.0 (LEO tốt hơn nhưng vẫn bị hop penalty)
-                elif next_node_type == 'MEO_SATELLITE':
-                    satellite_bonus = 4.0  # GIẢM từ 18.0 → 4.0
-                reward += satellite_bonus
-                logger.debug(f"✅ Satellite hop bonus: {satellite_bonus} for {next_node_type} (net với hop penalty: {satellite_bonus - 15.0})")
-            
-            # Penalty tăng dần cho nhiều hops (exponential penalty) - CỰC KỲ NGHIÊM KHẮC
-            num_hops = len(self.path) - 1
-            if num_hops > 3:  # GIẢM threshold từ 4 xuống 3 - Force RL học đường ngắn
-                excess_hops = num_hops - 3
-                excess_penalty = excess_hops * excess_hops * 20.0  # TĂNG: 10.0 → 20.0 - PENALTY CỰC LỚN
-                reward -= excess_penalty
-                logger.debug(f"⚠️ Excess hops penalty: -{excess_penalty} for {num_hops} hops (threshold=3)")
-            
-            # Proximity bonus - thưởng khi đến gần destination (tăng scale)
-            if dist_to_dest < 1000000:  # Trong 1000km
-                proximity_bonus = (1000000 - dist_to_dest) / 1000000.0 * self.proximity_bonus_scale * 2.0
-                reward += proximity_bonus
-            elif dist_to_dest < 2000000:  # Trong 2000km
-                proximity_bonus = (2000000 - dist_to_dest) / 2000000.0 * self.proximity_bonus_scale
-                reward += proximity_bonus
-            
-            # Node quality reward - MỤC TIÊU THỨ 2 (sau khi giảm hop/distance)
-            node_quality = self.state_builder._compute_node_quality(next_node)
-            quality_reward = node_quality * self.quality_reward_scale  # 0-10.0 points
-            reward += quality_reward
-            
-            # Extra bonus for EXCELLENT nodes (quality > 0.8) - Giảm để không override hop penalty
-            if node_quality > 0.8:
-                excellent_bonus = 5.0  # Giảm từ 15.0 → 5.0
-                reward += excellent_bonus
-                logger.debug(f"✨ Excellent node bonus: {excellent_bonus} (quality={node_quality:.2f})")
-            # Bonus for GOOD nodes (quality > 0.6)
-            elif node_quality > 0.6:
-                good_bonus = 3.0  # Giảm từ 8.0 → 3.0
-                reward += good_bonus
-                logger.debug(f"✅ Good node bonus: {good_bonus} (quality={node_quality:.2f})")
-            # Penalty for BAD nodes (quality < 0.3) - GIỮNGUYÊN vì tránh node tồi vẫn quan trọng
-            elif node_quality < 0.3:
-                bad_penalty = -20.0  # Giữ nguyên
-                reward += bad_penalty
-                logger.debug(f"❌ Bad node penalty: {bad_penalty} (quality={node_quality:.2f})")
-            
-            # Resource utilization penalty - SỬ DỤNG UTILIZATION THỰC TẾ
-            # Nhiều terminals quanh GS → utilization cao → RL nên tìm đường vòng qua GS khác
-            # next_node_utilization đã được tính ở trên (bao gồm connection count)
-            estimated_utilization = min(100.0, next_node_utilization)
-            
-            if estimated_utilization > 90:
-                reward -= 40.0  # Tăng từ 30 → 40 - RẤT NGUY HIỂM
-            elif estimated_utilization > 80:
-                reward -= 25.0  # Tăng từ 20 → 25 - Nguy hiểm
-            elif estimated_utilization > 70:
-                reward -= 15.0  # Tăng từ 12 → 15 - Cảnh báo cao
-            elif estimated_utilization > 60:
-                reward -= 8.0   # Giữ nguyên - Cảnh báo
-            elif estimated_utilization < 30:
-                reward += 10.0  # Giữ nguyên: Bonus cho node ít tải
-            
-            # Bonus/Penalty dựa trên số terminals (cho GS)
-            if next_node_type == 'GROUND_STATION':
-                if next_connection_count <= 2:
-                    reward += 8.0  # Tăng từ 5 → 8: Bonus lớn cho GS ít tải
-                elif next_connection_count <= 5:
-                    reward += 3.0  # Tăng từ 2 → 3: Bonus cho GS tải vừa
-                elif next_connection_count > 15:
-                    reward -= 25.0  # Tăng từ 10 → 25: Penalty RẤT LỚN cho GS quá tải
-                elif next_connection_count > 10:
-                    reward -= 15.0  # Penalty lớn cho GS tải cao
-                
-            # Battery level penalty - tránh nodes có battery thấp
-            battery_level = next_node.get('batteryChargePercent', 100)
-            if battery_level < 20:
-                reward -= 10.0  # Battery rất thấp - penalty lớn
-            elif battery_level < 30:
-                reward -= 5.0  # Battery thấp - penalty vừa
-            elif battery_level < 50:
-                reward -= 2.0  # Battery trung bình - penalty nhỏ
-                
-            # Loss rate penalty - tăng penalty MẠNh
-            loss_rate = next_node.get('packetLossRate', 0)
-            if loss_rate > 0.1:
-                reward -= loss_rate * 50.0  # Tăng từ 20 → 50: Rất cao loss - penalty rất lớn
-            elif loss_rate > 0.05:
-                reward -= loss_rate * 30.0  # Tăng từ 10 → 30: Cao loss - penalty lớn
-            elif loss_rate > 0:
-                reward -= loss_rate * 10.0  # Penalty cho bất kỳ loss rate nào
-        
-        # Check truncation - giảm penalty và tăng partial success reward
-        truncated = self.step_count >= self.max_steps
-        if truncated and not terminated:
-            reward += self.failure_penalty
-            
-            # Partial success reward based on progress - tăng reward
+            # Get initial distance for normalization
             initial_dist = self._calculate_distance(
                 self.source_terminal.get('position'),
                 self.dest_terminal.get('position')
             )
-            current_dist = dist_to_dest
+            
+            # Component 1: Progress reward (ratio-based, not absolute)
+            # This normalizes progress regardless of absolute distances
             if initial_dist > 0:
-                progress_made = (initial_dist - current_dist) / initial_dist
-                # Thưởng cho bất kỳ progress nào - tăng mạnh
-                reward += progress_made * 200.0  # Tăng từ 100.0
-                # Bonus nếu đến gần destination - tăng scale
-                if dist_to_dest < 500000:  # Trong 500km
-                    reward += 100.0  # Bonus lớn cho việc đến gần
-                elif dist_to_dest < 1000000:  # Trong 1000km
-                    reward += 50.0
-                elif dist_to_dest < 2000000:  # Trong 2000km
-                    reward += 25.0
+                progress_ratio = progress / initial_dist  # -1 to +1 range
+                if progress > 0:
+                    reward = progress_ratio * 30.0  # Max +30 per step
+                else:
+                    reward = progress_ratio * 50.0  # Max -50 per step (penalty stronger)
+            else:
+                reward = 0.0
+            
+            # Component 2: Small step penalty
+            reward -= 1.0  # Encourage shorter paths
+            
+            # Component 3: Resource quality penalties (TRAP NODE DETECTION)
+            # These help RL learn to avoid overloaded nodes that Dijkstra ignores
+            # Using constants from environment.constants for thresholds and penalties
+            from environment.constants import (
+                TRAP_UTILIZATION_SEVERE, TRAP_UTILIZATION_HIGH, TRAP_UTILIZATION_MODERATE,
+                TRAP_PACKET_LOSS_SEVERE, TRAP_PACKET_LOSS_HIGH, TRAP_PACKET_LOSS_MODERATE,
+                TRAP_BATTERY_CRITICAL, TRAP_BATTERY_LOW, TRAP_BATTERY_MODERATE,
+                TRAP_DELAY_HIGH, TRAP_DELAY_MODERATE,
+                PENALTY_UTILIZATION_SEVERE, PENALTY_UTILIZATION_HIGH, PENALTY_UTILIZATION_MODERATE,
+                PENALTY_PACKET_LOSS_SEVERE, PENALTY_PACKET_LOSS_HIGH, PENALTY_PACKET_LOSS_MODERATE,
+                PENALTY_BATTERY_CRITICAL, PENALTY_BATTERY_LOW, PENALTY_BATTERY_MODERATE,
+                PENALTY_DELAY_HIGH, PENALTY_DELAY_MODERATE
+            )
+            
+            # 3a. Utilization penalty
+            cpu = next_node.get('cpu', {}).get('utilization', 0)
+            mem = next_node.get('memory', {}).get('utilization', 0)
+            bw = next_node.get('bandwidth', {}).get('utilization', 0)
+            max_util = max(cpu, mem, bw)
+            
+            if max_util >= TRAP_UTILIZATION_SEVERE:
+                reward += PENALTY_UTILIZATION_SEVERE
+            elif max_util >= TRAP_UTILIZATION_HIGH:
+                reward += PENALTY_UTILIZATION_HIGH
+            elif max_util >= TRAP_UTILIZATION_MODERATE:
+                reward += PENALTY_UTILIZATION_MODERATE
+            
+            # 3b. Packet loss penalty
+            packet_loss = next_node.get('packetLossRate', 0)
+            if packet_loss >= TRAP_PACKET_LOSS_SEVERE:
+                reward += PENALTY_PACKET_LOSS_SEVERE
+            elif packet_loss >= TRAP_PACKET_LOSS_HIGH:
+                reward += PENALTY_PACKET_LOSS_HIGH
+            elif packet_loss >= TRAP_PACKET_LOSS_MODERATE:
+                reward += PENALTY_PACKET_LOSS_MODERATE
+            
+            # 3c. Low battery penalty
+            battery = next_node.get('batteryChargePercent', 100)
+            if battery < TRAP_BATTERY_CRITICAL:
+                reward += PENALTY_BATTERY_CRITICAL
+            elif battery < TRAP_BATTERY_LOW:
+                reward += PENALTY_BATTERY_LOW
+            elif battery < TRAP_BATTERY_MODERATE:
+                reward += PENALTY_BATTERY_MODERATE
+            
+            # 3d. High processing delay penalty
+            delay = next_node.get('nodeProcessingDelayMs', 0)
+            if delay >= TRAP_DELAY_HIGH:
+                reward += PENALTY_DELAY_HIGH
+            elif delay >= TRAP_DELAY_MODERATE:
+                reward += PENALTY_DELAY_MODERATE
         
-        # Update current node
+        truncated = self.step_count >= self.max_steps
+        if truncated and not terminated:
+            # Simple failure penalty - not too extreme
+            reward = -50.0  # Fixed penalty instead of accumulating
+        
         self.current_node = next_node
-        
-        # Build next state
         state = self.state_builder.build_state(
             nodes=self.nodes,
             source_terminal=self.source_terminal,
@@ -528,6 +567,10 @@ class RoutingEnvironment(gym.Env):
             'terminated': terminated,
             'progress': progress if not terminated else 1.0
         }
+        
+        # 🔧 REWARD CLIPPING: Prevent extreme outliers
+        # Clip to reasonable range: -100 to +600
+        reward = max(-100.0, min(600.0, reward))
         
         return state, reward, terminated, truncated, info
     
@@ -573,42 +616,73 @@ class RoutingEnvironment(gym.Env):
         return min(operational_nodes, key=balance_score)
     
     def _find_fallback_node(self) -> Optional[Dict]:
-        """Fallback strategy khi không có valid actions"""
-        # Ưu tiên ground stations gần destination
-        fallback_node = self._find_best_ground_station(self.dest_terminal, self.nodes)
-        if fallback_node:
-            return fallback_node
+        """Fallback strategy khi không có valid actions.
         
-        # Fallback đến node operational bất kỳ gần destination
+        IMPORTANT: Must only return nodes that are within valid communication range
+        from current_node. Uses same range validation as state_builder.
+        """
+        if not self.current_node:
+            return None
+            
+        current_pos = self.current_node.get('position')
+        current_type = self.current_node.get('nodeType', '')
+        
+        # Get all operational nodes first
         operational_nodes = [
             n for n in self.nodes 
             if n.get('isOperational', True) and n.get('position')
+            and n.get('nodeId') not in self.visited_nodes  # Don't revisit
         ]
         
         if not operational_nodes:
             return None
+        
+        # Filter to only nodes within valid range
+        reachable_nodes = []
+        for node in operational_nodes:
+            node_pos = node.get('position')
+            node_type = node.get('nodeType', '')
             
+            if not node_pos:
+                continue
+                
+            dist_km = self._calculate_distance(current_pos, node_pos) / 1000.0
+            max_range_km = self._get_max_range_for_connection(current_type, node_type)
+            
+            if dist_km <= max_range_km:
+                reachable_nodes.append(node)
+        
+        if not reachable_nodes:
+            logger.debug(f"No reachable nodes from {self.current_node.get('nodeId')}")
+            return None
+        
+        # Among reachable nodes, prefer ground stations near destination
         dest_pos = self.dest_terminal.get('position')
+        gs_nodes = [n for n in reachable_nodes if 'GS' in n.get('nodeId', '') or 'GROUND' in n.get('nodeType', '').upper()]
+        
+        if gs_nodes:
+            return min(
+                gs_nodes,
+                key=lambda n: self._calculate_distance(n.get('position'), dest_pos)
+            )
+        
+        # Otherwise, return closest reachable node to destination
         return min(
-            operational_nodes,
-            key=lambda n: self._calculate_distance(
-                n.get('position'), dest_pos
-            ) if n.get('position') else float('inf')
+            reachable_nodes,
+            key=lambda n: self._calculate_distance(n.get('position'), dest_pos)
         )
     
     def _estimate_optimal_hops(self) -> int:
-        """Ước tính số hops tối ưu cho path - STRICT để force shorter paths"""
+        """Estimate optimal number of hops for path"""
         direct_dist = self._calculate_distance(
             self.source_terminal.get('position'),
             self.dest_terminal.get('position')
         )
         
-        # 🔥 STRICT: Force RL to learn shortest paths
-        # Typical optimal: Terminal → GS → LEO → GS → Terminal = 3-4 hops
-        avg_hop_dist = 3000000  # 3000km (tăng từ 2500km để giảm estimated hops)
-        optimal_hops = max(3, int(direct_dist / avg_hop_dist) + 2)  # +2 for GS hops
+        avg_hop_dist_m = 3000000
+        optimal_hops = max(MIN_PATH_HOPS, int(direct_dist / avg_hop_dist_m) + 2)
         
-        return min(optimal_hops, 5)  # Max 5 hops (giảm từ 6, STRICT!)
+        return min(optimal_hops, EFFICIENCY_EXTRA_PENALTY_BASE)
     
     def _find_best_ground_station(
         self, terminal: Dict, nodes: List[Dict]
@@ -659,6 +733,9 @@ class RoutingEnvironment(gym.Env):
         """
         Filter out nodes với vấn đề nghiêm trọng trong stress scenarios
         Giúp RL học tránh các nodes có vấn đề
+        
+        IMPORTANT: This function receives ALREADY FILTERED nodes from state_builder.
+        Do NOT re-add nodes from any other source as they may be out of range.
         """
         filtered = []
         for node in nodes:
@@ -685,20 +762,143 @@ class RoutingEnvironment(gym.Env):
                 if problem_count < 2:
                     filtered.append(node)
         
-        # Nếu filter quá nhiều, giữ lại một số nodes tốt nhất
-        if len(filtered) < 3 and len(nodes) > 0:
-            # Sort by quality và giữ top nodes
+        # 🔧 FIX: If filter removed too many, return ORIGINAL filtered list (from state_builder)
+        # Do NOT use `nodes` directly as fallback - those are already range-filtered
+        # If we have very few nodes, just return what we have
+        if len(filtered) < 3:
+            # Return original input (already range-filtered by state_builder)
+            # Sort by quality but keep all nodes from input
             nodes_sorted = sorted(
-                nodes,
+                nodes,  # These are already range-filtered
                 key=lambda n: (
                     -n.get('resourceUtilization', 0),  # Lower is better
                     -n.get('batteryChargePercent', 100),  # Higher is better
                     n.get('packetLossRate', 0)  # Lower is better
                 )
             )
-            filtered = nodes_sorted[:max(3, len(nodes) // 2)]
+            return nodes_sorted  # Return all, not just top half
         
         return filtered
+    
+    def _get_max_range_for_connection(self, source_type: str, dest_type: str) -> float:
+        """Get max communication range based on node types.
+        
+        Uses constants from environment.constants for different satellite/GS combinations.
+        """
+        from environment.constants import (
+            GS_MAX_DIRECT_RANGE_KM,
+            GS_TO_LEO_MAX_RANGE_KM,
+            GS_TO_MEO_MAX_RANGE_KM,
+            GS_TO_GEO_MAX_RANGE_KM,
+            LEO_MAX_RANGE_KM,
+            LEO_TO_MEO_MAX_RANGE_KM,
+            LEO_TO_GEO_MAX_RANGE_KM,
+            MEO_MAX_RANGE_KM,
+            MEO_TO_GEO_MAX_RANGE_KM,
+            GEO_MAX_RANGE_KM,
+            SATELLITE_RANGE_MARGIN
+        )
+        
+        # Normalize types - extract orbital type from nodeType
+        def get_orbital_type(node_type: str) -> str:
+            if 'GROUND' in node_type.upper():
+                return 'GS'
+            elif 'LEO' in node_type.upper():
+                return 'LEO'
+            elif 'MEO' in node_type.upper():
+                return 'MEO'
+            elif 'GEO' in node_type.upper():
+                return 'GEO'
+            elif 'SATELLITE' in node_type.upper():
+                return 'LEO'
+            elif 'AERIAL' in node_type.upper():
+                return 'LEO'
+            else:
+                return 'LEO'  # Default
+        
+        src = get_orbital_type(source_type)
+        dst = get_orbital_type(dest_type)
+        
+        # Sort to make lookup symmetric (GS-LEO == LEO-GS)
+        pair = tuple(sorted([src, dst]))
+        
+        # Range lookup table based on node type pairs
+        # Keys are sorted alphabetically: GEO < GS < LEO < MEO
+        range_table = {
+            ('GS', 'GS'): GS_MAX_DIRECT_RANGE_KM,
+            ('GS', 'LEO'): GS_TO_LEO_MAX_RANGE_KM,
+            ('GS', 'MEO'): GS_TO_MEO_MAX_RANGE_KM,
+            ('GEO', 'GS'): GS_TO_GEO_MAX_RANGE_KM,  # GEO < GS alphabetically
+            ('LEO', 'LEO'): LEO_MAX_RANGE_KM,
+            ('LEO', 'MEO'): LEO_TO_MEO_MAX_RANGE_KM,
+            ('GEO', 'LEO'): LEO_TO_GEO_MAX_RANGE_KM,  # GEO < LEO
+            ('MEO', 'MEO'): MEO_MAX_RANGE_KM,
+            ('GEO', 'MEO'): MEO_TO_GEO_MAX_RANGE_KM,  # GEO < MEO
+            ('GEO', 'GEO'): GEO_MAX_RANGE_KM,
+        }
+        
+        max_range = range_table.get(pair, LEO_MAX_RANGE_KM)
+        
+        # Apply margin for dynamic orbital positions (except GS-GS)
+        if 'GS' not in pair or pair != ('GS', 'GS'):
+            max_range *= SATELLITE_RANGE_MARGIN
+        
+        return max_range
+    
+    def _calculate_dijkstra_aligned_reward(
+        self,
+        current_node: Dict,
+        next_node: Dict,
+        distance: float,
+        dest_terminal_pos: Dict
+    ) -> float:
+        """Calculate reward aligned with Dijkstra's edge weights"""
+        base_distance_km = distance / M_TO_KM
+        base_reward = -base_distance_km
+        
+        cpu = next_node.get('cpu', {}).get('utilization', 0)
+        mem = next_node.get('memory', {}).get('utilization', 0)
+        bw = next_node.get('bandwidth', {}).get('utilization', 0)
+        max_util = max(cpu, mem, bw)
+        
+        if max_util >= self.drop_threshold:
+            return REWARD_DROP_NODE
+        
+        if max_util >= self.penalty_threshold:
+            excess = (max_util - self.penalty_threshold) / (UTILIZATION_MAX_PERCENT - self.penalty_threshold)
+            penalty = base_distance_km * (self.penalty_multiplier - 1.0) * excess
+            base_reward -= penalty
+        
+        current_pos = current_node.get('position')
+        next_pos = next_node.get('position')
+        
+        if current_pos and next_pos and dest_terminal_pos:
+            current_to_dest = self._calculate_distance(current_pos, dest_terminal_pos)
+            next_to_dest = self._calculate_distance(next_pos, dest_terminal_pos)
+            
+            progress_km = (current_to_dest - next_to_dest) / M_TO_KM
+            progress_reward = progress_km * DIJKSTRA_PROGRESS_SCALE
+            
+            if next_to_dest < DISTANCE_VERY_CLOSE_M:
+                return REWARD_SUCCESS
+            
+            return base_reward + progress_reward
+        
+        return base_reward
+    
+    def _check_recent_progress(self, current_dist: float) -> bool:
+        """Check if agent is making progress towards destination"""
+        if len(self.recent_distances) < PROGRESS_CHECK_WINDOW_SIZE:
+            return True
+        
+        last_distances = list(self.recent_distances)[-PROGRESS_CHECK_WINDOW_SIZE:]
+        total_progress = last_distances[0] - current_dist
+        
+        if total_progress < PROGRESS_MIN_THRESHOLD_M:
+            logger.debug(f"No progress detected: {total_progress:.1f}m in last {PROGRESS_CHECK_WINDOW_SIZE} steps")
+            return False
+        
+        return True
     
     def get_path_result(self) -> Dict:
         """Get final path result - đảm bảo format đúng và đầy đủ"""
@@ -780,8 +980,7 @@ class RoutingEnvironment(gym.Env):
                 processing_delay = 5  # Default processing delay
                 total_latency += propagation_delay + processing_delay
         
-        # Check if path successfully reached destination
-        is_success = self.terminated and len(path_segments) >= 4  # At least: source_terminal, source_node, dest_node, dest_terminal
+        is_success = self.terminated and len(path_segments) >= MIN_PATH_SEGMENTS  # At least: source_terminal, source_node, dest_node, dest_terminal
         
         return {
             'source': {

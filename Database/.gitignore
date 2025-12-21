@@ -1,1 +1,27 @@
+# Logs
 node_update.log
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environment
+.env
+.env.local
+venv/
+env/
+.venv/
+
+# OS
+.DS_Store
+*.swp
+*.swo
+
+# Build
+*.egg-info/
+dist/
+build/

@@ -9,6 +9,7 @@ import logging
 from pathlib import Path
 import time
 import random
+from collections import deque
 
 from training.trainer import RoutingTrainer
 from training.curriculum_learning import CurriculumScheduler
@@ -90,10 +91,22 @@ class EnhancedRoutingTrainer(RoutingTrainer):
         logger.info(f"Starting enhanced training: {max_episodes} episodes")
         logger.info(f"State dim: {state_dim}, Action dim: {action_dim}")
         
-        # Generate expert demonstrations nếu dùng imitation learning
-        if self.use_imitation and len(self.imitation.expert_demos) == 0:
-            logger.info("Generating expert demonstrations...")
-            self._generate_expert_demos(terminals, nodes, num_demos=50)
+        if self.use_imitation:
+            # Clear old demos if state dimension changed (e.g., max_nodes changed)
+            if len(self.imitation.expert_demos) > 0:
+                # Check if demo state dimension matches current state dimension
+                first_demo = self.imitation.expert_demos[0]
+                if len(first_demo.states) > 0:
+                    demo_state_dim = len(first_demo.states[0])
+                    if demo_state_dim != state_dim:
+                        logger.info(f"State dimension changed ({demo_state_dim} → {state_dim}), clearing old demonstrations")
+                        self.imitation.expert_demos.clear()
+            
+            if len(self.imitation.expert_demos) == 0:
+                logger.info("Generating expert demonstrations...")
+                imitation_config = self.config.get('imitation_learning', {})
+                num_demos = imitation_config.get('num_demos', 500)
+                self.imitation.generate_comprehensive_demos(terminals, nodes, num_demos=num_demos)
         
         # Training loop
         for episode in range(max_episodes):
@@ -108,11 +121,22 @@ class EnhancedRoutingTrainer(RoutingTrainer):
             if not source_terminal or not dest_terminal:
                 continue
             
-            # Reset environment với selected terminals
+            # 🔥 FIX: Chọn Ground Stations cho terminals TRƯỚC khi reset
+            # Model chỉ học routing giữa GS, không học chọn GS cho terminal
+            source_gs = self._find_best_ground_station(source_terminal, nodes)
+            dest_gs = self._find_best_ground_station(dest_terminal, nodes)
+            
+            if not source_gs or not dest_gs:
+                logger.warning(f"Skipping episode: Cannot find ground stations for terminals")
+                continue
+            
+            # Reset environment với explicit ground stations
             state, info = env.reset(
                 options={
                     'source_terminal_id': source_terminal.get('terminalId'),
-                    'dest_terminal_id': dest_terminal.get('terminalId')
+                    'dest_terminal_id': dest_terminal.get('terminalId'),
+                    'source_ground_station': source_gs, 
+                    'dest_ground_station': dest_gs         
                 }
             )
             
@@ -170,6 +194,12 @@ class EnhancedRoutingTrainer(RoutingTrainer):
                 if train_metrics:
                     episode_losses.append(train_metrics['loss'])
                     self.training_losses.append(train_metrics['loss'])
+                elif agent.total_steps % 100 == 0 and len(agent.replay_buffer) < agent.learning_starts:
+                    # Log buffer status periodically
+                    logger.debug(
+                        f"Buffer: {len(agent.replay_buffer)}/{agent.learning_starts} "
+                        f"(training starts at {agent.learning_starts} experiences)"
+                    )
                 
                 # Update state
                 state = next_state
@@ -213,6 +243,21 @@ class EnhancedRoutingTrainer(RoutingTrainer):
                 success_rate = len([r for r in self.episode_rewards if r > 0]) / max(len(self.episode_rewards), 1)
                 self.imitation.update_dagger(success_rate)
             
+            # Calculate coverage and success
+            visited_nodes = len(env.visited_nodes) if hasattr(env, 'visited_nodes') else 0
+            total_nodes = len(nodes)
+            coverage = visited_nodes / total_nodes if total_nodes > 0 else 0.0
+            if not hasattr(self, 'episode_coverage'):
+                self.episode_coverage = deque(maxlen=100)
+                self.episode_success = deque(maxlen=100)
+                self.reward_per_step = deque(maxlen=100)
+            
+            self.episode_coverage.append(coverage)
+            success = 1 if terminated else 0
+            self.episode_success.append(success)
+            reward_per_step = episode_reward / episode_length if episode_length > 0 else 0.0
+            self.reward_per_step.append(reward_per_step)
+            
             # Update metrics
             self.episode_rewards.append(episode_reward)
             self.episode_lengths.append(episode_length)
@@ -244,18 +289,38 @@ class EnhancedRoutingTrainer(RoutingTrainer):
                 
                 logger.info(log_msg)
                 
-                # Tensorboard
+                # Calculate additional metrics
+                mean_coverage = np.mean(list(self.episode_coverage)[-10:]) if hasattr(self, 'episode_coverage') and self.episode_coverage else 0.0
+                mean_success = np.mean(list(self.episode_success)[-10:]) if hasattr(self, 'episode_success') and self.episode_success else 0.0
+                mean_reward_per_step = np.mean(list(self.reward_per_step)[-10:]) if hasattr(self, 'reward_per_step') and self.reward_per_step else 0.0
+                
+                # Tensorboard - organized by category
                 if self.writer:
-                    self.writer.add_scalar('train/reward', episode_reward, episode)
-                    self.writer.add_scalar('train/mean_reward', mean_reward, episode)
-                    self.writer.add_scalar('train/loss', mean_loss, episode)
+                    # Training metrics
+                    self.writer.add_scalar('1_Training/Reward', episode_reward, episode)
+                    self.writer.add_scalar('1_Training/Mean_Reward_10ep', mean_reward, episode)
+                    self.writer.add_scalar('1_Training/Reward_Per_Step', reward_per_step, episode)
+                    self.writer.add_scalar('1_Training/Mean_Reward_Per_Step_10ep', mean_reward_per_step, episode)
+                    self.writer.add_scalar('1_Training/Episode_Length', episode_length, episode)
+                    self.writer.add_scalar('1_Training/Mean_Length_10ep', mean_length, episode)
+                    self.writer.add_scalar('1_Training/Loss', mean_loss, episode)
+                    self.writer.add_scalar('1_Training/Epsilon', agent.epsilon, episode)
                     
+                    # Coverage metrics
+                    self.writer.add_scalar('2_Coverage/Node_Coverage', coverage, episode)
+                    self.writer.add_scalar('2_Coverage/Mean_Coverage_10ep', mean_coverage, episode)
+                    
+                    # Success metrics
+                    self.writer.add_scalar('3_Success/Success_Rate', success, episode)
+                    self.writer.add_scalar('3_Success/Mean_Success_Rate_10ep', mean_success, episode)
+                    
+                    # Enhanced features
                     if self.use_curriculum:
-                        self.writer.add_scalar('curriculum/level', stats['current_level'], episode)
-                        self.writer.add_scalar('curriculum/difficulty', stats['difficulty'], episode)
+                        self.writer.add_scalar('7_Enhanced/Curriculum_Level', stats['current_level'], episode)
+                        self.writer.add_scalar('7_Enhanced/Curriculum_Difficulty', stats['difficulty'], episode)
                     
                     if self.use_imitation:
-                        self.writer.add_scalar('imitation/expert_ratio', self.imitation.mixing_ratio, episode)
+                        self.writer.add_scalar('7_Enhanced/Imitation_Expert_Ratio', self.imitation.mixing_ratio, episode)
             
             # Evaluation
             if (episode + 1) % self.eval_frequency == 0:
@@ -270,8 +335,18 @@ class EnhancedRoutingTrainer(RoutingTrainer):
                 )
                 
                 if self.writer:
-                    self.writer.add_scalar('eval/mean_reward', eval_reward, episode)
-                    self.writer.add_scalar('eval/success_rate', eval_metrics['success_rate'], episode)
+                    # Evaluation metrics - organized
+                    self.writer.add_scalar('6_Evaluation/Mean_Reward', eval_reward, episode)
+                    self.writer.add_scalar('6_Evaluation/Success_Rate', eval_metrics['success_rate'], episode)
+                    self.writer.add_scalar('6_Evaluation/Mean_Hops', eval_metrics.get('mean_hops', 0), episode)
+                    self.writer.add_scalar('6_Evaluation/Mean_Latency', eval_metrics.get('mean_latency', 0), episode)
+                    self.writer.add_scalar('6_Evaluation/Std_Reward', eval_metrics.get('std_reward', 0), episode)
+                    self.writer.add_scalar('6_Evaluation/Mean_Length', eval_metrics.get('mean_length', 0), episode)
+                    
+                    # Reward per episode ratio
+                    if eval_metrics.get('mean_length', 0) > 0:
+                        eval_reward_per_step = eval_reward / eval_metrics['mean_length']
+                        self.writer.add_scalar('6_Evaluation/Reward_Per_Step', eval_reward_per_step, episode)
                 
                 # Early stopping và save best model
                 if eval_reward > self.best_mean_reward:
@@ -340,37 +415,54 @@ class EnhancedRoutingTrainer(RoutingTrainer):
             indices = np.random.choice(len(terminals), size=2, replace=False)
             return terminals[indices[0]], terminals[indices[1]]
     
+    def _find_best_ground_station(self, terminal: Dict, nodes: List[Dict]) -> Optional[Dict]:
+        """Tìm ground station tốt nhất cho terminal (giống như trong routing_bp)"""
+        try:
+            # Import function từ routing_bp
+            from api.routing_bp import find_best_ground_station
+            return find_best_ground_station(terminal, nodes)
+        except ImportError:
+            # Fallback: Simple distance-based selection
+            terminal_pos = terminal.get('position')
+            if not terminal_pos:
+                return None
+            
+            ground_stations = [
+                n for n in nodes
+                if n.get('nodeType') == 'GROUND_STATION'
+                and n.get('isOperational', True)
+                and n.get('position')
+            ]
+            
+            if not ground_stations:
+                return None
+            
+            # Find closest
+            from environment.state_builder import RoutingStateBuilder
+            state_builder = RoutingStateBuilder(self.config)
+            
+            best_station = None
+            best_score = float('inf')
+            
+            for station in ground_stations:
+                distance = state_builder._calculate_distance(
+                    terminal_pos, station.get('position')
+                )
+                quality = state_builder._compute_node_quality(station)
+                score = distance / 1000.0 * (1.1 - quality)
+                
+                if score < best_score:
+                    best_score = score
+                    best_station = station
+            
+            return best_station
+    
     def _generate_expert_demos(
         self,
         terminals: List[Dict],
         nodes: List[Dict],
-        num_demos: int = 50
+        num_demos: int = 500
     ):
-        """Generate expert demonstrations"""
-        logger.info(f"Generating {num_demos} expert demonstrations...")
-        
-        demo_count = 0
-        attempts = 0
-        max_attempts = num_demos * 3
-        
-        while demo_count < num_demos and attempts < max_attempts:
-            attempts += 1
-            
-            if len(terminals) < 2:
-                break
-            
-            indices = np.random.choice(len(terminals), size=2, replace=False)
-            source = terminals[indices[0]]
-            dest = terminals[indices[1]]
-            
-            # Generate Dijkstra demonstration
-            demo = self.imitation.generate_expert_demonstration(
-                source, dest, nodes, algorithm='dijkstra'
-            )
-            
-            if demo:
-                self.imitation.add_demonstration(demo)
-                demo_count += 1
-        
-        logger.info(f"Generated {demo_count} expert demonstrations")
+        """Generate expert demonstrations using comprehensive method"""
+        self.imitation.generate_comprehensive_demos(terminals, nodes, num_demos=num_demos)
 

@@ -24,10 +24,10 @@ rl_agent:
   # Optimized DQN Hyperparameters
   dqn:
     learning_rate: 0.0001
-    batch_size: 64  # Increased for better stability
+    batch_size: 32  # Reduced for faster updates
     buffer_size: 100000
-    learning_starts: 5000  # More samples before training
-    target_update_interval: 1000
+    learning_starts: 256  # 🔧 FIX: Reduced from 1000 for faster learning start
+    target_update_interval: 100  # 🔧 FIX: Reduced from 1000 for more stable Q-targets
     gamma: 0.99
     tau: 0.005  # Soft updates for stability
     
@@ -40,8 +40,9 @@ rl_agent:
     
     # Optimized Exploration
     exploration_initial_eps: 1.0
-    exploration_final_eps: 0.01  # Lower final epsilon
-    exploration_decay: 0.9995  # Exponential decay
+    exploration_final_eps: 0.05  # 🔧 FIX: Increased from 0.01 for more exploration
+    exploration_decay: 0.999  # 🔧 FIX: Slower decay from 0.9995
+    epsilon_decay_strategy: "linear"  # 🔧 NEW: Use linear decay instead of exponential
     
     # Optimized Dueling DQN
     dueling:
@@ -52,15 +53,19 @@ rl_agent:
       use_layer_norm: true  # Training stability
 
 # Optimized State Builder Configuration
+# FIX: Reduced max_nodes for actual filtering and faster training
 state_builder:
-  # Optimized dimensions
-  max_nodes: 30  # Reduced from 50 for performance
+  # Optimized dimensions - REDUCED for faster training
+  max_nodes: 15  # FIX: Reduced from 53 - only keep top 15 candidates
   max_terminals: 2  # Only need source + destination
   
-  # Feature optimization
-  node_feature_dim: 12  # Optimized from 15
-  terminal_feature_dim: 6  # Optimized from 8
-  global_feature_dim: 8  # Optimized from 10
+  # Feature dimensions
+  node_feature_dim: 12  # FIX: Reduced from 18
+  terminal_feature_dim: 6
+  global_feature_dim: 8
+  
+  # Enable Dijkstra-aware features
+  include_dijkstra_features: true
   
   # Performance features
   use_caching: true
@@ -70,19 +75,19 @@ state_builder:
   # Dynamic features
   dynamic_positions:
     enabled: true
-    update_interval_seconds: 30  # Less frequent updates
+    update_interval_seconds: 30
 
 # Optimized Training Configuration
 training:
-  # Episode Settings
-  max_episodes: 2000  # More episodes for better learning
-  max_steps_per_episode: 15  # Reduced for faster episodes
-  eval_frequency: 50  # More frequent evaluation
+  max_episodes: 5000
+  max_steps_per_episode: 15
+  eval_frequency: 25
+  adaptive_max_steps: true
   
   # Advanced Training Features
   target_update_frequency: 100
   gradient_clip: 1.0
-  early_stopping_patience: 50
+  early_stopping_patience: 100  # Phase 2: Increased from 50 to 100
   
   # Evaluation
   eval_episodes: 20  # More episodes for stable metrics
@@ -104,6 +109,13 @@ training:
   tensorboard_enabled: true
   console_log_enabled: true
   
+  # Dashboard Configuration - Custom training visualization
+  dashboard:
+    enabled: true
+    auto_cleanup_logs: true  # Tự động xóa logs sau training
+    log_retention_days: 7    # Giữ logs 7 ngày gần nhất
+    live_update_frequency: 10  # Update dashboard mỗi 10 episodes
+  
   # Performance Monitoring
   enable_performance_metrics: true
   memory_monitoring: true
@@ -122,9 +134,11 @@ curriculum:
 # Imitation Learning Configuration
 imitation_learning:
   enabled: true
-  use_dagger: true  # Dataset Aggregation
-  expert_ratio: 0.3  # 30% expert actions initially
-  bc_loss_weight: 0.5  # Behavior Cloning loss weight
+  use_dagger: true
+  expert_ratio: 0.3
+  bc_loss_weight: 0.5
+  num_demos: 500
+  use_weighted_demos: true
 
 # Multi-objective Optimization Configuration
 multi_objective:
@@ -136,13 +150,22 @@ multi_objective:
   energy_weight: 0.3
   adaptive_weights: true  # Adapt weights based on performance
 
-# Optimized Reward Function Configuration - Nới lỏng để tăng success rate
+# Optimized Reward Function Configuration
+# Phase 1 Enhancement: Dijkstra-aligned rewards
 reward:
+  # Phase 1: Enable Dijkstra-aligned reward calculation
+  dijkstra_aligned: true  # NEW: Use Dijkstra's edge weight logic for rewards
+  
+  # Phase 1: Dijkstra parameters (match calculate_path_dijkstra)
+  drop_threshold: 95.0  # Drop nodes with utilization >= 95%
+  penalty_threshold: 80.0  # Apply penalty for utilization >= 80%
+  penalty_multiplier: 3.0  # Multiplier for penalty (3.0x)
+  
   # Primary Rewards (optimized scales)
-  success_reward: 200.0
-  failure_penalty: -10.0  # Giảm từ -30.0 xuống -10.0
-  step_penalty: -0.1  # Giảm từ -0.5 xuống -0.1
-  hop_penalty: -0.5  # Giảm từ -2.0 xuống -0.5
+  success_reward: 500.0
+  failure_penalty: -50.0
+  step_penalty: -1.0
+  hop_penalty: -2.0
   
   # Progressive Rewards - Tăng để khuyến khích progress
   progress_reward_scale: 100.0  # Tăng từ 15.0 lên 100.0
@@ -158,15 +181,15 @@ reward:
   efficiency_bonus: 20.0
   inefficiency_penalty: -10.0
   
-  # Resource Awareness - Giảm penalties
-  high_utilization_penalty: -2.0  # Giảm từ -5.0
-  medium_utilization_penalty: -1.0  # Giảm từ -2.0
-  loss_rate_penalty_scale: 5.0  # Giảm từ 10.0
+  # Resource Awareness - Reduced penalties
+  high_utilization_penalty: -1.0
+  medium_utilization_penalty: -0.5
+  loss_rate_penalty_scale: 3.0
 
 # Action Space Configuration
 action_space:
   type: "discrete"
-  max_actions: 30  # Matches max_nodes
+  max_actions: 53  # Matches max_nodes (actual operational nodes)
   
   # Action Selection
   use_action_masking: true

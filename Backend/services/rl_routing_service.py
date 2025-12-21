@@ -120,7 +120,19 @@ class RLRoutingService:
         topology: Optional[Dict] = None,
         scenario: Optional[Dict] = None
     ) -> Dict:
-        """Optimized path calculation với performance monitoring"""
+        """
+        Optimized path calculation với performance monitoring
+        
+        ⚠️ LƯU Ý: RL Routing Service hiện tại còn YẾU KÉM so với Dijkstra.
+        Xem chi tiết trong calculate_path_rl() ở api/routing_bp.py để biết lý do.
+        
+        Các vấn đề chính:
+        - Phụ thuộc vào model quality và training
+        - Có giới hạn max_steps (6-8) so với Dijkstra không giới hạn
+        - Không đảm bảo optimality như Dijkstra
+        - Có thể fail và cần fallback
+        - Phức tạp hơn trong debug và maintenance
+        """
         start_time = time.time()
         self.request_count += 1
         
@@ -173,15 +185,42 @@ class RLRoutingService:
     ) -> Dict:
         """Tính path sử dụng RL agent với logic terminal→GS→satellite→GS→terminal"""
         
-        # 🔥 FIX: Tìm Ground Stations tối ưu cho source và dest terminals (giống Dijkstra)
-        from api.routing_bp import find_best_ground_station
+        # ⚠️ FIX: RL và Dijkstra phải dùng CÙNG GS để so sánh công bằng về routing
+        # Nếu dùng GS khác nhau, đây là 2 bài toán routing khác nhau → không thể so sánh!
+        # 
+        # Option: Dùng nearest GS (baseline) để fair comparison
+        # Hoặc có thể tách biệt: GS selection comparison + Routing comparison (cùng GS)
+        from api.routing_bp import find_best_ground_station, find_nearest_ground_station, calculate_distance
         
-        source_gs = find_best_ground_station(source_terminal, nodes)
-        dest_gs = find_best_ground_station(dest_terminal, nodes)
+        # 🔥 FIX: Dùng nearest GS để fair comparison với Dijkstra
+        # Nếu muốn so sánh best GS vs nearest GS, cần tách biệt thành 2 comparisons:
+        # 1. GS Selection: best GS vs nearest GS
+        # 2. Routing: Cùng GS, so sánh RL vs Dijkstra
+        source_gs = find_nearest_ground_station(source_terminal, nodes)
+        dest_gs = find_nearest_ground_station(dest_terminal, nodes)
         
         if not source_gs or not dest_gs:
             logger.error(f"❌ RL: Cannot find ground stations for terminals")
             raise ValueError("No suitable ground stations found for terminals")
+        
+        # Log chi tiết về GS selection (giờ dùng nearest GS để fair comparison)
+        if source_gs:
+            source_distance_km = calculate_distance(source_terminal.get('position'), source_gs.get('position')) / 1000.0
+            logger.info(
+                f"🤖 RL: Using NEAREST Ground Station {source_gs['nodeId']} "
+                f"for terminal {source_terminal.get('terminalId')} "
+                f"(distance: {source_distance_km:.1f}km, "
+                f"FAIR COMPARISON with Dijkstra - same GS selection)"
+            )
+        
+        if dest_gs:
+            dest_distance_km = calculate_distance(dest_terminal.get('position'), dest_gs.get('position')) / 1000.0
+            logger.info(
+                f"🤖 RL: Using NEAREST Ground Station {dest_gs['nodeId']} "
+                f"for terminal {dest_terminal.get('terminalId')} "
+                f"(distance: {dest_distance_km:.1f}km, "
+                f"FAIR COMPARISON with Dijkstra - same GS selection)"
+            )
         
         logger.info(f"🛰️ RL routing: {source_terminal.get('terminalId')} → {source_gs['nodeId']} → satellites → {dest_gs['nodeId']} → {dest_terminal.get('terminalId')}")
         
@@ -210,7 +249,8 @@ class RLRoutingService:
         # Route sử dụng agent (deterministic)
         done = False
         step_count = 0
-        max_steps = 6  # GIẢM MẠNH: 8 → 6 để force shorter paths
+        max_steps = 15  # 🔥 FIX: Tăng từ 6 lên 15 để đảm bảo tìm được path đầy đủ
+        # max_steps = 6 quá thấp có thể khiến RL dừng sớm và tìm được path không đầy đủ
         
         while not done and step_count < max_steps:
             action = self.agent.select_action(state, deterministic=True)

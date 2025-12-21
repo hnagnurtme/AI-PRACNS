@@ -1,17 +1,66 @@
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+*.egg-info/
+*.egg
+
+# Virtual environments
 env/
 venv/
 .venv/
-*.egg-info/
+ENV/
+env.bak/
+venv.bak/
+
+# Logs
+*.log
+logs/
+*.log.*
+
+# Models (keep structure, ignore trained models)
+models/rl_agent*/
+models/checkpoints/*.pt
+models/checkpoints/*.json
+models/best_models/*.pt
+!models/checkpoints/.gitkeep
+!models/best_models/.gitkeep
+
+# TensorBoard
+logs/tensorboard/
+*.tfevents.*
+
+# Build outputs
 dist/
 build/
-*.log
-models/rl_agent*
-logs/
-.DS_Store
+*.egg-info/
+
+# Environment
 .env
+.env.local
+.env.*.local
+
+# OS
+.DS_Store
+*.swp
+*.swo
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+notebooks/.ipynb_checkpoints/
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+.pytest_cache/
+.coverage
+htmlcov/
 
