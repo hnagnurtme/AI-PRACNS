@@ -19,6 +19,11 @@ from config import Config
 from agent.dueling_dqn import DuelingDQNAgent
 from environment.state_builder import RoutingStateBuilder
 from environment.routing_env import RoutingEnvironment
+from environment.constants import (
+    BATTERY_MAX_PERCENT,
+    NORM_PACKET_BUFFER,
+    M_TO_KM
+)
 
 logger = logging.getLogger(__name__)
 
@@ -183,43 +188,39 @@ class RLRoutingService:
         nodes: List[Dict],
         service_qos: Optional[Dict]
     ) -> Dict:
-        """Tính path sử dụng RL agent với logic terminal→GS→satellite→GS→terminal"""
+        """Calculate path using RL agent with terminal→GS→satellite→GS→terminal logic"""
         
-        # ⚠️ FIX: RL và Dijkstra phải dùng CÙNG GS để so sánh công bằng về routing
-        # Nếu dùng GS khác nhau, đây là 2 bài toán routing khác nhau → không thể so sánh!
-        # 
-        # Option: Dùng nearest GS (baseline) để fair comparison
-        # Hoặc có thể tách biệt: GS selection comparison + Routing comparison (cùng GS)
-        from api.routing_bp import find_best_ground_station, find_nearest_ground_station, calculate_distance
+        from api.routing_bp import find_best_ground_station, calculate_distance
         
-        # 🔥 FIX: Dùng nearest GS để fair comparison với Dijkstra
-        # Nếu muốn so sánh best GS vs nearest GS, cần tách biệt thành 2 comparisons:
-        # 1. GS Selection: best GS vs nearest GS
-        # 2. Routing: Cùng GS, so sánh RL vs Dijkstra
-        source_gs = find_nearest_ground_station(source_terminal, nodes)
-        dest_gs = find_nearest_ground_station(dest_terminal, nodes)
+        source_gs = find_best_ground_station(source_terminal, nodes)
+        dest_gs = find_best_ground_station(dest_terminal, nodes)
         
         if not source_gs or not dest_gs:
             logger.error(f"❌ RL: Cannot find ground stations for terminals")
             raise ValueError("No suitable ground stations found for terminals")
         
-        # Log chi tiết về GS selection (giờ dùng nearest GS để fair comparison)
         if source_gs:
-            source_distance_km = calculate_distance(source_terminal.get('position'), source_gs.get('position')) / 1000.0
+            source_distance_km = calculate_distance(source_terminal.get('position'), source_gs.get('position')) / M_TO_KM
             logger.info(
-                f"🤖 RL: Using NEAREST Ground Station {source_gs['nodeId']} "
+                f"🤖 RL: Using BEST Ground Station {source_gs['nodeId']} "
                 f"for terminal {source_terminal.get('terminalId')} "
                 f"(distance: {source_distance_km:.1f}km, "
-                f"FAIR COMPARISON with Dijkstra - same GS selection)"
+                f"utilization: {source_gs.get('resourceUtilization', 0):.1f}%, "
+                f"battery: {source_gs.get('batteryChargePercent', BATTERY_MAX_PERCENT):.1f}%, "
+                f"packet_loss: {source_gs.get('packetLossRate', 0)*100:.2f}% - "
+                f"RESOURCE-OPTIMIZED selection)"
             )
         
         if dest_gs:
-            dest_distance_km = calculate_distance(dest_terminal.get('position'), dest_gs.get('position')) / 1000.0
+            dest_distance_km = calculate_distance(dest_terminal.get('position'), dest_gs.get('position')) / M_TO_KM
             logger.info(
-                f"🤖 RL: Using NEAREST Ground Station {dest_gs['nodeId']} "
+                f"🤖 RL: Using BEST Ground Station {dest_gs['nodeId']} "
                 f"for terminal {dest_terminal.get('terminalId')} "
                 f"(distance: {dest_distance_km:.1f}km, "
-                f"FAIR COMPARISON with Dijkstra - same GS selection)"
+                f"utilization: {dest_gs.get('resourceUtilization', 0):.1f}%, "
+                f"battery: {dest_gs.get('batteryChargePercent', BATTERY_MAX_PERCENT):.1f}%, "
+                f"packet_loss: {dest_gs.get('packetLossRate', 0)*100:.2f}% - "
+                f"RESOURCE-OPTIMIZED selection)"
             )
         
         logger.info(f"🛰️ RL routing: {source_terminal.get('terminalId')} → {source_gs['nodeId']} → satellites → {dest_gs['nodeId']} → {dest_terminal.get('terminalId')}")
@@ -475,7 +476,7 @@ class RLRoutingService:
                 drop_prob += loss_rate * 0.3
                 
                 # Buffer overflow risk
-                buffer_ratio = node.get('currentPacketCount', 0) / max(node.get('packetBufferCapacity', 1000), 1)
+                buffer_ratio = node.get('currentPacketCount', 0) / max(node.get('packetBufferCapacity', NORM_PACKET_BUFFER), 1)
                 if buffer_ratio > 0.8:
                     drop_prob += 0.15
         
@@ -530,7 +531,7 @@ class RLRoutingService:
                 
                 # Dựa trên multiple factors
                 loss_rate = 1 - min(node.get('packetLossRate', 0), 1.0)
-                battery = node.get('batteryChargePercent', 100) / 100.0
+                battery = node.get('batteryChargePercent', BATTERY_MAX_PERCENT) / BATTERY_MAX_PERCENT
                 healthy = 1.0 if node.get('healthy', True) else 0.5
                 
                 node_reliability = (loss_rate + battery + healthy) / 3
