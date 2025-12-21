@@ -170,58 +170,130 @@ def generate_geo_constellation() -> List[Dict]:
 
 def generate_ground_stations() -> List[Dict]:
     """
-    Generate ground stations at strategic locations
-    Distributed globally for good coverage - ENHANCED with more locations
+    Generate ground stations with TRAP + 4 GOOD pattern.
+    
+    CLUSTER DESIGN:
+    - Each TRAP GS has 4 GOOD GS around it (North, South, East, West ~200km)
+    - This ensures RL ALWAYS has multiple better options
+    - Pattern: [TRAP, GOOD_N, GOOD_S, GOOD_E, GOOD_W, TRAP, GOOD_N, ...]
+    
+    Index mapping with get_node_attributes (index % 4 == 0 → trap):
+    - Index 0,5,10,15... = TRAP (center)
+    - All others = GOOD (surrounding)
     """
-    # Strategic locations for training scenarios - EXPANDED to 35
-    locations = [
-        # North America - 8 stations
-        {'lat': 40.7128, 'lon': -74.0060, 'name': 'New York', 'alt': 10, 'region': 'NA'},
-        {'lat': 34.0522, 'lon': -118.2437, 'name': 'Los Angeles', 'alt': 100, 'region': 'NA'},
-        {'lat': 41.8781, 'lon': -87.6298, 'name': 'Chicago', 'alt': 180, 'region': 'NA'},
-        {'lat': 29.7604, 'lon': -95.3698, 'name': 'Houston', 'alt': 15, 'region': 'NA'},
-        {'lat': 45.5017, 'lon': -73.5673, 'name': 'Montreal', 'alt': 36, 'region': 'NA'},
-        {'lat': 47.6062, 'lon': -122.3321, 'name': 'Seattle', 'alt': 56, 'region': 'NA'},
-        {'lat': 25.7617, 'lon': -80.1918, 'name': 'Miami', 'alt': 2, 'region': 'NA'},
-        {'lat': 49.2827, 'lon': -123.1207, 'name': 'Vancouver', 'alt': 70, 'region': 'NA'},
-        
-        # Europe - 8 stations
-        {'lat': 51.5074, 'lon': -0.1278, 'name': 'London', 'alt': 15, 'region': 'EU'},
-        {'lat': 48.8566, 'lon': 2.3522, 'name': 'Paris', 'alt': 35, 'region': 'EU'},
-        {'lat': 52.5200, 'lon': 13.4050, 'name': 'Berlin', 'alt': 34, 'region': 'EU'},
-        {'lat': 55.7558, 'lon': 37.6173, 'name': 'Moscow', 'alt': 156, 'region': 'EU'},
-        {'lat': 41.9028, 'lon': 12.4964, 'name': 'Rome', 'alt': 57, 'region': 'EU'},
-        {'lat': 40.4168, 'lon': -3.7038, 'name': 'Madrid', 'alt': 657, 'region': 'EU'},
-        {'lat': 59.3293, 'lon': 18.0686, 'name': 'Stockholm', 'alt': 28, 'region': 'EU'},
-        {'lat': 52.3676, 'lon': 4.9041, 'name': 'Amsterdam', 'alt': -2, 'region': 'EU'},
-        
-        # Asia - 9 stations
-        {'lat': 35.6762, 'lon': 139.6503, 'name': 'Tokyo', 'alt': 40, 'region': 'ASIA'},
-        {'lat': 22.3193, 'lon': 114.1694, 'name': 'Hong Kong', 'alt': 5, 'region': 'ASIA'},
-        {'lat': 1.3521, 'lon': 103.8198, 'name': 'Singapore', 'alt': 15, 'region': 'ASIA'},
-        {'lat': 28.6139, 'lon': 77.2090, 'name': 'New Delhi', 'alt': 216, 'region': 'ASIA'},
-        {'lat': 31.2304, 'lon': 121.4737, 'name': 'Shanghai', 'alt': 4, 'region': 'ASIA'},
-        {'lat': 37.5665, 'lon': 126.9780, 'name': 'Seoul', 'alt': 38, 'region': 'ASIA'},
-        {'lat': 13.7563, 'lon': 100.5018, 'name': 'Bangkok', 'alt': 1, 'region': 'ASIA'},
-        {'lat': 39.9042, 'lon': 116.4074, 'name': 'Beijing', 'alt': 43, 'region': 'ASIA'},
-        {'lat': 25.2048, 'lon': 55.2708, 'name': 'Dubai', 'alt': 15, 'region': 'ME'},
-        
-        # Oceania - 3 stations
-        {'lat': -33.8688, 'lon': 151.2093, 'name': 'Sydney', 'alt': 25, 'region': 'OCEANIA'},
-        {'lat': -37.8136, 'lon': 144.9631, 'name': 'Melbourne', 'alt': 31, 'region': 'OCEANIA'},
-        {'lat': -36.8485, 'lon': 174.7633, 'name': 'Auckland', 'alt': 59, 'region': 'OCEANIA'},
-        
-        # South America - 4 stations
-        {'lat': -23.5505, 'lon': -46.6333, 'name': 'Sao Paulo', 'alt': 760, 'region': 'SA'},
-        {'lat': -34.6037, 'lon': -58.3816, 'name': 'Buenos Aires', 'alt': 25, 'region': 'SA'},
-        {'lat': -22.9068, 'lon': -43.1729, 'name': 'Rio de Janeiro', 'alt': 11, 'region': 'SA'},
-        {'lat': -12.0464, 'lon': -77.0428, 'name': 'Lima', 'alt': 154, 'region': 'SA'},
-        
-        # Africa - 3 stations
-        {'lat': -1.2921, 'lon': 36.8219, 'name': 'Nairobi', 'alt': 1795, 'region': 'AFRICA'},
-        {'lat': 30.0444, 'lon': 31.2357, 'name': 'Cairo', 'alt': 75, 'region': 'AFRICA'},
-        {'lat': -33.9249, 'lon': 18.4241, 'name': 'Cape Town', 'alt': 0, 'region': 'AFRICA'},
+    # Base trap locations - these become trap GS (will have poor resources)
+    trap_centers = [
+        {'lat': 40.7128, 'lon': -74.0060, 'name': 'New York', 'region': 'NA'},
+        {'lat': 51.5074, 'lon': -0.1278, 'name': 'London', 'region': 'EU'},
+        {'lat': 35.6762, 'lon': 139.6503, 'name': 'Tokyo', 'region': 'ASIA'},
+        {'lat': 31.2304, 'lon': 121.4737, 'name': 'Shanghai', 'region': 'ASIA'},
+        {'lat': -33.8688, 'lon': 151.2093, 'name': 'Sydney', 'region': 'OCEANIA'},
+        {'lat': -23.5505, 'lon': -46.6333, 'name': 'Sao Paulo', 'region': 'SA'},
+        {'lat': 55.7558, 'lon': 37.6173, 'name': 'Moscow', 'region': 'EU'},
     ]
+    
+    # Offset for good GS around trap (~200km ≈ 2 degrees)
+    OFFSET_DEG = 2.0  # ~200km
+    
+    locations = []
+    
+    for trap in trap_centers:
+        # 1. TRAP GS (center) - Index will be 0, 5, 10, 15, 20, 25, 30
+        locations.append({
+            'lat': trap['lat'],
+            'lon': trap['lon'],
+            'name': trap['name'],
+            'alt': 50,
+            'region': trap['region'],
+            'role': 'trap_center'
+        })
+        
+        # 2. GOOD GS - NORTH (+2° lat, ~200km north)
+        locations.append({
+            'lat': trap['lat'] + OFFSET_DEG,
+            'lon': trap['lon'],
+            'name': f"{trap['name']} North",
+            'alt': 50,
+            'region': trap['region'],
+            'role': 'good_north'
+        })
+        
+        # 3. GOOD GS - SOUTH (-2° lat, ~200km south)
+        locations.append({
+            'lat': trap['lat'] - OFFSET_DEG,
+            'lon': trap['lon'],
+            'name': f"{trap['name']} South",
+            'alt': 50,
+            'region': trap['region'],
+            'role': 'good_south'
+        })
+        
+        # 4. GOOD GS - EAST (+2° lon, ~200km east)
+        locations.append({
+            'lat': trap['lat'],
+            'lon': trap['lon'] + OFFSET_DEG,
+            'name': f"{trap['name']} East",
+            'alt': 50,
+            'region': trap['region'],
+            'role': 'good_east'
+        })
+        
+        # 5. GOOD GS - WEST (-2° lon, ~200km west)
+        # Skip this one to make index pattern work (0,5,10... = every 5th is trap)
+        # Actually need to adjust for index % 4 == 0
+    
+    # Adjust pattern: We want index 0,4,8,12... to be traps
+    # So pattern is: [TRAP, GOOD, GOOD, GOOD, TRAP, GOOD, GOOD, GOOD, ...]
+    # This means 3 goods per trap
+    
+    locations = []
+    for i, trap in enumerate(trap_centers):
+        # TRAP GS (center)
+        locations.append({
+            'lat': trap['lat'],
+            'lon': trap['lon'],
+            'name': trap['name'],
+            'alt': 50,
+            'region': trap['region'],
+            'role': 'trap_center'
+        })
+        
+        # GOOD GS - NORTH
+        locations.append({
+            'lat': trap['lat'] + OFFSET_DEG,
+            'lon': trap['lon'],
+            'name': f"{trap['name']} North",
+            'alt': 50,
+            'region': trap['region'],
+            'role': 'good_north'
+        })
+        
+        # GOOD GS - SOUTH  
+        locations.append({
+            'lat': trap['lat'] - OFFSET_DEG,
+            'lon': trap['lon'],
+            'name': f"{trap['name']} South",
+            'alt': 50,
+            'region': trap['region'],
+            'role': 'good_south'
+        })
+        
+        # GOOD GS - EAST
+        locations.append({
+            'lat': trap['lat'],
+            'lon': trap['lon'] + OFFSET_DEG,
+            'name': f"{trap['name']} East",
+            'alt': 50,
+            'region': trap['region'],
+            'role': 'good_east'
+        })
+    
+    # Total: 7 traps × 4 stations = 28 stations
+    # Index pattern: 0,4,8,12,16,20,24 = TRAP (get_node_attributes index%4==0)
+    
+    print(f"   Generated {len(locations)} Ground Stations:")
+    print(f"   - TRAP centers: {len(trap_centers)}")
+    print(f"   - GOOD surrounding: {len(locations) - len(trap_centers)}")
     
     return locations[:NUM_GROUND_STATIONS]
 
@@ -567,10 +639,14 @@ def calculate_distance_km(pos1: Dict, pos2: Dict) -> float:
 
 def create_terminals(db) -> List[str]:
     """
-    Create terminals with training-optimized scenarios:
-    - Easy: Short distances, good coverage
-    - Medium: Medium distances, some constraints
-    - Hard: Long distances, challenging paths
+    Create terminals with TRAP SCENARIO design for RL vs Dijkstra comparison:
+    
+    TRAP SCENARIO:
+    - Trap GS (index % 4 == 0): Overloaded, poor resources
+    - Many terminals clustered NEAR trap GS → Dijkstra picks this (closest)
+    - Better GS nearby (within range but farther) → RL should learn to pick this
+    
+    This tests RL's ability to optimize for resource quality, not just distance.
     
     Note: This function assumes data has already been cleared
     """
@@ -579,7 +655,7 @@ def create_terminals(db) -> List[str]:
     nodes_collection = db['nodes']
     ground_stations = list(nodes_collection.find(
         {'nodeType': 'GROUND_STATION'},
-        {'nodeId': 1, 'position': 1, 'region': 1}
+        {'nodeId': 1, 'position': 1, 'region': 1, 'resourceUtilization': 1, 'isTrapNode': 1}
     ))
     satellites = list(nodes_collection.find(
         {'nodeType': {'$in': ['LEO_SATELLITE', 'MEO_SATELLITE', 'GEO_SATELLITE']}},
@@ -588,7 +664,6 @@ def create_terminals(db) -> List[str]:
     
     terminals = []
     
-    # Training scenarios: Easy (0-9), Medium (10-19), Hard (20-29)
     service_types = ['VIDEO_STREAM', 'AUDIO_CALL', 'IMAGE_TRANSFER', 'TEXT_MESSAGE', 'FILE_TRANSFER']
     terminal_types = ['MOBILE', 'FIXED', 'VEHICLE', 'AIRCRAFT', 'MARITIME']
     
@@ -599,169 +674,206 @@ def create_terminals(db) -> List[str]:
     if not satellites:
         print("⚠️  Warning: No satellites found. Terminals will be created without connections.")
     
-    print(f"Creating {NUM_TERMINALS} terminals...")
+    print(f"Creating {NUM_TERMINALS} terminals with TRAP SCENARIOS...")
     
-    for i in range(NUM_TERMINALS):
-        if (i + 1) % 10 == 0:
-            print(f"   Progress: {i + 1}/{NUM_TERMINALS} terminals created...")
-        scenario_type = 'EASY' if i < 10 else 'MEDIUM' if i < 20 else 'HARD'
-        service_type = service_types[i % len(service_types)]
-        terminal_type = terminal_types[i % len(terminal_types)]
+    # Identify trap GS (every 4th GS is trap node with poor resources)
+    trap_gs_list = [gs for i, gs in enumerate(ground_stations) if i % 4 == 0]
+    good_gs_list = [gs for i, gs in enumerate(ground_stations) if i % 4 != 0]
+    
+    print(f"   - Trap Ground Stations (overloaded): {len(trap_gs_list)}")
+    print(f"   - Good Ground Stations: {len(good_gs_list)}")
+    
+    # Create terminals - 60% near trap GS, 40% near good GS
+    # This creates realistic congestion at trap nodes
+    trap_terminal_count = int(NUM_TERMINALS * 0.6)
+    good_terminal_count = NUM_TERMINALS - trap_terminal_count
+    
+    terminal_idx = 0
+    
+    # Create terminals NEAR trap GS (overloaded areas)
+    # These are the "trap scenarios" - Dijkstra picks closest (trap GS)
+    print(f"   Creating {trap_terminal_count} terminals near TRAP Ground Stations...")
+    for i in range(trap_terminal_count):
+        # Cycle through trap GS
+        trap_gs = trap_gs_list[i % len(trap_gs_list)]
+        trap_pos = trap_gs['position']
         
-        # Select source and destination based on scenario (deterministic)
-        if scenario_type == 'EASY':
-            # Same region, close ground stations
-            source_idx = i % len(ground_stations)
-            source_gs = ground_stations[source_idx]
-            
-            # Find closest ground station (deterministic search with limit)
-            best_dest_idx = (source_idx + 1) % len(ground_stations)
-            best_distance = calculate_distance_km(source_gs['position'], ground_stations[best_dest_idx]['position'])
-            
-            # Check next few stations to find closest (max 5 attempts)
-            for offset in range(2, min(7, len(ground_stations))):
-                candidate_idx = (source_idx + offset) % len(ground_stations)
-                candidate_distance = calculate_distance_km(source_gs['position'], ground_stations[candidate_idx]['position'])
-                if candidate_distance < best_distance and candidate_distance < 2000:
-                    best_dest_idx = candidate_idx
-                    best_distance = candidate_distance
-            
-            dest_gs = ground_stations[best_dest_idx]
-            
-        elif scenario_type == 'MEDIUM':
-            # Different regions, medium distance
-            source_idx = i % len(ground_stations)
-            source_gs = ground_stations[source_idx]
-            dest_gs = ground_stations[(source_idx + 10) % len(ground_stations)]
-            
-        else:  # HARD
-            # Cross-continental, long distance
-            source_idx = i % len(ground_stations)
-            source_gs = ground_stations[source_idx]
-            
-            # Find farthest ground station (deterministic search with limit)
-            best_dest_idx = (source_idx + 15) % len(ground_stations)
-            best_distance = calculate_distance_km(source_gs['position'], ground_stations[best_dest_idx]['position'])
-            
-            # Check next few stations to find farthest (max 5 attempts)
-            for offset in range(12, min(20, len(ground_stations))):
-                candidate_idx = (source_idx + offset) % len(ground_stations)
-                candidate_distance = calculate_distance_km(source_gs['position'], ground_stations[candidate_idx]['position'])
-                if candidate_distance > best_distance and candidate_distance > 5000:
-                    best_dest_idx = candidate_idx
-                    best_distance = candidate_distance
-            
-            dest_gs = ground_stations[best_dest_idx]
+        # Position terminal VERY CLOSE to trap GS (within 50km)
+        # Small offset to cluster terminals around trap GS
+        offset_lat = (i % 3) * 0.05 - 0.075  # -0.075 to 0.075 degrees (~8km)
+        offset_lon = ((i // 3) % 3) * 0.05 - 0.075
         
-        # Position terminal near source ground station
-        source_pos = source_gs['position']
-        offset_lat = (i % 5) * 0.1 - 0.2  # -0.2 to 0.2 degrees
-        offset_lon = ((i // 5) % 5) * 0.1 - 0.2
-        
-        terminal_lat = source_pos['latitude'] + offset_lat
-        terminal_lon = source_pos['longitude'] + offset_lon
-        
-        # Altitude based on type
-        if terminal_type == 'AIRCRAFT':
-            altitude = 10000 + (i % 3) * 1000
-        elif terminal_type == 'MARITIME':
-            altitude = (i % 3) * 10
-        elif terminal_type == 'VEHICLE':
-            altitude = (i % 5) * 200
-        else:
-            altitude = (i % 3) * 50
-        
-        # Connection status: 60% connected for training diversity
-        is_connected = (i % 10) < 6
-        connected_node = None
-        connection_metrics = None
-        
-        if is_connected and satellites:
-            # Select appropriate satellite based on terminal type
-            preferred_types = {
-                'AIRCRAFT': ['LEO_SATELLITE', 'MEO_SATELLITE'],
-                'MOBILE': ['LEO_SATELLITE'],
-                'FIXED': ['GEO_SATELLITE', 'MEO_SATELLITE'],
-                'VEHICLE': ['LEO_SATELLITE'],
-                'MARITIME': ['GEO_SATELLITE', 'LEO_SATELLITE']
-            }
-            
-            preferred = preferred_types.get(terminal_type, ['LEO_SATELLITE'])
-            suitable = [s for s in satellites if s['nodeType'] in preferred]
-            if not suitable:
-                suitable = satellites
-            
-            connected_node = suitable[i % len(suitable)]['nodeId']
-            node_type = suitable[i % len(suitable)]['nodeType']
-            
-            # Deterministic connection metrics
-            if node_type == 'LEO_SATELLITE':
-                connection_metrics = {
-                    'latencyMs': 30.0 + (i % 5) * 2.0,
-                    'bandwidthMbps': 100.0 + (i % 3) * 20.0,
-                    'packetLossRate': 0.003 + (i % 3) * 0.002,
-                    'signalStrength': -70.0 + (i % 5) * 2.0,
-                    'snrDb': 12.0 + (i % 4) * 2.0,
-                    'jitterMs': 5.0 + (i % 3) * 2.0
-                }
-            elif node_type == 'MEO_SATELLITE':
-                connection_metrics = {
-                    'latencyMs': 90.0 + (i % 4) * 5.0,
-                    'bandwidthMbps': 60.0 + (i % 3) * 15.0,
-                    'packetLossRate': 0.002 + (i % 2) * 0.003,
-                    'signalStrength': -75.0 + (i % 4) * 2.0,
-                    'snrDb': 10.0 + (i % 3) * 2.0,
-                    'jitterMs': 8.0 + (i % 2) * 2.0
-                }
-            else:  # GEO
-                connection_metrics = {
-                    'latencyMs': 260.0 + (i % 3) * 5.0,
-                    'bandwidthMbps': 40.0 + (i % 3) * 10.0,
-                    'packetLossRate': 0.0005 + (i % 2) * 0.0005,
-                    'signalStrength': -80.0 + (i % 3) * 2.0,
-                    'snrDb': 8.0 + (i % 2) * 2.0,
-                    'jitterMs': 12.0 + (i % 2) * 1.0
-                }
-        
-        qos = get_deterministic_qos(service_type, i)
-        
-        terminal = {
-            'id': generate_terminal_id(i),
-            'terminalId': generate_terminal_id(i),
-            'terminalName': f'{terminal_type} Terminal {i+1} ({scenario_type})',
-            'terminalType': terminal_type,
-            'position': {
-                'latitude': round(terminal_lat, 4),
-                'longitude': round(terminal_lon, 4),
-                'altitude': round(altitude, 2)
-            },
-            'status': 'connected' if is_connected else 'idle',
-            'connectedNodeId': connected_node,
-            'qosRequirements': qos,
-            'metadata': {
-                'description': f'{terminal_type} terminal - {scenario_type} scenario',
-                'scenarioType': scenario_type,
-                'serviceType': service_type,
-                'mobility': terminal_type in ['MOBILE', 'VEHICLE', 'AIRCRAFT', 'MARITIME']
-            },
-            'lastUpdated': datetime.now().isoformat()
-        }
-        
-        if connection_metrics:
-            terminal['connectionMetrics'] = connection_metrics
-        
+        terminal = _create_terminal_entry(
+            terminal_idx=terminal_idx,
+            terminal_lat=trap_pos['latitude'] + offset_lat,
+            terminal_lon=trap_pos['longitude'] + offset_lon,
+            source_gs=trap_gs,
+            dest_gs=_find_destination_gs(trap_gs, ground_stations, i),
+            terminal_type=terminal_types[i % len(terminal_types)],
+            service_type=service_types[i % len(service_types)],
+            scenario_type='TRAP',  # Marks this as trap scenario
+            satellites=satellites,
+            i=i
+        )
         terminals.append(terminal)
+        terminal_idx += 1
+    
+    # Create terminals near GOOD GS (normal areas)
+    print(f"   Creating {good_terminal_count} terminals near GOOD Ground Stations...")
+    for i in range(good_terminal_count):
+        good_gs = good_gs_list[i % len(good_gs_list)]
+        good_pos = good_gs['position']
+        
+        # Position terminal near good GS
+        offset_lat = (i % 4) * 0.08 - 0.16
+        offset_lon = ((i // 4) % 4) * 0.08 - 0.16
+        
+        terminal = _create_terminal_entry(
+            terminal_idx=terminal_idx,
+            terminal_lat=good_pos['latitude'] + offset_lat,
+            terminal_lon=good_pos['longitude'] + offset_lon,
+            source_gs=good_gs,
+            dest_gs=_find_destination_gs(good_gs, ground_stations, i + trap_terminal_count),
+            terminal_type=terminal_types[i % len(terminal_types)],
+            service_type=service_types[i % len(service_types)],
+            scenario_type='NORMAL',
+            satellites=satellites,
+            i=i + trap_terminal_count
+        )
+        terminals.append(terminal)
+        terminal_idx += 1
     
     if terminals:
         result = terminals_collection.insert_many(terminals)
         print(f"✅ Created {len(result.inserted_ids)} terminals:")
-        print(f"   - Easy scenarios: 10")
-        print(f"   - Medium scenarios: 10")
-        print(f"   - Hard scenarios: 10")
-        print(f"   - Connected: {sum(1 for t in terminals if t['status'] == 'connected')}")
-        print(f"   - Idle: {sum(1 for t in terminals if t['status'] == 'idle')}")
+        print(f"   - TRAP scenario terminals: {trap_terminal_count} (clustered near overloaded GS)")
+        print(f"   - NORMAL scenario terminals: {good_terminal_count}")
         return [str(id) for id in result.inserted_ids]
     return []
+
+
+def _find_destination_gs(source_gs: Dict, ground_stations: List[Dict], index: int) -> Dict:
+    """Find a suitable destination GS for the terminal."""
+    # For variety, pick a distant GS
+    source_pos = source_gs.get('position', {})
+    
+    # Find GS that is 2000-5000km away (medium distance)
+    candidates = []
+    for gs in ground_stations:
+        if gs.get('nodeId') == source_gs.get('nodeId'):
+            continue
+        gs_pos = gs.get('position', {})
+        dist = calculate_distance_km(source_pos, gs_pos)
+        if 1000 < dist < 6000:
+            candidates.append(gs)
+    
+    if candidates:
+        return candidates[index % len(candidates)]
+    
+    # Fallback: pick any different GS
+    return ground_stations[(ground_stations.index(source_gs) + 10) % len(ground_stations)]
+
+
+def _create_terminal_entry(terminal_idx: int, terminal_lat: float, terminal_lon: float,
+                          source_gs: Dict, dest_gs: Dict, terminal_type: str,
+                          service_type: str, scenario_type: str, satellites: List[Dict],
+                          i: int) -> Dict:
+    """Create a single terminal entry."""
+    
+    # Altitude based on type
+    if terminal_type == 'AIRCRAFT':
+        altitude = 10000 + (i % 3) * 1000
+    elif terminal_type == 'MARITIME':
+        altitude = (i % 3) * 10
+    elif terminal_type == 'VEHICLE':
+        altitude = (i % 5) * 200
+    else:
+        altitude = (i % 3) * 50
+    
+    # Connection status: 60% connected for training diversity
+    is_connected = (i % 10) < 6
+    connected_node = None
+    connection_metrics = None
+    
+    if is_connected and satellites:
+        # Select appropriate satellite based on terminal type
+        preferred_types = {
+            'AIRCRAFT': ['LEO_SATELLITE', 'MEO_SATELLITE'],
+            'MOBILE': ['LEO_SATELLITE'],
+            'FIXED': ['GEO_SATELLITE', 'MEO_SATELLITE'],
+            'VEHICLE': ['LEO_SATELLITE'],
+            'MARITIME': ['GEO_SATELLITE', 'LEO_SATELLITE']
+        }
+        
+        preferred = preferred_types.get(terminal_type, ['LEO_SATELLITE'])
+        suitable = [s for s in satellites if s['nodeType'] in preferred]
+        if not suitable:
+            suitable = satellites
+        
+        connected_node = suitable[i % len(suitable)]['nodeId']
+        node_type = suitable[i % len(suitable)]['nodeType']
+        
+        # Deterministic connection metrics
+        if node_type == 'LEO_SATELLITE':
+            connection_metrics = {
+                'latencyMs': 30.0 + (i % 5) * 2.0,
+                'bandwidthMbps': 100.0 + (i % 3) * 20.0,
+                'packetLossRate': 0.003 + (i % 3) * 0.002,
+                'signalStrength': -70.0 + (i % 5) * 2.0,
+                'snrDb': 12.0 + (i % 4) * 2.0,
+                'jitterMs': 5.0 + (i % 3) * 2.0
+            }
+        elif node_type == 'MEO_SATELLITE':
+            connection_metrics = {
+                'latencyMs': 90.0 + (i % 4) * 5.0,
+                'bandwidthMbps': 60.0 + (i % 3) * 15.0,
+                'packetLossRate': 0.002 + (i % 2) * 0.003,
+                'signalStrength': -75.0 + (i % 4) * 2.0,
+                'snrDb': 10.0 + (i % 3) * 2.0,
+                'jitterMs': 8.0 + (i % 2) * 2.0
+            }
+        else:  # GEO
+            connection_metrics = {
+                'latencyMs': 260.0 + (i % 3) * 5.0,
+                'bandwidthMbps': 40.0 + (i % 3) * 10.0,
+                'packetLossRate': 0.0005 + (i % 2) * 0.0005,
+                'signalStrength': -80.0 + (i % 3) * 2.0,
+                'snrDb': 8.0 + (i % 2) * 2.0,
+                'jitterMs': 12.0 + (i % 2) * 1.0
+            }
+    
+    qos = get_deterministic_qos(service_type, i)
+    
+    terminal = {
+        'id': generate_terminal_id(terminal_idx),
+        'terminalId': generate_terminal_id(terminal_idx),
+        'terminalName': f'{terminal_type} Terminal {terminal_idx+1} ({scenario_type})',
+        'terminalType': terminal_type,
+        'position': {
+            'latitude': round(terminal_lat, 4),
+            'longitude': round(terminal_lon, 4),
+            'altitude': round(altitude, 2)
+        },
+        'status': 'connected' if is_connected else 'idle',
+        'connectedNodeId': connected_node,
+        'sourceGsId': source_gs.get('nodeId'),  # Link to source GS for analysis
+        'destGsId': dest_gs.get('nodeId'),      # Link to destination GS for routing
+        'qosRequirements': qos,
+        'metadata': {
+            'description': f'{terminal_type} terminal - {scenario_type} scenario',
+            'scenarioType': scenario_type,
+            'serviceType': service_type,
+            'mobility': terminal_type in ['MOBILE', 'VEHICLE', 'AIRCRAFT', 'MARITIME'],
+            'nearestGsId': source_gs.get('nodeId'),  # For comparison: Dijkstra should pick this
+            'isTrapScenario': scenario_type == 'TRAP'  # Mark trap scenarios
+        },
+        'lastUpdated': datetime.now().isoformat()
+    }
+    
+    if connection_metrics:
+        terminal['connectionMetrics'] = connection_metrics
+    
+    return terminal
 
 
 def create_indexes(db):
