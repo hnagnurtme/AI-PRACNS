@@ -11,7 +11,33 @@ import math
 from bson import ObjectId
 import json
 from environment.constants import (
+    EARTH_RADIUS_M,
+    SPEED_OF_LIGHT_MPS,
+    MS_PER_SECOND,
+    UTILIZATION_MAX_PERCENT,
+    UTILIZATION_HIGH_PERCENT,
+    UTILIZATION_MEDIUM_PERCENT,
+    UTILIZATION_LOW_PERCENT,
+    UTILIZATION_CRITICAL_PERCENT,
+    TERMINAL_UTILIZATION_IMPACT,
+    BATTERY_MAX_PERCENT,
+    BATTERY_LOW_PERCENT,
+    PACKET_LOSS_HIGH,
+    TRAP_PACKET_LOSS_HIGH,
+    NORM_PACKET_BUFFER,
+    GS_CONNECTION_OVERLOADED,
     GS_DIRECT_CONNECTION_THRESHOLD_KM,
+    TERMINAL_TO_GS_MAX_RANGE_KM,
+    DEFAULT_MAX_RANGE_KM,
+    GS_TO_LEO_MAX_RANGE_KM,
+    GS_TO_MEO_MAX_RANGE_KM,
+    GS_TO_GEO_MAX_RANGE_KM,
+    LEO_MAX_RANGE_KM,
+    LEO_TO_MEO_MAX_RANGE_KM,
+    LEO_TO_GEO_MAX_RANGE_KM,
+    MEO_MAX_RANGE_KM,
+    MEO_TO_GEO_MAX_RANGE_KM,
+    GEO_MAX_RANGE_KM,
     RESOURCE_FACTOR_LOW_THRESHOLD,
     RESOURCE_FACTOR_MEDIUM_THRESHOLD,
     RESOURCE_FACTOR_HIGH_THRESHOLD,
@@ -21,7 +47,10 @@ from environment.constants import (
     RESOURCE_FACTOR_MEDIUM_PENALTY_RANGE,
     RESOURCE_FACTOR_HIGH_PENALTY_MAX,
     RESOURCE_FACTOR_HIGH_PENALTY_RANGE,
-    SATELLITE_RANGE_MARGIN
+    SATELLITE_RANGE_MARGIN,
+    DIJKSTRA_DROP_THRESHOLD,
+    TRAP_BATTERY_MODERATE,
+    M_TO_KM
 )
 
 logger = logging.getLogger(__name__)
@@ -105,8 +134,7 @@ def calculate_distance(pos1: dict, pos2: dict) -> float:
     a = math.sin(dlat/2)**2 + math.cos(lat1) * math.cos(lat2) * math.sin(dlon/2)**2
     c = 2 * math.asin(math.sqrt(a))
     
-    # Earth radius in meters
-    R = 6371000
+    R = EARTH_RADIUS_M
     
     # Calculate 3D distance including altitude
     horizontal_dist = R * c
@@ -226,10 +254,8 @@ def update_node_resource_utilization(node_id: str):
         # Nhưng để tính toán chính xác, ta sẽ tính lại dựa trên số terminals
         # Giả sử base utilization là 0 khi không có terminals
         base_utilization = 0  # Base utilization khi không có terminals
-        # Mỗi terminal chiếm ~10% resource (mô phỏng tác động lớn hơn)
-        terminal_utilization_impact = connection_count * 10.0
-        # Total utilization = base + terminal impact (capped at 100%)
-        new_utilization = min(100.0, base_utilization + terminal_utilization_impact)
+        terminal_utilization_impact = connection_count * TERMINAL_UTILIZATION_IMPACT
+        new_utilization = min(UTILIZATION_MAX_PERCENT, base_utilization + terminal_utilization_impact)
         
         # ========== 2. PACKET LOSS RATE ==========
         # Reset base packet loss về 0.001 (0.1%) nếu không có terminals
@@ -245,19 +271,13 @@ def update_node_resource_utilization(node_id: str):
         # Mỗi terminal tạo ~20 packets trong queue (tăng gấp đôi để mô phỏng tác động lớn hơn)
         packets_per_terminal = 20
         new_packet_count = base_packet_count + (connection_count * packets_per_terminal)
-        # Cap at buffer capacity
-        buffer_capacity = node.get('packetBufferCapacity', 1000)
+        buffer_capacity = node.get('packetBufferCapacity', NORM_PACKET_BUFFER)
         new_packet_count = min(buffer_capacity, new_packet_count)
         
-        # ========== 4. BATTERY (%) ==========
-        current_battery = node.get('batteryChargePercent', 100.0)
-        # Mỗi terminal tiêu thụ năng lượng: 1% per terminal per update (tăng gấp đôi)
-        # Battery giảm dần khi có nhiều terminals
-        # Nếu không có terminals, battery có thể tăng lại (recharge) - nhưng để đơn giản, chỉ giảm khi có terminals
-        battery_drain_per_terminal = 1.0  # Tăng từ 0.5% lên 1% per terminal
+        current_battery = node.get('batteryChargePercent', BATTERY_MAX_PERCENT)
+        battery_drain_per_terminal = 1.0
         battery_drain = connection_count * battery_drain_per_terminal
-        # Battery chỉ giảm khi có terminals, không tăng lại tự động
-        new_battery = max(10.0, current_battery - battery_drain)  # Minimum 10%
+        new_battery = max(BATTERY_LOW_PERCENT, current_battery - battery_drain)
         
         # ========== Cập nhật node ==========
         nodes_collection.update_one(
@@ -328,11 +348,8 @@ def find_best_ground_station(terminal: dict, nodes: list,
     ground_stations = []
     terminal_pos = terminal['position']
     
-    # Phạm vi mở rộng cho terminal: 1500km (để hỗ trợ kết nối xa giữa các thành phố lớn)
-    # Có thể lấy từ terminal config hoặc dùng default
-    terminal_max_range_km = terminal.get('communication', {}).get('maxRangeKm', 1500.0)  # Default: 1500km
-    # Giới hạn tối đa 1500km để đảm bảo có thể kết nối giữa các thành phố lớn
-    terminal_max_range_km = min(terminal_max_range_km, 1500.0)
+    terminal_max_range_km = terminal.get('communication', {}).get('maxRangeKm', TERMINAL_TO_GS_MAX_RANGE_KM)
+    terminal_max_range_km = min(terminal_max_range_km, TERMINAL_TO_GS_MAX_RANGE_KM)
     
     for node in nodes:
         if (node.get('nodeType') == 'GROUND_STATION' 
@@ -390,11 +407,10 @@ def find_best_ground_station(terminal: dict, nodes: list,
     best_node = None
     best_score = -1
     
-    # Normalization factors (will be calculated from available nodes)
     max_distance = 0
-    max_utilization = 100.0
+    max_utilization = UTILIZATION_MAX_PERCENT
     max_connections = 0
-    min_battery = 100.0
+    min_battery = BATTERY_MAX_PERCENT
     max_packet_loss = 0.0
     
     # First pass: calculate normalization factors
@@ -405,7 +421,7 @@ def find_best_ground_station(terminal: dict, nodes: list,
         connection_count = get_node_connection_count(node['nodeId'])
         max_connections = max(max_connections, connection_count)
         
-        battery = node.get('batteryChargePercent', 100)
+        battery = node.get('batteryChargePercent', BATTERY_MAX_PERCENT)
         min_battery = min(min_battery, battery)
         
         packet_loss = node.get('packetLossRate', 0)
@@ -417,23 +433,22 @@ def find_best_ground_station(terminal: dict, nodes: list,
     if max_connections == 0:
         max_connections = 1
     if max_packet_loss == 0:
-        max_packet_loss = 0.01  # 1% default max
+        max_packet_loss = TRAP_PACKET_LOSS_HIGH
     
     # Second pass: calculate scores and find best node (tối ưu tài nguyên)
     for node in ground_stations:
         distance = calculate_distance(terminal_pos, node['position'])
         utilization = node.get('resourceUtilization', 0)
         connection_count = get_node_connection_count(node['nodeId'])
-        battery = node.get('batteryChargePercent', 100)
+        battery = node.get('batteryChargePercent', BATTERY_MAX_PERCENT)
         packet_loss = node.get('packetLossRate', 0)
         packet_count = node.get('currentPacketCount', 0)
-        packet_capacity = node.get('packetBufferCapacity', 1000)
+        packet_capacity = node.get('packetBufferCapacity', NORM_PACKET_BUFFER)
         
-        # Normalize factors (0-1 scale, higher is better)
         normalized_distance = 1.0 - (distance / max_distance) if max_distance > 0 else 0.5
         normalized_utilization = 1.0 - (utilization / max_utilization)
         normalized_connections = 1.0 - (connection_count / max(max_connections, 1))
-        normalized_battery = battery / 100.0  # Higher battery = better
+        normalized_battery = battery / BATTERY_MAX_PERCENT
         normalized_packet_loss = 1.0 - (packet_loss / max_packet_loss) if max_packet_loss > 0 else 1.0
         buffer_factor = 1.0 - min(packet_count / max(packet_capacity, 1), 1.0)
         
@@ -448,22 +463,20 @@ def find_best_ground_station(terminal: dict, nodes: list,
             buffer_factor * 0.05  # 5% weight for buffer capacity
         )
         
-        # Penalties cho nodes có vấn đề nghiêm trọng (tối ưu tài nguyên)
         penalty = 0.0
-        if utilization > 90:
-            penalty += 0.3  # Heavy penalty for high utilization
-        if battery < 20:
-            penalty += 0.3  # Heavy penalty for low battery
-        if packet_loss > 0.1:
-            penalty += 0.2  # Penalty for high packet loss
-        if connection_count > 15:
-            penalty += 0.15  # Penalty for too many connections
+        if utilization > UTILIZATION_CRITICAL_PERCENT:
+            penalty += 0.3
+        if battery < BATTERY_LOW_PERCENT:
+            penalty += 0.3
+        if packet_loss > PACKET_LOSS_HIGH:
+            penalty += 0.2
+        if connection_count > GS_CONNECTION_OVERLOADED:
+            penalty += 0.15
         
         score = max(0, score - penalty)
         
-        # Bonus cho nodes tối ưu
-        if utilization < 20 and battery > 80 and packet_loss < 0.01:
-            score += 0.1  # Bonus for optimal nodes
+        if utilization < UTILIZATION_LOW_PERCENT and battery > UTILIZATION_HIGH_PERCENT and packet_loss < TRAP_PACKET_LOSS_HIGH:
+            score += 0.1
         
         if score > best_score:
             best_score = score
@@ -475,7 +488,7 @@ def find_best_ground_station(terminal: dict, nodes: list,
             f"✅ Selected optimal Ground Station {best_node['nodeId']} for terminal {terminal.get('terminalId')} "
             f"(score: {best_score:.3f}, distance: {distance_km:.1f}km, "
             f"utilization: {best_node.get('resourceUtilization', 0):.1f}%, "
-            f"battery: {best_node.get('batteryChargePercent', 100):.1f}%, "
+            f"battery: {best_node.get('batteryChargePercent', BATTERY_MAX_PERCENT):.1f}%, "
             f"packet_loss: {best_node.get('packetLossRate', 0)*100:.2f}%, "
             f"connections: {get_node_connection_count(best_node['nodeId'])})"
         )
@@ -534,9 +547,8 @@ def calculate_path(source_terminal: dict, dest_terminal: dict, nodes: list) -> d
         dest_pos = dest_node['position']
         distance = calculate_distance(source_pos, dest_pos)
         
-        # Get communication ranges (strict, no multiplier)
-        source_max_range = source_node.get('communication', {}).get('maxRangeKm', 2000) * 1000
-        dest_max_range = dest_node.get('communication', {}).get('maxRangeKm', 2000) * 1000
+        source_max_range = source_node.get('communication', {}).get('maxRangeKm', DEFAULT_MAX_RANGE_KM) * M_TO_KM
+        dest_max_range = dest_node.get('communication', {}).get('maxRangeKm', DEFAULT_MAX_RANGE_KM) * M_TO_KM
         max_range = min(source_max_range, dest_max_range)  # Use minimum range
         
         # BẮT BUỘC: Ground stations quá xa (>80% range) PHẢI đi qua satellites
@@ -567,7 +579,7 @@ def calculate_path(source_terminal: dict, dest_terminal: dict, nodes: list) -> d
                 dist_to_source = calculate_distance(source_node['position'], sat['position'])
                 dist_to_dest = calculate_distance(sat['position'], dest_node['position'])
                 
-                sat_max_range = sat.get('communication', {}).get('maxRangeKm', 2000) * 1000
+                sat_max_range = sat.get('communication', {}).get('maxRangeKm', DEFAULT_MAX_RANGE_KM) * M_TO_KM
                 
                 # Check if satellite can reach both ground stations
                 if dist_to_source <= sat_max_range and dist_to_dest <= sat_max_range:
@@ -605,7 +617,7 @@ def calculate_path(source_terminal: dict, dest_terminal: dict, nodes: list) -> d
                 min_dist_dest = float('inf')
                 
                 for sat in satellites:
-                    sat_max_range = sat.get('communication', {}).get('maxRangeKm', 2000) * 1000
+                    sat_max_range = sat.get('communication', {}).get('maxRangeKm', DEFAULT_MAX_RANGE_KM) * M_TO_KM
                     
                     dist_to_source = calculate_distance(source_node['position'], sat['position'])
                     if dist_to_source <= sat_max_range and dist_to_source < min_dist_source:
@@ -664,13 +676,12 @@ def calculate_path(source_terminal: dict, dest_terminal: dict, nodes: list) -> d
         segment_dist = calculate_distance(pos1, pos2)
         total_distance += segment_dist
         
-        # Estimate latency (simplified: distance / speed of light * 2 + processing delay)
-        speed_of_light = 299792458  # m/s
-        propagation_delay = (segment_dist / speed_of_light) * 1000  # ms
-        processing_delay = 5  # ms per hop
+        speed_of_light = SPEED_OF_LIGHT_MPS
+        propagation_delay = (segment_dist / speed_of_light) * MS_PER_SECOND
+        processing_delay = 5
         path['estimatedLatency'] += propagation_delay + processing_delay
     
-    path['totalDistance'] = round(total_distance / 1000, 2)  # Convert to km
+    path['totalDistance'] = round(total_distance / M_TO_KM, 2)
     path['estimatedLatency'] = round(path['estimatedLatency'], 2)
     path['hops'] = len(path['path']) - 1
     path['success'] = len(path['path']) >= 4  # At least: source_terminal, source_node, dest_node, dest_terminal
@@ -694,10 +705,8 @@ def calculate_edge_latency(node1: dict, node2: dict, distance_m: float) -> float
     - High packet loss → retransmission overhead
     - Low battery → power-saving mode, processing chậm
     """
-    speed_of_light = 299792458  # m/s
-    
-    # Propagation delay (phụ thuộc vào distance)
-    propagation_delay_ms = (distance_m / speed_of_light) * 1000
+    speed_of_light = SPEED_OF_LIGHT_MPS
+    propagation_delay_ms = (distance_m / speed_of_light) * MS_PER_SECOND
     
     # Processing delay khác nhau cho từng loại node
     node1_type = node1.get('nodeType', '')
@@ -717,14 +726,12 @@ def calculate_edge_latency(node1: dict, node2: dict, distance_m: float) -> float
     node2_base_delay = node2.get('nodeProcessingDelayMs', 
                                 base_processing_delays.get(node2_type, 5.0))
     
-    # 🎯 RESOURCE IMPACT: Utilization cao → processing delay tăng lên
-    node1_util = node1.get('resourceUtilization', 50) / 100.0  # 0-1
-    node2_util = node2.get('resourceUtilization', 50) / 100.0
+    node1_util = node1.get('resourceUtilization', 50) / UTILIZATION_MAX_PERCENT
+    node2_util = node2.get('resourceUtilization', 50) / UTILIZATION_MAX_PERCENT
     
-    # Utilization > 70% → delay tăng gấp đôi
-    # Utilization > 90% → delay tăng gấp 3
-    node1_util_penalty = 1.0 + (node1_util - 0.5) * 2.0 if node1_util > 0.5 else 1.0
-    node2_util_penalty = 1.0 + (node2_util - 0.5) * 2.0 if node2_util > 0.5 else 1.0
+    util_threshold = UTILIZATION_MEDIUM_PERCENT / UTILIZATION_MAX_PERCENT
+    node1_util_penalty = 1.0 + (node1_util - util_threshold) * 2.0 if node1_util > util_threshold else 1.0
+    node2_util_penalty = 1.0 + (node2_util - util_threshold) * 2.0 if node2_util > util_threshold else 1.0
     
     node1_processing = node1_base_delay * node1_util_penalty
     node2_processing = node2_base_delay * node2_util_penalty
@@ -735,23 +742,20 @@ def calculate_edge_latency(node1: dict, node2: dict, distance_m: float) -> float
     node1_loss = node1.get('packetLossRate', 0.001)  # 0-1
     node2_loss = node2.get('packetLossRate', 0.001)
     
-    # Loss rate > 1% → thêm 5-20ms retransmission delay
-    node1_loss_penalty = node1_loss * 1000 if node1_loss > 0.01 else 0
-    node2_loss_penalty = node2_loss * 1000 if node2_loss > 0.01 else 0
+    node1_loss_penalty = node1_loss * 1000 if node1_loss > TRAP_PACKET_LOSS_HIGH else 0
+    node2_loss_penalty = node2_loss * 1000 if node2_loss > TRAP_PACKET_LOSS_HIGH else 0
     loss_delay_ms = (node1_loss_penalty + node2_loss_penalty) / 2.0
     
-    # 🎯 BATTERY IMPACT: Low battery → power-saving mode
-    node1_battery = node1.get('batteryChargePercent', 100) / 100.0
-    node2_battery = node2.get('batteryChargePercent', 100) / 100.0
+    node1_battery = node1.get('batteryChargePercent', BATTERY_MAX_PERCENT) / BATTERY_MAX_PERCENT
+    node2_battery = node2.get('batteryChargePercent', BATTERY_MAX_PERCENT) / BATTERY_MAX_PERCENT
     
-    # Battery < 30% → thêm 5ms power-saving delay
-    node1_battery_penalty = (0.3 - node1_battery) * 20 if node1_battery < 0.3 else 0
-    node2_battery_penalty = (0.3 - node2_battery) * 20 if node2_battery < 0.3 else 0
+    battery_threshold = TRAP_BATTERY_MODERATE / BATTERY_MAX_PERCENT
+    node1_battery_penalty = (battery_threshold - node1_battery) * 20 if node1_battery < battery_threshold else 0
+    node2_battery_penalty = (battery_threshold - node2_battery) * 20 if node2_battery < battery_threshold else 0
     battery_delay_ms = (node1_battery_penalty + node2_battery_penalty) / 2.0
     
-    # Queue delay (nếu node có nhiều packets)
-    node1_queue = node1.get('currentPacketCount', 0) / max(node1.get('packetBufferCapacity', 1000), 1) * 10.0
-    node2_queue = node2.get('currentPacketCount', 0) / max(node2.get('packetBufferCapacity', 1000), 1) * 10.0
+    node1_queue = node1.get('currentPacketCount', 0) / max(node1.get('packetBufferCapacity', NORM_PACKET_BUFFER), 1) * 10.0
+    node2_queue = node2.get('currentPacketCount', 0) / max(node2.get('packetBufferCapacity', NORM_PACKET_BUFFER), 1) * 10.0
     queue_delay_ms = (node1_queue + node2_queue) / 2.0
     
     # Total latency = propagation + processing + resource penalties + queue
@@ -760,23 +764,17 @@ def calculate_edge_latency(node1: dict, node2: dict, distance_m: float) -> float
     
     return total_latency
 
-# 🌐 Communication Range Constants (km) - Based on realistic satellite operations
 COMM_RANGES = {
-    # Ground Station ranges to satellites
-    'GS_TO_LEO': 2000,      # GS can reach LEO at ~500-1500km altitude
-    'GS_TO_MEO': 25000,     # GS can reach MEO at ~20,000km altitude  
-    'GS_TO_GEO': 38000,     # GS can reach GEO at ~35,786km altitude
-    
-    # Satellite-to-Satellite ranges (Inter-Satellite Links)
-    'LEO_TO_LEO': 5000,     # LEO satellites in same/adjacent orbits
-    'LEO_TO_MEO': 20000,    # LEO to MEO cross-links
-    'LEO_TO_GEO': 37000,    # LEO to GEO (rare, very long distance)
-    'MEO_TO_MEO': 10000,    # MEO satellites in same/adjacent orbits
-    'MEO_TO_GEO': 20000,    # MEO to GEO cross-links
-    'GEO_TO_GEO': 8000,     # GEO satellites (geostationary, relatively close)
-    
-    # Terminal to GS
-    'TERMINAL_TO_GS': 1500  # Terminals communicate with nearby ground stations
+    'GS_TO_LEO': GS_TO_LEO_MAX_RANGE_KM,
+    'GS_TO_MEO': GS_TO_MEO_MAX_RANGE_KM,
+    'GS_TO_GEO': GS_TO_GEO_MAX_RANGE_KM,
+    'LEO_TO_LEO': LEO_MAX_RANGE_KM,
+    'LEO_TO_MEO': LEO_TO_MEO_MAX_RANGE_KM,
+    'LEO_TO_GEO': LEO_TO_GEO_MAX_RANGE_KM,
+    'MEO_TO_MEO': MEO_MAX_RANGE_KM,
+    'MEO_TO_GEO': MEO_TO_GEO_MAX_RANGE_KM,
+    'GEO_TO_GEO': GEO_MAX_RANGE_KM,
+    'TERMINAL_TO_GS': TERMINAL_TO_GS_MAX_RANGE_KM
 }
 
 def get_max_comm_range(node1_type: str, node2_type: str) -> float:
@@ -794,47 +792,32 @@ def get_max_comm_range(node1_type: str, node2_type: str) -> float:
     
     key = f"{type1}_TO_{type2}"
     
-    # Return range if exists, otherwise use conservative default
-    return COMM_RANGES.get(key, 2000)
+    return COMM_RANGES.get(key, DEFAULT_MAX_RANGE_KM)
 
 def calculate_path_dijkstra(source_terminal: dict, dest_terminal: dict, nodes: list, 
-                           resource_aware: bool = False, drop_threshold: float = 95.0,
+                           resource_aware: bool = False, drop_threshold: float = DIJKSTRA_DROP_THRESHOLD,
                            penalty_threshold: float = 80.0, penalty_multiplier: float = 3.0,
                            source_gs: Optional[dict] = None, dest_gs: Optional[dict] = None) -> dict:
     """
-    Calculate path using Dijkstra's algorithm - BASELINE: Pure Distance Optimization
+    Calculate path using Dijkstra's algorithm - Pure Distance Optimization
     
-    ⚠️ BASELINE ALGORITHM: Dijkstra tối ưu PURE DISTANCE (no resource penalties)
-    để đảm bảo tìm được path với distance ngắn nhất (baseline rõ ràng).
-    
-    ⚠️ GS Selection:
-    - Nếu source_gs và dest_gs được cung cấp: Dùng GS đó (để so sánh công bằng với RL)
-    - Nếu không: LUÔN dùng find_nearest_ground_station (chỉ khoảng cách) để làm baseline
+    Always uses find_nearest_ground_station (distance only, no resource optimization).
+    Edge weights are pure distance only (no resource penalties).
     
     Args:
         source_terminal: Source terminal dict
         dest_terminal: Destination terminal dict
         nodes: List of available nodes
-        resource_aware: DEPRECATED - Always False for baseline (pure distance only)
-        drop_threshold: Resource utilization % above which nodes are DROPPED (default: 95%)
-        penalty_threshold: DEPRECATED - Not used (pure distance only)
-        penalty_multiplier: DEPRECATED - Not used (pure distance only)
-        source_gs: Optional pre-selected source ground station (for fair comparison with RL)
-        dest_gs: Optional pre-selected destination ground station (for fair comparison with RL)
-    
-    Logic:
-        - GS Selection: Dùng source_gs/dest_gs nếu có, nếu không dùng find_nearest_ground_station
-        - Edge weights: PURE DISTANCE ONLY (no resource penalties)
-        - Nodes with resource > drop_threshold: EXCLUDED from routing (marked as congested)
-        - Ground Station → Ground Station: Direct connection allowed if distance < 100km
-        - Node → Node: Pure distance (km) as edge weight
-        - ✅ Đảm bảo: Dijkstra LUÔN tìm được path với distance ngắn nhất (từ GS đã chọn)
+        resource_aware: DEPRECATED - Always False (pure distance only)
+        drop_threshold: Resource utilization % above which nodes are DROPPED
+        penalty_threshold: DEPRECATED - Not used
+        penalty_multiplier: DEPRECATED - Not used
+        source_gs: DEPRECATED - Not used (always uses nearest GS)
+        dest_gs: DEPRECATED - Not used (always uses nearest GS)
     """
-    # Build graph: nodes as vertices, DISTANCE as edge weights
     graph = {}
     node_map = {node['nodeId']: node for node in nodes}
     
-    # Helper: Calculate node resource utilization
     def get_node_utilization(node: dict) -> float:
         """Get max resource utilization across CPU, Memory, Bandwidth"""
         cpu = node.get('cpu', {}).get('utilization', 0)
@@ -842,7 +825,6 @@ def calculate_path_dijkstra(source_terminal: dict, dest_terminal: dict, nodes: l
         bw = node.get('bandwidth', {}).get('utilization', 0)
         return max(cpu, mem, bw)
     
-    # Helper: Check if node should be dropped due to high resource usage
     def should_drop_node(node: dict) -> bool:
         """Drop nodes with resource usage > drop_threshold"""
         if not resource_aware:
@@ -851,32 +833,11 @@ def calculate_path_dijkstra(source_terminal: dict, dest_terminal: dict, nodes: l
         return util >= drop_threshold
     
     def calculate_edge_weight(node: dict, other_node: dict, base_distance_km: float) -> float:
-        """
-        Calculate edge weight - BASELINE: Pure Distance Only
-        
-        ⚠️ BASELINE: Không có resource penalties để đảm bảo Dijkstra tìm được
-        path với distance ngắn nhất (baseline rõ ràng).
-        
-        RL sẽ thể hiện lợi ích của resource-aware optimization.
-        """
-        # Pure distance only - no resource penalties for baseline
+        """Calculate edge weight - pure distance only (no resource penalties)"""
         return base_distance_km
     
-    # 🔥 FIX: Nếu có pre-selected GS, dùng GS đó để so sánh công bằng với RL
-    # Nếu không, dùng nearest GS (baseline)
-    if source_gs and dest_gs:
-        source_node = source_gs
-        dest_node = dest_gs
-        logger.info(
-            f"📐 Dijkstra: Using PRE-SELECTED Ground Stations "
-            f"(source: {source_gs['nodeId']}, dest: {dest_gs['nodeId']}) "
-            f"for FAIR COMPARISON with RL"
-        )
-    else:
-        # 🔥 BASELINE: Dijkstra LUÔN dùng nearest GS (chỉ khoảng cách) để so sánh với RL
-        # RL sẽ dùng find_best_ground_station (tối ưu resource) để thể hiện sự vượt trội
-        source_node = find_nearest_ground_station(source_terminal, nodes)
-        dest_node = find_nearest_ground_station(dest_terminal, nodes)
+    source_node = find_nearest_ground_station(source_terminal, nodes)
+    dest_node = find_nearest_ground_station(dest_terminal, nodes)
     
     if source_node:
         source_distance_km = calculate_distance(source_terminal.get('position'), source_node.get('position')) / 1000.0
@@ -940,7 +901,7 @@ def calculate_path_dijkstra(source_terminal: dict, dest_terminal: dict, nodes: l
                         )
                     continue
                 
-                realistic_max_range = get_max_comm_range(node_type, other_type) * 1000
+                realistic_max_range = get_max_comm_range(node_type, other_type) * M_TO_KM
                 
                 if distance <= realistic_max_range * SATELLITE_RANGE_MARGIN:
                     # BASELINE: Pure distance only (no resource penalties)
@@ -1155,15 +1116,15 @@ def _calculate_path_rl_heuristic(source_terminal: dict, dest_terminal: dict, nod
     def get_node_weight(node):
         utilization = node.get('resourceUtilization', 0)
         packet_count = node.get('currentPacketCount', 0)
-        capacity = node.get('packetBufferCapacity', 1000)
+        capacity = node.get('packetBufferCapacity', NORM_PACKET_BUFFER)
         packet_ratio = packet_count / capacity if capacity > 0 else 0
         
-        if utilization > 80:
-            congestion_penalty = 2.0 + (utilization - 80) / 20 * 3.0  # 2.0 to 5.0 for 80-100%
-        elif utilization > 60:
-            congestion_penalty = 1.0 + (utilization - 60) / 20 * 1.0  # 1.0 to 2.0 for 60-80%
+        if utilization > UTILIZATION_HIGH_PERCENT:
+            congestion_penalty = 2.0 + (utilization - UTILIZATION_HIGH_PERCENT) / 20 * 3.0
+        elif utilization > UTILIZATION_LOW_PERCENT:
+            congestion_penalty = 1.0 + (utilization - UTILIZATION_LOW_PERCENT) / 20 * 1.0
         else:
-            congestion_penalty = utilization / 60 * 1.0  # 0 to 1.0 for 0-60%
+            congestion_penalty = utilization / UTILIZATION_LOW_PERCENT * 1.0
         
         # Add packet buffer penalty
         buffer_penalty = packet_ratio * 0.5  # 0 to 0.5
