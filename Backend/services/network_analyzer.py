@@ -440,13 +440,20 @@ class NetworkAnalyzer:
             )
             
             # Đề xuất vị trí mới để giảm tải
-            # Tìm vị trí tốt nhất: gần terminals nhưng không quá gần ground station hiện tại
-            for term_info in nearby_terminals[:3]:  # Top 3 terminals gần nhất
-                term_pos = term_info['position']
+            # 🔧 FIX: Chỉ tìm 1 vị trí tốt nhất cho mỗi overloaded GS (không phải 3)
+            if nearby_terminals:
+                # Chọn terminal ở khoảng cách trung bình từ GS (không quá gần, không quá xa)
+                # Sắp xếp theo distance và chọn terminal ở giữa
+                nearby_terminals.sort(key=lambda x: x['distance_to_gs'])
+                
+                # Chọn terminal ở vị trí 1/3 từ xa nhất (đủ xa để phân tán tải)
+                best_idx = max(0, len(nearby_terminals) // 3)
+                best_terminal = nearby_terminals[best_idx]
+                term_pos = best_terminal['position']
                 
                 priority = (
                     len(nearby_terminals) * 10 +
-                    (NEARBY_TERMINAL_RANGE_KM - term_info['distance_to_gs']) / 10 +
+                    overloaded_gs['overload_score'] * 100 +  # Weight by how overloaded the GS is
                     -nearby_nodes * 5
                 )
                 
@@ -455,7 +462,7 @@ class NetworkAnalyzer:
                     'priority': priority,
                     'nearby_terminals': len(nearby_terminals),
                     'nearby_nodes': nearby_nodes,
-                    'recommended_type': 'GROUND_STATION',  # Luôn đề xuất ground station để giảm tải
+                    'recommended_type': 'GROUND_STATION',
                     'overloaded_gs_id': gs.get('nodeId'),
                     'overloaded_gs_name': gs.get('nodeName', gs.get('nodeId')),
                     'overload_score': overloaded_gs['overload_score'],
