@@ -218,8 +218,8 @@ GS_RANGE_MARGIN = 1.0  # No margin for ground stations
 # Terminal ranges (user devices connecting to Ground Stations ONLY)
 TERMINAL_TO_GS_MAX_RANGE_KM = 1000.0  
 
-# Ground Station ranges - INCREASED for better connectivity
-GS_MAX_DIRECT_RANGE_KM = 500.0  # GS-to-GS (was 100km, now 500km for fiber/microwave links)
+
+GS_MAX_DIRECT_RANGE_KM = 100.0  # GS-to-GS direct connection threshold
 GS_TO_LEO_MAX_RANGE_KM = 3000.0  # GS to LEO satellite (was 2000km)
 GS_TO_MEO_MAX_RANGE_KM = 12000.0  # GS to MEO satellite (was 10000km)
 GS_TO_GEO_MAX_RANGE_KM = 40000.0  # GS to GEO satellite (geostationary)
@@ -250,8 +250,8 @@ DIJKSTRA_PENALTY_THRESHOLD = 80.0
 DIJKSTRA_PENALTY_MULTIPLIER = 3.0
 DIJKSTRA_PROGRESS_SCALE = 10.0
 
-# Ground Station direct connection
-GS_DIRECT_CONNECTION_THRESHOLD_KM = 100.0
+# Ground Station direct connection (MUST match GS_MAX_DIRECT_RANGE_KM for consistency)
+GS_DIRECT_CONNECTION_THRESHOLD_KM = GS_MAX_DIRECT_RANGE_KM
 
 # Resource factor thresholds for edge weight calculation
 RESOURCE_FACTOR_LOW_THRESHOLD = 40.0

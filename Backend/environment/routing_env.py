@@ -425,39 +425,30 @@ class RoutingEnvironment(gym.Env):
         terminated = False
         reward = initial_reward
         
-        has_min_hops = len(self.path) >= MIN_PATH_HOPS
+        # Simple termination: require at least 2 nodes and reaching dest_gs
+        node_count_in_path = sum(1 for p in self.path if 'nodeId' in p)
+        has_min_hops = node_count_in_path >= 2
         
-        # 🔥 FIX: Chỉ terminate khi thực sự đến destination GS
-        # Không cho phép early termination dựa trên distance để tránh "nhảy" trực tiếp
-        # Điều này đảm bảo RL phải đi qua đầy đủ path giống Dijkstra
         if hasattr(self, 'dest_ground_station') and self.dest_ground_station:
-            # Nếu có explicit dest_gs (từ reset options), CHỈ terminate khi đến đúng GS đó
-            # Không cho phép early termination dựa trên distance
+            # Terminate when reaching destination GS with minimum path
             if reached_dest_gs and has_min_hops:
                 self.path.append(self.dest_terminal)
                 terminated = True
                 self.terminated = True
         else:
-            # Fallback: Nếu không có explicit dest_gs, cho phép terminate khi gần destination
-            # (cho backward compatibility)
-            if reached_dest_gs or \
-               (is_ground_station and is_near_dest and has_min_hops) or \
-               (has_min_hops and dist_to_dest < DISTANCE_CLOSE_DEST_M):
+            # Fallback for backward compatibility
+            if (is_ground_station and is_near_dest and has_min_hops):
                 self.path.append(self.dest_terminal)
                 terminated = True
                 self.terminated = True
         
         if terminated:
-            # 🔧 SIMPLIFIED SUCCESS REWARD
-            # Base success: 500, small bonuses, no extreme penalties
-            reward = self.success_reward  # 500
+            reward = self.success_reward 
             
-            # Small bonus for reaching exact destination GS
             if reached_dest_gs:
                 reward += 50.0
                 logger.info(f"RL reached exact destination GS: {self.dest_ground_station['nodeId']}")
             
-            # Small efficiency bonus/penalty (capped)
             num_hops = len(self.path) - 2
             if num_hops <= 3:
                 reward += 30.0  # Very efficient
@@ -466,9 +457,7 @@ class RoutingEnvironment(gym.Env):
             elif num_hops > 8:
                 reward -= 30.0  # Too long (capped penalty)
                 
-        else:
-            # 🔧 NORMALIZED REWARD FUNCTION - Scale to reasonable range
-            # Target range: -50 to +50 per step (not counting terminal rewards)
+        else:   
             
             # Get initial distance for normalization
             initial_dist = self._calculate_distance(
@@ -568,8 +557,6 @@ class RoutingEnvironment(gym.Env):
             'progress': progress if not terminated else 1.0
         }
         
-        # 🔧 REWARD CLIPPING: Prevent extreme outliers
-        # Clip to reasonable range: -100 to +600
         reward = max(-100.0, min(600.0, reward))
         
         return state, reward, terminated, truncated, info
